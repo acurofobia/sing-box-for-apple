@@ -1,3 +1,6 @@
 [submodule "Frameworks/Runestone"]
 	path = Frameworks/Runestone
 	url = https://github.com/nekohasekai/Runestone.git
+[submodule "upstream/sing-box"]
+	path = upstream/sing-box
+	url = https://github.com/SagerNet/sing-box.git

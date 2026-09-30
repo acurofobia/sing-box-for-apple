@@ -365,7 +365,7 @@ struct MainView: View {
                 guard let profile = environments.extensionProfile else { return }
                 Task {
                     do {
-                        try await profile.start()
+                        try await profile.startManual()
                     } catch {
                         alert = AlertState(action: "start service", error: error)
                     }

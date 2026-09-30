@@ -59,7 +59,12 @@ public final class DashboardViewModel: BaseViewModel {
             do {
                 profileList = try await ProfileManager.list().map { ProfilePreview($0) }
                 guard !profileList.isEmpty else {
-                    environments?.emptyProfiles = true
+                    #if os(iOS)
+                        let onlyVK = await SharedPreferences.onlyVKTurn.get()
+                        environments?.emptyProfiles = !(onlyVK && (try? VKTurnConfigurationStore.load()) != nil)
+                    #else
+                        environments?.emptyProfiles = true
+                    #endif
                     return
                 }
 

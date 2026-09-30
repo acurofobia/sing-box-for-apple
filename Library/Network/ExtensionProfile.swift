@@ -4,6 +4,7 @@ import NetworkExtension
 import os
 #if os(iOS)
     import FileProvider
+    import Network
 #endif
 
 private let logger = Logger(category: "ExtensionProfile")
@@ -12,10 +13,28 @@ private let logger = Logger(category: "ExtensionProfile")
 public class ExtensionProfile: ObservableObject {
     public static let controlKind = AppConfiguration.widgetControlKind
 
-    private let manager: NEVPNManager?
+    private var manager: NEVPNManager?
+    #if os(iOS)
+        private var singManager: NETunnelProviderManager?
+        private var vkManager: NETunnelProviderManager?
+    #endif
     private var connection: NEVPNConnection?
-    private var observer: Any?
+    private var observers: [Any] = []
     private let isMock: Bool
+
+    public enum ProviderKind: String, Sendable {
+        case singBox, vkTurn
+
+        public var title: String {
+            switch self {
+            case .singBox: return "sing-box"
+            case .vkTurn: return "VK TURN"
+            }
+        }
+    }
+
+    @Published public private(set) var activeProvider: ProviderKind = .singBox
+    @Published public private(set) var startupError: String?
 
     @Published public var status: NEVPNStatus
     @Published public var connectedDate: Date?
@@ -27,6 +46,23 @@ public class ExtensionProfile: ObservableObject {
         connectedDate = manager.connection.connectedDate
         isMock = false
     }
+
+    #if os(iOS)
+        private init(singManager: NETunnelProviderManager?, vkManager: NETunnelProviderManager?, active: ProviderKind) {
+            self.singManager = singManager
+            self.vkManager = vkManager
+            activeProvider = active
+            let selected = active == .vkTurn ? vkManager : singManager
+            manager = selected
+            connection = selected?.connection
+            status = selected?.connection.status ?? .disconnected
+            connectedDate = selected?.connection.connectedDate
+            isMock = false
+            if active == .vkTurn, status == .disconnected {
+                startupError = VKTurnConfigurationStore.lastError
+            }
+        }
+    #endif
 
     private init(mockStatus: NEVPNStatus, mockConnectedDate: Date?) {
         manager = nil
@@ -46,34 +82,76 @@ public class ExtensionProfile: ObservableObject {
     }
 
     public func register() {
-        guard !isMock, let manager else { return }
-        observer = NotificationCenter.default.addObserver(
-            forName: NSNotification.Name.NEVPNStatusDidChange,
-            object: manager.connection,
-            queue: nil
-        ) { [weak self] notification in
-            guard let connection = notification.object as? NEVPNConnection else {
-                return
-            }
-            Task { @MainActor in
-                guard let self else {
-                    return
-                }
-                self.connection = connection
-                self.status = connection.status
-                self.connectedDate = connection.connectedDate
-                if connection.status == .disconnected {
-                    Self.schedulePromoteOOMDraft()
-                }
-                #if os(iOS)
-                    if #available(iOS 16.0, *) {
-                        if connection.status == .connected || connection.status == .disconnected {
+        guard !isMock else { return }
+        for observer in observers { NotificationCenter.default.removeObserver(observer) }
+        observers.removeAll()
+        #if os(iOS)
+            let candidates: [(NETunnelProviderManager, ProviderKind)] = [
+                singManager.map { ($0, .singBox) }, vkManager.map { ($0, .vkTurn) },
+            ].compactMap { $0 }
+        #else
+            let candidates: [(NEVPNManager, ProviderKind)] = manager.map { [($0, .singBox)] } ?? []
+        #endif
+        for (candidate, kind) in candidates {
+            let token = NotificationCenter.default.addObserver(
+                forName: NSNotification.Name.NEVPNStatusDidChange,
+                object: candidate.connection,
+                queue: nil
+            ) { [weak self] notification in
+                guard notification.object is NEVPNConnection else { return }
+                Task { @MainActor in
+                    guard let self else { return }
+                    #if os(iOS)
+                        let changedManager = kind == .vkTurn ? self.vkManager : self.singManager
+                    #else
+                        let changedManager = self.manager
+                    #endif
+                    guard let changedManager else { return }
+                    let changed = changedManager.connection
+                    if changed.status.isStarted && self.activeProvider != kind {
+                        self.selectActive(changedManager, kind: kind)
+                    }
+                    guard self.activeProvider == kind else { return }
+                    self.connection = changed
+                    self.status = changed.status
+                    self.connectedDate = changed.connectedDate
+                    if changed.status == .disconnected, kind == .singBox {
+                        Self.schedulePromoteOOMDraft()
+                    }
+                    #if os(iOS)
+                        if changed.status == .disconnected, kind == .vkTurn {
+                            self.startupError = VKTurnConfigurationStore.lastError
+                            if #available(iOS 16.0, *) {
+                                do {
+                                    try await changed.fetchLastDisconnectError()
+                                } catch {
+                                    if self.startupError == nil {
+                                        self.startupError = error.localizedDescription
+                                    }
+                                }
+                            }
+                        }
+                        if #available(iOS 16.0, *), changed.status == .connected || changed.status == .disconnected {
                             Self.signalFileProviderChanges()
                         }
-                    }
-                #endif
+                    #endif
+                }
             }
+            observers.append(token)
         }
+    }
+
+    private func selectActive(_ selected: NEVPNManager, kind: ProviderKind) {
+        manager = selected
+        connection = selected.connection
+        activeProvider = kind
+        status = selected.connection.status
+        connectedDate = selected.connection.connectedDate
+        startupError = nil
+    }
+
+    public func recordStartupError(_ message: String) {
+        startupError = message
     }
 
     private static func schedulePromoteOOMDraft() {
@@ -112,7 +190,7 @@ public class ExtensionProfile: ObservableObject {
     #endif
 
     nonisolated deinit {
-        if let observer {
+        for observer in observers {
             NotificationCenter.default.removeObserver(observer)
         }
     }
@@ -164,7 +242,9 @@ public class ExtensionProfile: ObservableObject {
             return
         }
         guard let manager else { return }
-        try await fetchProfile()
+        if activeProvider == .singBox {
+            try await fetchProfile()
+        }
         manager.isEnabled = true
         let alwaysOn = await SharedPreferences.alwaysOn.get()
         let onDemandEnabled = await SharedPreferences.onDemandEnabled.get()
@@ -181,9 +261,10 @@ public class ExtensionProfile: ObservableObject {
         #if !os(tvOS)
             if let protocolConfiguration = manager.protocolConfiguration {
                 let includeAllNetworks = await SharedPreferences.includeAllNetworks.get()
-                protocolConfiguration.includeAllNetworks = includeAllNetworks
+                protocolConfiguration.includeAllNetworks = activeProvider == .vkTurn || includeAllNetworks
                 protocolConfiguration.excludeLocalNetworks = await SharedPreferences.excludeLocalNetworks.get()
-                protocolConfiguration.enforceRoutes = await SharedPreferences.enforceRoutes.get()
+                let enforceRoutes = await SharedPreferences.enforceRoutes.get()
+                protocolConfiguration.enforceRoutes = activeProvider == .singBox && enforceRoutes
                 if #available(iOS 16.4, macOS 13.3, *) {
                     protocolConfiguration.excludeAPNs = await SharedPreferences.excludeAPNs.get()
                     protocolConfiguration.excludeCellularServices = await SharedPreferences.excludeCellularServices.get()
@@ -194,7 +275,7 @@ public class ExtensionProfile: ObservableObject {
             }
         #endif
         try await manager.saveToPreferences()
-        let options = try await prepareStartOptions()
+        let options = activeProvider == .singBox ? try await prepareStartOptions() : nil
         try manager.connection.startVPNTunnel(options: options)
     }
 
@@ -290,12 +371,14 @@ public class ExtensionProfile: ObservableObject {
             manager.isOnDemandEnabled = false
             try await manager.saveToPreferences()
         }
-        do {
-            try await Task.detached(priority: .userInitiated) {
-                try LibboxNewStandaloneCommandClient()!.serviceClose()
-            }.value
-        } catch {
-            logger.debug("serviceClose error: \(error.localizedDescription)")
+        if activeProvider == .singBox {
+            do {
+                try await Task.detached(priority: .userInitiated) {
+                    try LibboxNewStandaloneCommandClient()!.serviceClose()
+                }.value
+            } catch {
+                logger.debug("serviceClose error: \(error.localizedDescription)")
+            }
         }
         manager.connection.stopVPNTunnel()
     }
@@ -313,26 +396,188 @@ public class ExtensionProfile: ObservableObject {
         try await start()
     }
 
+    #if os(iOS)
+        public func vkTurnStats() async throws -> VKTurnStats {
+            guard activeProvider == .vkTurn,
+                  let session = connection as? NETunnelProviderSession else {
+                throw VKTurnError.missingConfiguration
+            }
+            let response = try await withCheckedThrowingContinuation { continuation in
+                do {
+                    try session.sendProviderMessage(Data("stats".utf8)) { data in
+                        continuation.resume(returning: data)
+                    }
+                } catch {
+                    continuation.resume(throwing: error)
+                }
+            }
+            guard let response else { throw VKTurnError.invalidField }
+            return try JSONDecoder().decode(VKTurnStats.self, from: response)
+        }
+
+        private struct ProbeMetadata: Decodable {
+            let `default`: String
+            let defaultUsable: Bool
+            let candidates: [String]
+        }
+
+        public func startManual() async throws {
+            guard await Self.hasPhysicalNetwork() else {
+                throw NSError(domain: "VPNChoice", code: 1, userInfo: [NSLocalizedDescriptionKey: "Нет подключения к сети."])
+            }
+            startupError = nil
+            let onlyVK = await SharedPreferences.onlyVKTurn.get()
+            if onlyVK {
+                _ = try VKTurnConfigurationStore.load()
+                try await selectProvider(.vkTurn)
+                try await start()
+                return
+            }
+
+            let profileID = await SharedPreferences.selectedProfileID.get()
+            var singWorks = false
+            if let profile = try? await ProfileManager.get(profileID) {
+                do {
+                    let content = try await profile.readAsync()
+                    let metadata = try await Task.detached(priority: .userInitiated) {
+                        var error: NSError?
+                        let result = LibboxProbeOutbounds(content, &error)
+                        if let error { throw error }
+                        guard let data = result.data(using: .utf8) else { throw VKTurnError.invalidField }
+                        return try JSONDecoder().decode(ProbeMetadata.self, from: data)
+                    }.value
+                    let preferred = await SharedPreferences.probeOutboundTag.get()
+                    let tag: String
+                    if !preferred.isEmpty, metadata.candidates.contains(preferred) {
+                        tag = preferred
+                    } else if metadata.defaultUsable {
+                        tag = ""
+                    } else {
+                        throw NSError(domain: "VPNChoice", code: 3, userInfo: [NSLocalizedDescriptionKey: "route.final ведёт напрямую или выбранный outbound отсутствует в профиле. Выберите проверяемый outbound в настройках VPN."])
+                    }
+                    singWorks = try await Task.detached(priority: .userInitiated) {
+                        var error: NSError?
+                        var success = ObjCBool(false)
+                        LibboxProbeConfig(content, tag, 10_000, &success, &error)
+                        if let error {
+                            if error.localizedDescription.contains("choose a non-direct outbound") {
+                                throw NSError(domain: "VPNChoice", code: 3, userInfo: [NSLocalizedDescriptionKey: "Выбранный outbound ведёт напрямую. Выберите другой outbound в настройках VPN."])
+                            }
+                            throw error
+                        }
+                        return success.boolValue
+                    }.value
+                } catch let error as NSError where error.domain == "VPNChoice" {
+                    throw error
+                } catch {
+                    logger.warning("sing-box probe failed: \(error.localizedDescription)")
+                }
+            }
+            if singWorks {
+                try await selectProvider(.singBox)
+                try await start()
+                return
+            }
+            _ = try VKTurnConfigurationStore.load()
+            try await selectProvider(.vkTurn)
+            try await start()
+        }
+
+        private static func hasPhysicalNetwork() async -> Bool {
+            await Task.detached(priority: .userInitiated) { physicalNetworkAvailable() }.value
+        }
+
+        private nonisolated static func physicalNetworkAvailable() -> Bool {
+            let monitor = NWPathMonitor()
+            let ready = DispatchSemaphore(value: 0)
+            monitor.pathUpdateHandler = { _ in ready.signal() }
+            monitor.start(queue: DispatchQueue(label: "VPNChoice.NetworkPath"))
+            let received = ready.wait(timeout: .now() + 2) == .success
+            let satisfied = monitor.currentPath.status == .satisfied
+            monitor.cancel()
+            return received && satisfied
+        }
+
+        private func selectProvider(_ kind: ProviderKind) async throws {
+            let selected: NETunnelProviderManager
+            if kind == .vkTurn {
+                let configuration = try VKTurnConfigurationStore.load()
+                if vkManager == nil {
+                    let newManager = NETunnelProviderManager()
+                    newManager.localizedDescription = "VK TURN"
+                    let tunnel = NETunnelProviderProtocol()
+                    tunnel.providerBundleIdentifier = AppConfiguration.vkTurnExtensionBundleID
+                    tunnel.serverAddress = VKTurnConfigurationStore.serverAddress(for: configuration)
+                    newManager.protocolConfiguration = tunnel
+                    newManager.isEnabled = true
+                    try await newManager.saveToPreferences()
+                    try await newManager.loadFromPreferences()
+                    vkManager = newManager
+                    register()
+                }
+                guard let vkManager else { throw VKTurnError.missingConfiguration }
+                selected = vkManager
+                if let tunnel = selected.protocolConfiguration as? NETunnelProviderProtocol {
+                    tunnel.serverAddress = VKTurnConfigurationStore.serverAddress(for: configuration)
+                }
+            } else {
+                guard let singManager else { throw VKTurnError.invalidField }
+                selected = singManager
+            }
+            let other = kind == .vkTurn ? singManager : vkManager
+            if let other, other.isOnDemandEnabled {
+                other.isOnDemandEnabled = false
+                try await other.saveToPreferences()
+            }
+            selectActive(selected, kind: kind)
+            await SharedPreferences.lastVPNProvider.set(kind.rawValue)
+        }
+    #else
+        public func startManual() async throws { try await start() }
+    #endif
+
     public static func load() async throws -> ExtensionProfile? {
         let managers = try await NETunnelProviderManager.loadAllFromPreferences()
+        #if os(iOS)
+            let sing = managers.first { ($0.protocolConfiguration as? NETunnelProviderProtocol)?.providerBundleIdentifier == AppConfiguration.extensionBundleID }
+            let vk = managers.first { ($0.protocolConfiguration as? NETunnelProviderProtocol)?.providerBundleIdentifier == AppConfiguration.vkTurnExtensionBundleID }
+            guard sing != nil || vk != nil else { return nil }
+            let saved = await SharedPreferences.lastVPNProvider.get()
+            let active: ProviderKind
+            if vk?.connection.status.isConnected == true {
+                active = .vkTurn
+            } else if sing?.connection.status.isConnected == true {
+                active = .singBox
+            } else {
+                active = saved == ProviderKind.vkTurn.rawValue && vk != nil ? .vkTurn : .singBox
+            }
+            let profile = ExtensionProfile(singManager: sing, vkManager: vk, active: active == .singBox && sing == nil ? .vkTurn : active)
+            return profile
+        #else
         if managers.isEmpty {
             return nil
         }
-        let profile = ExtensionProfile(managers[0])
+        let providerID = Variant.useSystemExtension ? AppConfiguration.systemExtensionBundleID : AppConfiguration.extensionBundleID
+        guard let manager = managers.first(where: { ($0.protocolConfiguration as? NETunnelProviderProtocol)?.providerBundleIdentifier == providerID }) else { return nil }
+        let profile = ExtensionProfile(manager)
         if profile.status == .disconnected {
             schedulePromoteOOMDraft()
         }
         return profile
+        #endif
     }
 
     public static func install() async throws {
+        let providerID = Variant.useSystemExtension ? AppConfiguration.systemExtensionBundleID : AppConfiguration.extensionBundleID
+        let existing = try await NETunnelProviderManager.loadAllFromPreferences()
+        guard !existing.contains(where: { ($0.protocolConfiguration as? NETunnelProviderProtocol)?.providerBundleIdentifier == providerID }) else { return }
         let manager = NETunnelProviderManager()
         manager.localizedDescription = Variant.applicationName
         let tunnelProtocol = NETunnelProviderProtocol()
         if Variant.useSystemExtension {
-            tunnelProtocol.providerBundleIdentifier = AppConfiguration.systemExtensionBundleID
+            tunnelProtocol.providerBundleIdentifier = providerID
         } else {
-            tunnelProtocol.providerBundleIdentifier = AppConfiguration.extensionBundleID
+            tunnelProtocol.providerBundleIdentifier = providerID
         }
         tunnelProtocol.serverAddress = "sing-box"
         manager.protocolConfiguration = tunnelProtocol

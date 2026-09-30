@@ -26,6 +26,10 @@ public enum AppConfiguration {
         "\(packageName).extension"
     }
 
+    public static var vkTurnExtensionBundleID: String {
+        "\(packageName).vkturn"
+    }
+
     public static var systemExtensionBundleID: String {
         "\(packageName).system"
     }

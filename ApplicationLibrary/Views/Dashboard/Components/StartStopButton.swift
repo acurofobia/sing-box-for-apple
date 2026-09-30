@@ -115,12 +115,23 @@ public struct StartStopButton: View {
                         if isStarting {
                             if status == .disconnected {
                                 isStarting = false
-                                if #available(iOS 16.0, macOS 13.0, tvOS 17.0, *) {
+                                #if os(iOS)
+                                    if profile.activeProvider == .vkTurn, let message = VKTurnConfigurationStore.lastError {
+                                        profile.recordStartupError(message)
+                                        alert = AlertState(errorMessage: message)
+                                    } else if #available(iOS 16.0, *) {
+                                        await checkStartupError()
+                                    }
+                                #else
+                                if #available(macOS 13.0, tvOS 17.0, *) {
                                     await checkStartupError()
                                 }
+                                #endif
                             } else if status.isConnectedStrict {
                                 isStarting = false
-                                environments.commandClient.connect()
+                                if profile.activeProvider == .singBox {
+                                    environments.commandClient.connect()
+                                }
                             }
                         }
                     }
@@ -152,6 +163,7 @@ public struct StartStopButton: View {
         private func checkStartupError() async {
             if let alertState = await profile.checkLastDisconnectError() {
                 alert = alertState
+                profile.recordStartupError(alertState.message)
             }
         }
 
@@ -159,13 +171,14 @@ public struct StartStopButton: View {
             do {
                 if isEnabled {
                     await MainActor.run { isStarting = true }
-                    try await profile.start()
+                    try await profile.startManual()
                 } else {
                     try await profile.stop()
                 }
             } catch {
                 await MainActor.run {
                     isStarting = false
+                    profile.recordStartupError(error.localizedDescription)
                     let action = isEnabled ? "start service" : "stop service"
                     alert = AlertState(action: action, error: error)
                 }

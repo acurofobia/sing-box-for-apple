@@ -335,7 +335,7 @@ public class ExtensionEnvironments: ObservableObject {
         if remoteServer != nil {
             return true
         }
-        return extensionProfile?.status.isConnectedStrict == true
+        return extensionProfile?.activeProvider == .singBox && extensionProfile?.status.isConnectedStrict == true
     }
 
     public func connect() {
@@ -351,7 +351,7 @@ public class ExtensionEnvironments: ObservableObject {
         guard let profile = extensionProfile else {
             return
         }
-        if profile.status.isConnected, !commandClient.isConnected {
+        if profile.activeProvider == .singBox, profile.status.isConnected, !commandClient.isConnected {
             commandClient.connect()
         }
     }

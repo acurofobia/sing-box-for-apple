@@ -15,9 +15,36 @@ public struct LogView: View {
     public init() {}
 
     public var body: some View {
-        LogViewContent(commandClient: environments.commandClient, initialSearchText: environments.logSearchText)
+        #if os(iOS)
+            if let profile = environments.extensionProfile {
+                LogProviderContent(commandClient: environments.commandClient,
+                                   initialSearchText: environments.logSearchText)
+                    .environmentObject(profile)
+            } else {
+                LogViewContent(commandClient: environments.commandClient,
+                               initialSearchText: environments.logSearchText)
+            }
+        #else
+            LogViewContent(commandClient: environments.commandClient, initialSearchText: environments.logSearchText)
+        #endif
     }
 }
+
+#if os(iOS)
+private struct LogProviderContent: View {
+    @EnvironmentObject private var profile: ExtensionProfile
+    let commandClient: CommandClient
+    let initialSearchText: String
+
+    var body: some View {
+        if profile.activeProvider == .vkTurn, profile.status.isConnected {
+            VKTurnLogView()
+        } else {
+            LogViewContent(commandClient: commandClient, initialSearchText: initialSearchText)
+        }
+    }
+}
+#endif
 
 private struct LogViewContent: View {
     @EnvironmentObject private var environments: ExtensionEnvironments

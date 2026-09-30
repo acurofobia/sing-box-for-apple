@@ -80,6 +80,9 @@ public enum SharedPreferences {
 
     #if os(iOS)
         public static let networkPermissionRequested = Preference<Bool>("network_permission_requested", defaultValue: false)
+        public static let onlyVKTurn = Preference<Bool>("only_vk_turn", defaultValue: false)
+        public static let probeOutboundTag = Preference<String>("probe_outbound_tag", defaultValue: "")
+        public static let lastVPNProvider = Preference<String>("last_vpn_provider", defaultValue: "singBox")
     #endif
 
     public static let systemProxyEnabled = Preference<Bool>("system_proxy_enabled", defaultValue: true)

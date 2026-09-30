@@ -10,6 +10,8 @@
 	</array>
 	<key>BasePackageIdentifier</key>
 	<string>$(BASE_PACKAGE_IDENTIFIER)</string>
+	<key>KeychainAccessGroup</key>
+	<string>$(AppIdentifierPrefix)$(BASE_PACKAGE_IDENTIFIER)</string>
 	<key>CFBundleDocumentTypes</key>
 	<array>
 		<dict>

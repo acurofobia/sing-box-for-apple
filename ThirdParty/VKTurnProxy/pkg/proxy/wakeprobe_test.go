@@ -1,0 +1,1088 @@
+package proxy
+
+import (
+	"context"
+	mathrand "math/rand"
+	"os"
+	"strings"
+	"sync"
+	"sync/atomic"
+	"testing"
+	"time"
+)
+
+// Build 422 — the post-wake probe (wakeprobe.go). The thresholds in the rule's
+// tests are LITERALS on purpose: a test that derives them from the constants
+// stays green when a constant is halved.
+
+func TestWakeProbeStepIsFactsAndListening(t *testing.T) {
+	const ms = time.Millisecond
+	t.Run("any pong of the probe's own pings answers it — the first one's too, not only the last", func(t *testing.T) {
+		for _, pong := range []uint64{46, 47, 50} {
+			s := wakeProbeState{first: 46, resends: 3}
+			if v := s.step(100*ms, pong); v != wakeProbeEchoed {
+				t.Errorf("pong %d against a probe whose first ping was 46: verdict %d, want echoed", pong, v)
+			}
+		}
+	})
+	t.Run("a mark below the probe's first ping answers nothing", func(t *testing.T) {
+		s := wakeProbeState{first: 46}
+		if v := s.step(100*ms, 45); v != wakeProbeWait {
+			t.Errorf("pong 45 against first 46: verdict %d, want wait", v)
+		}
+	})
+	t.Run("asked again after one second of listening", func(t *testing.T) {
+		s := wakeProbeState{first: 1}
+		for i := 1; i <= 9; i++ {
+			if v := s.step(100*ms, 0); v != wakeProbeWait {
+				t.Fatalf("step %d (%.1f s listened): verdict %d, want wait", i, s.listened.Seconds(), v)
+			}
+		}
+		if v := s.step(100*ms, 0); v != wakeProbeResend {
+			t.Fatalf("at 1.0 s of listening: verdict %d, want a re-send", v)
+		}
+		if s.resends != 1 || s.sinceSend != 0 {
+			t.Errorf("after the re-send: resends %d sinceSend %s, want 1 and 0", s.resends, s.sinceSend)
+		}
+	})
+	t.Run("a frozen step is not listening, and is followed by a ping at once", func(t *testing.T) {
+		s := wakeProbeState{first: 1, listened: 2 * time.Second, sinceSend: 400 * ms}
+		if v := s.step(57*time.Second, 0); v != wakeProbeThawed {
+			t.Fatalf("a 57-s step: verdict %d, want thawed — a ping at once", v)
+		}
+		if s.listened != 2*time.Second {
+			t.Errorf("listened %s after a frozen step, want it unchanged at 2s — the process could not hear", s.listened)
+		}
+		if s.freezes != 1 || s.sinceSend != 0 {
+			t.Errorf("freezes %d sinceSend %s, want 1 and 0", s.freezes, s.sinceSend)
+		}
+	})
+	t.Run("an answer that is already in when a frozen step ends is from BEFORE the freeze: asked again, not believed", func(t *testing.T) {
+		s := wakeProbeState{first: 46, listened: 300 * ms}
+		if v := s.step(150*time.Second, 46); v != wakeProbeThawed {
+			t.Errorf("a 150-s step with pong 46 in: verdict %d, want thawed — the server reaps a session in a sleep like that", v)
+		}
+	})
+	t.Run("the verdict takes thirty seconds of LISTENING — not one step sooner", func(t *testing.T) {
+		s := wakeProbeState{first: 1}
+		for i := 1; i <= 299; i++ {
+			if v := s.step(100*ms, 0); v == wakeProbeDead || v == wakeProbeEchoed {
+				t.Fatalf("step %d (%.1f s listened): verdict %d before thirty seconds", i, s.listened.Seconds(), v)
+			}
+		}
+		if v := s.step(100*ms, 0); v != wakeProbeDead {
+			t.Fatalf("at 30.0 s of listening with nothing heard: verdict %d, want dead", v)
+		}
+		if s.resends != 29 {
+			t.Errorf("asked again %d times in thirty seconds, want 29 (once a second)", s.resends)
+		}
+	})
+	t.Run("the last look: an answer that is in when the verdict is due wins", func(t *testing.T) {
+		s := wakeProbeState{first: 7, listened: 29900 * ms, sinceSend: 900 * ms}
+		if v := s.step(100*ms, 7); v != wakeProbeEchoed {
+			t.Errorf("verdict %d, want echoed — the mark is read before the verdict", v)
+		}
+	})
+	t.Run("no verdict before the latest ping has had its second", func(t *testing.T) {
+		// A thaw at 29.95 s of listening: asked again at once — and judged only a second later.
+		s := wakeProbeState{first: 1, listened: 29950 * ms, sinceSend: 950 * ms}
+		if v := s.step(90*time.Second, 0); v != wakeProbeThawed {
+			t.Fatalf("the frozen step: verdict %d, want thawed", v)
+		}
+		for i := 1; i <= 9; i++ {
+			if v := s.step(100*ms, 0); v != wakeProbeWait {
+				t.Fatalf("%d00 ms after the thaw's ping: verdict %d, want wait", i, v)
+			}
+		}
+		if v := s.step(100*ms, 0); v != wakeProbeDead {
+			t.Errorf("a full second after the thaw's ping, thirty seconds listened: verdict %d, want dead", v)
+		}
+	})
+	t.Run("while a fresh ping is OWED there is no verdict — the window run out or not — and the pause is not listening", func(t *testing.T) {
+		s := wakeProbeState{first: 5, owed: true, listened: 29950 * ms}
+		for i := 1; i <= 9; i++ {
+			if v := s.step(100*ms, 0); v != wakeProbeWait {
+				t.Fatalf("%d00 ms into the pause: verdict %d, want wait", i, v)
+			}
+		}
+		if v := s.step(100*ms, 0); v != wakeProbeResend {
+			t.Fatalf("a second after the three crossed writes, the window long run out: verdict %d, want the owed ping sent — never dead", v)
+		}
+		if s.listened != 29950*ms {
+			t.Errorf("listened %s, want it unchanged at 29.95s — nothing that could be heard was out", s.listened)
+		}
+		if s.resends != 1 || s.sinceSend != 0 {
+			t.Errorf("resends %d sinceSend %s, want 1 and 0", s.resends, s.sinceSend)
+		}
+	})
+	t.Run("while a fresh ping is owed no pong answers — nothing sent so far may", func(t *testing.T) {
+		s := wakeProbeState{first: 4, owed: true}
+		if v := s.step(100*ms, 4); v != wakeProbeWait {
+			t.Errorf("pong 4 with the fresh ping still owed: verdict %d, want wait", v)
+		}
+	})
+	t.Run("a freeze ends the pause too: a ping at once", func(t *testing.T) {
+		s := wakeProbeState{first: 4, owed: true, sinceSend: 400 * ms}
+		if v := s.step(57*time.Second, 0); v != wakeProbeThawed {
+			t.Errorf("a 57-s step while a ping is owed: verdict %d, want thawed", v)
+		}
+	})
+}
+
+// The night of 2026-09-19: the process runs about two seconds per wake and is
+// frozen for minutes in between. The rule up to 421 — a wall-clock deadline —
+// killed at the first thaw; this one counts only what it could hear.
+func TestANightOfShortWakesKillsNobodyWhoCouldNotHear(t *testing.T) {
+	const ms = time.Millisecond
+	s := wakeProbeState{first: 1}
+	var wall time.Duration
+	wake := func(pongAtEnd uint64) wakeProbeVerdict {
+		for i := 0; i < 20; i++ { // two seconds awake
+			wall += 100 * ms
+			if v := s.step(100*ms, 0); v == wakeProbeDead || v == wakeProbeEchoed {
+				return v
+			}
+		}
+		wall += 140 * time.Second // frozen
+		return s.step(140*time.Second, pongAtEnd)
+	}
+	for n := 1; n <= 10; n++ {
+		if v := wake(0); v != wakeProbeThawed {
+			t.Fatalf("wake %d (wall %s, listened %s): verdict %d at the thaw, want thawed", n, wall, s.listened, v)
+		}
+	}
+	if wall < 20*time.Minute {
+		t.Fatalf("the fixture is wrong: wall %s", wall)
+	}
+	if s.listened != 20*time.Second {
+		t.Errorf("listened %s over ten two-second wakes, want 20s", s.listened)
+	}
+	s.first = 30 // the caller re-bases the probe on the ping it sent at the last thaw
+	if v := s.step(100*ms, 30); v != wakeProbeEchoed {
+		t.Errorf("the pong of the thaw's ping at last: verdict %d, want echoed", v)
+	}
+	// The control: a connection that never answers IS killed — after thirty seconds it could hear.
+	s = wakeProbeState{first: 1}
+	wakes := 0
+	for {
+		wakes++
+		if v := wake(0); v == wakeProbeDead {
+			break
+		} else if v == wakeProbeEchoed || wakes > 40 {
+			t.Fatalf("wake %d: verdict %d — a silent connection must end dead", wakes, v)
+		}
+	}
+	if wakes != 15 || s.listened != 30*time.Second {
+		t.Errorf("dead at wake %d with %s listened, want wake 15 and exactly 30s — fifteen two-second wakes", wakes, s.listened)
+	}
+}
+
+func shrinkWakeProbe(t *testing.T) {
+	t.Helper()
+	w, r, po, f, a, c, j := wakeProbeWindow, wakeProbeResendEvery, wakeProbePoll, wakeProbeFreezeStep, wakeProbeAdopt, wakeProbeClock, wakeProbeJitter
+	wakeProbeWindow, wakeProbeResendEvery, wakeProbePoll, wakeProbeFreezeStep, wakeProbeAdopt, wakeProbeJitter = 300*time.Millisecond, 30*time.Millisecond, 3*time.Millisecond, 10*time.Second, 50*time.Millisecond, time.Millisecond
+	t.Cleanup(func() {
+		wakeProbeWindow, wakeProbeResendEvery, wakeProbePoll, wakeProbeFreezeStep, wakeProbeAdopt, wakeProbeClock, wakeProbeJitter = w, r, po, f, a, c, j
+	})
+}
+
+func probeProxy() *Proxy {
+	return &Proxy{credPool: &credPool{}, lastPongSeq: make([]atomic.Uint64, 1), lastPingSeq: make([]atomic.Uint64, 1), lastActiveProbeAt: make([]atomic.Int64, 1),
+		lastTxAt: make([]atomic.Int64, 1), lastRxAt: make([]atomic.Int64, 1), wakeCh: make(chan struct{})}
+}
+
+type sentPings struct {
+	mu   sync.Mutex
+	seqs []uint64
+}
+
+func (s *sentPings) add(seq uint64) { s.mu.Lock(); s.seqs = append(s.seqs, seq); s.mu.Unlock() }
+func (s *sentPings) all() []uint64 {
+	s.mu.Lock()
+	defer s.mu.Unlock()
+	return append([]uint64(nil), s.seqs...)
+}
+
+// 2026-09-20, both fatal wakes: the ping never left the phone. It is asked again.
+func TestALostPingIsAskedAgain(t *testing.T) {
+	shrinkWakeProbe(t)
+	p := probeProxy()
+	var sent sentPings
+	var seq uint64
+	var lastPingAt time.Time
+	alive, _, err := p.runWakeProbe(context.Background(), 0, 0, "", &seq, &lastPingAt, func(s uint64, _ time.Time) error {
+		sent.add(s)
+		if s >= 2 { // the first ping is lost on the way out; the far side answers from the second on
+			go func() { time.Sleep(time.Millisecond); p.notePongSeq(0, s) }()
+		}
+		return nil
+	})
+	if err != nil || !alive {
+		t.Fatalf("alive %v err %v — a connection whose first ping was lost must live (pings sent: %v)", alive, err, sent.all())
+	}
+	if got := sent.all(); len(got) < 2 || got[0] != 1 || got[1] != 2 {
+		t.Errorf("pings sent %v, want 1 and then 2", got)
+	}
+}
+
+// The pong of the probe's FIRST ping answers it, however many were sent after.
+func TestAPongOfTheFirstPingAnswersAfterLaterPings(t *testing.T) {
+	shrinkWakeProbe(t)
+	p := probeProxy()
+	var sent sentPings
+	var seq uint64
+	var lastPingAt time.Time
+	alive, _, err := p.runWakeProbe(context.Background(), 0, 0, "", &seq, &lastPingAt, func(s uint64, _ time.Time) error {
+		sent.add(s)
+		if s == 3 { // the pong of ping ONE arrives late — after two re-sends, none of which is ever answered
+			go func() { time.Sleep(time.Millisecond); p.notePongSeq(0, 1) }()
+		}
+		return nil
+	})
+	if err != nil || !alive {
+		t.Fatalf("alive %v err %v — pong 1 answers a probe whose first ping was 1 (pings sent: %v)", alive, err, sent.all())
+	}
+}
+
+// 2026-09-20 16:03:57, the 22: the overdue tick's ping had just gone out and
+// its pong came back in four milliseconds; the wake's second ping was lost.
+func TestTheTicksPingIsTheProbesFirst(t *testing.T) {
+	shrinkWakeProbe(t)
+	p := probeProxy()
+	p.notePongSeq(0, 45)
+	var sent sentPings
+	seq := uint64(46)
+	lastPingAt := time.Now().Add(-5 * time.Millisecond) // the tick's ping, a moment ago
+	go func() { time.Sleep(4 * time.Millisecond); p.notePongSeq(0, 46) }()
+	alive, _, err := p.runWakeProbe(context.Background(), 0, 0, "", &seq, &lastPingAt, func(s uint64, _ time.Time) error {
+		sent.add(s)
+		return nil
+	})
+	if err != nil || !alive {
+		t.Fatalf("alive %v err %v — the tick's pong answers the probe", alive, err)
+	}
+	if got := sent.all(); len(got) != 0 || seq != 46 {
+		t.Errorf("the probe sent %v (seq now %d): nothing more goes into the thaw's burst when the tick has just pinged", got, seq)
+	}
+	// The control: a ping sent long ago is not adopted — the probe sends its own, and the old pong answers nothing.
+	p = probeProxy()
+	p.notePongSeq(0, 46)
+	sent = sentPings{}
+	seq = 46
+	lastPingAt = time.Now().Add(-2 * time.Second)
+	alive, _, err = p.runWakeProbe(context.Background(), 0, 0, "", &seq, &lastPingAt, func(s uint64, _ time.Time) error {
+		sent.add(s)
+		return nil
+	})
+	if err != nil || alive {
+		t.Fatalf("alive %v err %v — pong 46 does not answer a probe whose first ping is 47", alive, err)
+	}
+	if got := sent.all(); len(got) == 0 || got[0] != 47 {
+		t.Errorf("pings sent %v, want the probe's own, starting at 47", got)
+	}
+}
+
+// 2026-09-19 §213: the process running, thirty seconds listened, nothing heard — killed, as before.
+func TestARealNoEchoIsStillKilled(t *testing.T) {
+	shrinkWakeProbe(t)
+	p := probeProxy()
+	var sent sentPings
+	var seq uint64
+	var lastPingAt time.Time
+	t0 := time.Now()
+	alive, _, err := p.runWakeProbe(context.Background(), 0, 0, "", &seq, &lastPingAt, func(s uint64, _ time.Time) error {
+		sent.add(s)
+		return nil
+	})
+	if err != nil || alive {
+		t.Fatalf("alive %v err %v — nothing ever answered", alive, err)
+	}
+	if el := time.Since(t0); el < 300*time.Millisecond {
+		t.Errorf("killed after %s, before the window (300ms here) had been listened through", el)
+	}
+	if n := len(sent.all()); n < 5 {
+		t.Errorf("%d pings in the window, want the probe asked again and again", n)
+	}
+}
+
+// A freeze inside the wait: the wall clock leaps ninety seconds — far past any
+// deadline — and the connection lives, asked again at the thaw.
+func TestAFreezeInsideTheWaitIsNotListening(t *testing.T) {
+	shrinkWakeProbe(t)
+	wakeProbeFreezeStep = 5 * time.Second
+	var leap atomic.Int64
+	wakeProbeClock = func() time.Time { return time.Now().Add(time.Duration(leap.Load())) }
+	p := probeProxy()
+	var sent sentPings
+	var seq uint64
+	var lastPingAt time.Time
+	alive, _, err := p.runWakeProbe(context.Background(), 0, 0, "", &seq, &lastPingAt, func(s uint64, _ time.Time) error {
+		sent.add(s)
+		switch s {
+		case 1: // the process freezes a moment AFTER its first ping has been written — inside a poll step, not inside the write
+			go func() { time.Sleep(5 * time.Millisecond); leap.Store(int64(90 * time.Second)) }()
+		case 2:
+			go func() { time.Sleep(time.Millisecond); p.notePongSeq(0, 2) }() // the thaw's ping is answered
+		}
+		return nil
+	})
+	if err != nil || !alive {
+		t.Fatalf("alive %v err %v — ninety frozen seconds are not thirty seconds of listening (pings: %v)", alive, err, sent.all())
+	}
+	if got := sent.all(); len(got) != 2 {
+		t.Errorf("pings sent %v, want exactly two: the first, and one at the thaw", got)
+	}
+}
+
+// fakeProbeClock: every reading moves it on by tick — one poll step — and a
+// test's send moves it further: a write that takes time.
+type fakeProbeClock struct {
+	mu   sync.Mutex
+	t    time.Time
+	tick time.Duration
+}
+
+func (c *fakeProbeClock) now() time.Time {
+	c.mu.Lock()
+	defer c.mu.Unlock()
+	c.t = c.t.Add(c.tick)
+	return c.t
+}
+
+func (c *fakeProbeClock) add(d time.Duration) time.Time {
+	c.mu.Lock()
+	defer c.mu.Unlock()
+	c.t = c.t.Add(d)
+	return c.t
+}
+
+// The review of 422: the step's clock was restarted BEFORE the ping was
+// written, so the time the write took was counted as the ping's listening — a
+// slow write left the latest ping less than its second.
+func TestTheTimeAWriteTakesIsNotThePingsListening(t *testing.T) {
+	shrinkWakeProbe(t) // the window 300 ms, a re-send after 30 ms of listening
+	clk := &fakeProbeClock{t: time.Unix(1_700_000_000, 0), tick: 10 * time.Millisecond}
+	wakeProbeClock = clk.now
+	const write = 20 * time.Millisecond
+	type span struct{ start, end time.Time }
+	var writes []span
+	p := probeProxy()
+	var seq uint64
+	var lastPingAt time.Time
+	alive, _, err := p.runWakeProbe(context.Background(), 0, 0, "", &seq, &lastPingAt, func(_ uint64, now time.Time) error {
+		writes = append(writes, span{now, clk.add(write)}) // the write takes 20 ms
+		return nil
+	})
+	if err != nil || alive {
+		t.Fatalf("alive %v err %v — nothing ever answered", alive, err)
+	}
+	for k := 1; k < len(writes); k++ {
+		if got := writes[k].start.Sub(writes[k-1].end); got < 30*time.Millisecond {
+			t.Errorf("ping %d had %s between the end of its write and the next ping, want its full 30ms of listening — the time a write takes is not listening", k, got)
+		}
+	}
+	verdictAt := clk.add(0)
+	if listened := verdictAt.Sub(writes[0].end) - time.Duration(len(writes)-1)*write; listened < 300*time.Millisecond {
+		t.Errorf("dead after %s outside the writes (%d pings), want the whole 300ms window listened", listened, len(writes))
+	}
+	if !lastPingAt.Equal(writes[len(writes)-1].end) && lastPingAt.Before(writes[len(writes)-1].end) {
+		t.Errorf("lastPingAt %s lies before the end of the last write %s — a ping is sent when its write is over", lastPingAt.Format("05.000"), writes[len(writes)-1].end.Format("05.000"))
+	}
+}
+
+// …and a write slower than a freeze step was taken for a FREEZE: nothing was
+// ever listened, the probe asked again at once, and an unanswered probe never
+// reached its verdict.
+func TestWritesSlowerThanAFreezeStepStillEndInAVerdict(t *testing.T) {
+	shrinkWakeProbe(t)
+	wakeProbeFreezeStep = 50 * time.Millisecond
+	clk := &fakeProbeClock{t: time.Unix(1_700_000_000, 0), tick: 10 * time.Millisecond}
+	wakeProbeClock = clk.now
+	ctx, cancel := context.WithCancel(context.Background())
+	defer cancel()
+	sends := 0
+	p := probeProxy()
+	var seq uint64
+	var lastPingAt time.Time
+	alive, _, err := p.runWakeProbe(ctx, 0, 0, "", &seq, &lastPingAt, func(uint64, time.Time) error {
+		sends++
+		clk.add(120 * time.Millisecond) // every write takes longer than a freeze step
+		if sends > 100 {
+			cancel() // the guard: on 422 the loop never ends by itself
+		}
+		return nil
+	})
+	if err != nil {
+		t.Fatalf("after %d pings the probe had reached no verdict (%v): a slow write was taken for a freeze, so nothing was ever listened", sends, err)
+	}
+	if alive {
+		t.Fatalf("alive — nothing ever answered")
+	}
+	if sends > 15 {
+		t.Errorf("%d pings for a 300-ms window asked again every 30 ms, want about ten", sends)
+	}
+}
+
+// Build 424. The wake used to be an EDGE — a channel closed and replaced — and a
+// goroutine that was in its tick branch at that instant never saw it.
+func TestAWakeBroadcastDuringATickBranchIsNotLost(t *testing.T) {
+	p := probeProxy()
+	w := p.newWakeWatch()
+	if w.pending() {
+		t.Fatal("a fresh watch has nothing pending")
+	}
+	// The goroutine is in its tick branch — not parked in its select — when the wake is broadcast…
+	p.broadcastWake()
+	// …and then comes round to the top of its loop:
+	ch := p.wakeChannel()
+	select {
+	case <-ch:
+		t.Fatal("the fixture is wrong: the channel read AFTER the broadcast is the new, open one")
+	default: // the channel alone has lost this wake
+	}
+	if !w.pending() {
+		t.Fatal("the wake broadcast during the tick branch is lost: nothing pending at the top of the loop")
+	}
+	alive, probed, err := w.serve(context.Background(), 0, 0, "", new(uint64), new(time.Time), nil) // the server does not echo: no probe is due
+	if err != nil || !alive || probed {
+		t.Fatalf("alive %v probed %v err %v", alive, probed, err)
+	}
+	if w.pending() {
+		t.Error("a wake that needed no probe is still pending — the loop would spin on it")
+	}
+	// A goroutine PARKED in its select is reached by the channel, as ever.
+	ch = p.wakeChannel()
+	go p.broadcastWake()
+	select {
+	case <-ch:
+	case <-time.After(2 * time.Second):
+		t.Fatal("a parked goroutine was not woken")
+	}
+	if !w.pending() {
+		t.Error("…and the watch says so too")
+	}
+}
+
+// Eight loops shaped like the probe goroutine's — a fast ticker with a busy
+// tick branch — against three hundred broadcasts at random moments: every one
+// of them must come to serve the LAST wake, wherever it was caught.
+func TestNoWakeIsLostWhereverTheGoroutineIsCaught(t *testing.T) {
+	for round := 0; round < 5; round++ {
+		p := probeProxy()
+		var final atomic.Uint64
+		var wg sync.WaitGroup
+		stop := make(chan struct{})
+		var lost atomic.Int32
+		for g := 0; g < 8; g++ {
+			wg.Add(1)
+			go func() {
+				defer wg.Done()
+				w := p.newWakeWatch()
+				tick := time.NewTicker(200 * time.Microsecond)
+				defer tick.Stop()
+				for {
+					if f := final.Load(); f != 0 && w.served == f {
+						return
+					}
+					ch := p.wakeChannel()
+					if w.pending() {
+						ch = closedWakeCh
+					}
+					select {
+					case <-tick.C:
+						time.Sleep(50 * time.Microsecond) // the tick branch: busy, away from the select
+					case <-ch:
+						w.served = p.wakeEpoch.Load()
+					case <-stop:
+						lost.Add(1)
+						return
+					}
+				}
+			}()
+		}
+		for i := 0; i < 300; i++ {
+			time.Sleep(time.Duration(mathrand.Intn(300)) * time.Microsecond)
+			p.broadcastWake()
+		}
+		final.Store(p.wakeEpoch.Load())
+		done := make(chan struct{})
+		go func() { wg.Wait(); close(done) }()
+		select {
+		case <-done:
+		case <-time.After(3 * time.Second):
+			close(stop)
+			<-done
+		}
+		if n := lost.Load(); n != 0 {
+			t.Fatalf("round %d: %d of 8 loops never came to serve the last wake — it was broadcast while they were in their tick branch", round, n)
+		}
+	}
+}
+
+func TestServeProbesAndMarksWhatWokeThePhoneMeanwhile(t *testing.T) {
+	shrinkWakeProbe(t)
+	p := probeProxy()
+	p.serverProbeable.Store(true)
+	w := p.newWakeWatch()
+	p.broadcastWake()
+	var seq uint64
+	var lastPingAt time.Time
+	alive, probed, err := w.serve(context.Background(), 0, 0, "", &seq, &lastPingAt, func(s uint64, _ time.Time) error {
+		if s == 1 {
+			p.broadcastWake() // the phone sleeps and wakes again while the probe runs — inside its first write: a fresh ping follows by itself
+		}
+		go func() { time.Sleep(time.Millisecond); p.notePongSeq(0, s) }()
+		return nil
+	})
+	if err != nil || !alive || !probed {
+		t.Fatalf("alive %v probed %v err %v", alive, probed, err)
+	}
+	if w.pending() {
+		t.Error("a wake broadcast while the probe ran is still pending: a second probe would follow the echo at once")
+	}
+	// Less than thirty seconds later the next wake needs no probe — and is served all the same.
+	p.broadcastWake()
+	if _, probed, _ = w.serve(context.Background(), 0, 0, "", &seq, &lastPingAt, nil); probed || w.pending() {
+		t.Errorf("probed %v pending %v, want a throttled wake served without a probe", probed, w.pending())
+	}
+}
+
+func TestTheEchosTimeCountsTheStepThatHeardIt(t *testing.T) {
+	for _, c := range []struct{ listened, took, want time.Duration }{
+		{0, 100 * time.Millisecond, 100 * time.Millisecond}, // an answer inside the first poll step: never "0s" — the old false echo's wording
+		{2 * time.Second, 100 * time.Millisecond, 2100 * time.Millisecond},
+		{2 * time.Second, 57 * time.Second, 2 * time.Second}, // heard right after a freeze: the frozen step is not listening
+	} {
+		if got := echoAfter(c.listened, c.took); got != c.want {
+			t.Errorf("echoAfter(%s, %s) = %s, want %s", c.listened, c.took, got, c.want)
+		}
+	}
+}
+
+// The review of 424: the probe has read the pong mark and reached its verdict;
+// the goroutine is held up (the log line, a freeze) and the NEXT wake is
+// broadcast; back in serve, the watch took the epoch as it stood THEN — a wake
+// no probe had looked at was marked served, and with the channel already
+// swapped it was lost again, throttle or no throttle.
+func TestAWakeAfterTheVerdictIsNotAbsorbedByTheProbe(t *testing.T) {
+	shrinkWakeProbe(t)
+	p := probeProxy()
+	p.serverProbeable.Store(true)
+	w := p.newWakeWatch()
+	p.broadcastWake()
+	wakeProbeAfterVerdict = func() { p.broadcastWake() } // between the verdict and the return
+	t.Cleanup(func() { wakeProbeAfterVerdict = nil })
+	var seq uint64
+	var lastPingAt time.Time
+	alive, probed, err := w.serve(context.Background(), 0, 0, "", &seq, &lastPingAt, func(s uint64, _ time.Time) error {
+		p.notePongSeq(0, s)
+		return nil
+	})
+	if err != nil || !alive || !probed {
+		t.Fatalf("alive %v probed %v err %v", alive, probed, err)
+	}
+	if !w.pending() {
+		t.Fatal("the wake broadcast AFTER the probe's verdict was marked served — no probe ever looked at it, and its channel is gone")
+	}
+}
+
+// A pong that was in before a freeze says nothing about the connection after
+// it: the probe asks again at the thaw, and only a pong of a ping sent from
+// there on answers it.
+func TestAPongFromBeforeAFreezeAnswersNothingAfterIt(t *testing.T) {
+	shrinkWakeProbe(t)
+	wakeProbeFreezeStep = 5 * time.Second
+	var leap atomic.Int64
+	wakeProbeClock = func() time.Time { return time.Now().Add(time.Duration(leap.Load())) }
+	p := probeProxy()
+	var sent sentPings
+	var seq uint64
+	var lastPingAt time.Time
+	alive, _, err := p.runWakeProbe(context.Background(), 0, 0, "", &seq, &lastPingAt, func(s uint64, _ time.Time) error {
+		sent.add(s)
+		if s == 1 {
+			p.notePongSeq(0, 1) // answered at once…
+			// …and the process freezes before it has looked — inside the poll step, after the
+			// write has returned (the time inside a write is no step): the server reaps the
+			// session meanwhile.
+			go func() { time.Sleep(time.Millisecond); leap.Store(int64(150 * time.Second)) }()
+		}
+		return nil // nothing sent after the thaw is ever answered
+	})
+	if err != nil {
+		t.Fatal(err)
+	}
+	if alive {
+		t.Fatalf("alive on the word of a pong from before a 150-s freeze; pings %v", sent.all())
+	}
+	if got := sent.all(); len(got) < 2 {
+		t.Errorf("pings %v — the probe asks again at the thaw", got)
+	}
+}
+
+// The review of 425: the ping is out and its pong is in; the process freezes
+// while still INSIDE send (after the Write, before the callback returns); the
+// phone wakes — a new wake epoch. The step's clock restarts after send, so the
+// next step looks short: no thaw was seen, the OLD pong answered, and the
+// verdict covered the new wake.
+func TestAWakeWhileAPingIsBeingWrittenVoidsWhatWasHeardBefore(t *testing.T) {
+	shrinkWakeProbe(t)
+	clk := &fakeProbeClock{t: time.Unix(1_700_000_000, 0), tick: 10 * time.Millisecond}
+	wakeProbeClock = clk.now
+	p := probeProxy()
+	var sent sentPings
+	var seq uint64
+	var lastPingAt time.Time
+	alive, _, err := p.runWakeProbe(context.Background(), 0, 0, "", &seq, &lastPingAt, func(s uint64, _ time.Time) error {
+		sent.add(s)
+		if s == 1 {
+			p.notePongSeq(0, 1)        // the pong is in…
+			clk.add(150 * time.Second) // …the process freezes inside send, the server reaps the session…
+			p.broadcastWake()          // …and the phone wakes before send has returned
+		}
+		return nil // nothing sent after that wake is ever answered
+	})
+	if err != nil {
+		t.Fatal(err)
+	}
+	if alive {
+		t.Fatalf("alive on the word of a pong from before the wake that fell inside send; pings %v", sent.all())
+	}
+	if got := sent.all(); len(got) < 2 || got[1] != 2 {
+		t.Errorf("pings %v — a fresh ping follows a wake that crossed the write", got)
+	}
+}
+
+// …and the same at a RE-SEND: the probe is re-based on the fresh ping, so the pong that came in before the wake answers nothing.
+func TestAWakeWhileARepeatedPingIsBeingWrittenRebasesTheProbe(t *testing.T) {
+	shrinkWakeProbe(t)
+	clk := &fakeProbeClock{t: time.Unix(1_700_000_000, 0), tick: 10 * time.Millisecond}
+	wakeProbeClock = clk.now
+	p := probeProxy()
+	var sent sentPings
+	var seq uint64
+	var lastPingAt time.Time
+	alive, _, err := p.runWakeProbe(context.Background(), 0, 0, "", &seq, &lastPingAt, func(s uint64, _ time.Time) error {
+		sent.add(s)
+		if s == 2 { // the first ping went unanswered; the second is answered — and the phone sleeps and wakes inside its write
+			p.notePongSeq(0, 2)
+			clk.add(150 * time.Second)
+			p.broadcastWake()
+		}
+		return nil
+	})
+	if err != nil {
+		t.Fatal(err)
+	}
+	if alive {
+		t.Fatalf("alive on the word of pong 2, heard before the wake that fell inside its write; pings %v", sent.all())
+	}
+}
+
+// The review of 426 (1): wake upon wake across three writes running — the probe
+// stops pinging in a row and OWES the fresh ping. If the window ran out on the
+// next steps the rule answered DEAD instead of the promised re-send: a kill
+// with a seq that was never sent, and the path that works after the last wake
+// checked by nobody.
+func TestNoVerdictWhileTheFreshPingIsStillOwed(t *testing.T) {
+	// The three writes that a wake crosses start at ping `from`: 2 — the first re-send; 1 — the probe's very first ping.
+	run := func(t *testing.T, from uint64, pathWorksAfterTheLastWake bool) (alive bool, pings []uint64, seq uint64) {
+		shrinkWakeProbe(t)
+		wakeProbeWindow = 60 * time.Millisecond // two re-send intervals: the window runs out right behind the three crossed writes
+		clk := &fakeProbeClock{t: time.Unix(1_700_000_000, 0), tick: 10 * time.Millisecond}
+		wakeProbeClock = clk.now
+		p := probeProxy()
+		var sent sentPings
+		var lastPingAt time.Time
+		ctx, cancel := context.WithCancel(context.Background())
+		defer cancel()
+		alive, _, err := p.runWakeProbe(ctx, 0, 0, "", &seq, &lastPingAt, func(s uint64, _ time.Time) error {
+			sent.add(s)
+			if s > 40 {
+				cancel() // the guard: a probe that never pays its debt never ends by itself
+			}
+			switch {
+			case s >= from && s <= from+2: // a ping and the two fresh ones behind it: the phone sleeps and wakes inside each write
+				p.notePongSeq(0, s) // answered, too — BEFORE the sleep: void all the same
+				clk.add(150 * time.Second)
+				p.broadcastWake()
+			case s > from+2 && pathWorksAfterTheLastWake: // whatever is sent after the last wake is answered; nothing before it ever was
+				p.notePongSeq(0, s)
+			}
+			return nil
+		})
+		if err != nil {
+			t.Fatalf("no verdict after pings %v (%v)", sent.all(), err)
+		}
+		return alive, sent.all(), seq
+	}
+	t.Run("the path works after the last wake: the owed ping is sent and answered", func(t *testing.T) {
+		alive, pings, seq := run(t, 2, true)
+		if !alive {
+			t.Fatalf("killed with sentSeq=%d after pings %v — no ping was sent after the last wake: the path that works after it was checked by nobody", seq, pings)
+		}
+		if len(pings) < 5 {
+			t.Errorf("pings %v — want the owed ping sent after the three crossed writes", pings)
+		}
+	})
+	t.Run("the control — a dead path is still killed, after the owed ping has gone out and had its second", func(t *testing.T) {
+		alive, pings, seq := run(t, 2, false)
+		if alive {
+			t.Fatalf("alive on the word of a pong heard before the last wake — nothing sent after it was ever answered (pings %v)", pings)
+		}
+		if len(pings) < 5 {
+			t.Errorf("pings %v — the verdict came before the owed ping was sent", pings)
+		}
+		if len(pings) > 0 && pings[len(pings)-1] != seq {
+			t.Errorf("the kill names sentSeq=%d, the last ping really sent is %d — a seq that never went out", seq, pings[len(pings)-1])
+		}
+	})
+	t.Run("the same at the probe's very first ping", func(t *testing.T) {
+		if alive, pings, _ := run(t, 1, true); !alive || len(pings) != 4 {
+			t.Errorf("alive %v pings %v — want 1, 2 and 3 crossed, the owed ping 4 sent after the pause and answered", alive, pings)
+		}
+		if alive, pings, _ := run(t, 1, false); alive || len(pings) < 4 {
+			t.Errorf("alive %v pings %v — want dead, and not on the word of pongs 1–3, heard before the last wake", alive, pings)
+		}
+	})
+}
+
+// The review of 426 (2): a tick ping refused for adoption left the stamp of the
+// ping BEFORE it standing, although seq had moved on. Right behind a long probe
+// — its last ping a moment old, its throttle long expired — the overdue tick
+// fires, its write is crossed by a wake, and the wake's probe then adopted the
+// REFUSED seq by the time of the previous ping.
+func TestARefusedTickPingIsNotAdoptedByThePreviousPingsTime(t *testing.T) {
+	shrinkWakeProbe(t)
+	wakeProbeAdopt = 200 * time.Millisecond
+	clk := &fakeProbeClock{t: time.Unix(1_700_000_000, 0), tick: 10 * time.Millisecond}
+	wakeProbeClock = clk.now
+	p := probeProxy()
+	var sent sentPings
+	var seq uint64
+	var lastPingAt time.Time
+	// A probe has just ended: its last ping is a moment old.
+	alive, _, err := p.runWakeProbe(context.Background(), 0, 0, "", &seq, &lastPingAt, func(s uint64, _ time.Time) error {
+		sent.add(s)
+		p.notePongSeq(0, s)
+		return nil
+	})
+	if err != nil || !alive || lastPingAt.IsZero() {
+		t.Fatalf("the fixture is wrong: alive %v err %v lastPingAt %v", alive, err, lastPingAt)
+	}
+	// The overdue tick fires right behind it, and the phone sleeps and wakes while its ping is being written.
+	if err := p.tickPing(&seq, &lastPingAt, clk.now(), func(s uint64, _ time.Time) error {
+		sent.add(s)
+		p.notePongSeq(0, s) // answered — BEFORE the sleep
+		p.broadcastWake()   // the phone sleeps and wakes before the write has returned
+		return nil
+	}); err != nil {
+		t.Fatal(err)
+	}
+	if !lastPingAt.IsZero() {
+		t.Errorf("after a tick ping refused for adoption lastPingAt still reads %s — the stamp of the ping BEFORE it, while seq has moved on to %d", lastPingAt.Format("05.000"), seq)
+	}
+	refused := seq
+	// The wake's probe. Nothing sent after that wake is ever answered.
+	before := len(sent.all())
+	alive, _, err = p.runWakeProbe(context.Background(), 0, 0, "", &seq, &lastPingAt, func(s uint64, _ time.Time) error {
+		sent.add(s)
+		return nil
+	})
+	if err != nil {
+		t.Fatal(err)
+	}
+	if got := sent.all(); len(got) == before {
+		t.Errorf("the probe sent nothing: it took the refused tick ping (seq %d) for its first — by the time of the ping before it", refused)
+	}
+	if alive {
+		t.Fatalf("alive on the word of the refused tick ping's pong, heard before the wake that crossed its write (pings %v)", sent.all())
+	}
+}
+
+// seq and lastPingAt belong together: the stamp is when the ping numbered seq
+// was sent — or nothing. The thresholds are literals (the freeze step is 1 s).
+func TestAPingIsStampedOnlyIfNoWakeAndNoFreezeCrossedItsWrite(t *testing.T) {
+	const ms = time.Millisecond
+	t0 := time.Unix(1_700_000_000, 0)
+	for _, c := range []struct {
+		what       string
+		wokeInside bool
+		took       time.Duration
+		stamped    bool
+	}{
+		{"an ordinary ping", false, 3 * ms, true},
+		{"a write of exactly one second — slow, no freeze", false, 1000 * ms, true},
+		{"a write that took longer than a freeze step may hide a freeze", false, 1001 * ms, false},
+		{"a wake was broadcast while the ping was being written: it may have left before the sleep", true, 3 * ms, false},
+	} {
+		got := pingStamp(c.wokeInside, t0, t0.Add(c.took))
+		if c.stamped && !got.Equal(t0.Add(c.took)) {
+			t.Errorf("%s: stamp %v, want the end of the write — a ping is sent when its write is over", c.what, got)
+		}
+		if !c.stamped && !got.IsZero() {
+			t.Errorf("%s: stamped %v, want nothing — the probe sends its own ping, that is all it costs", c.what, got)
+		}
+	}
+}
+
+// The tick's ping, one body for both session kinds: seq moves, and the stamp
+// says afterwards what pingStamp allows — never what the ping before it left.
+func TestTheTicksPingMovesSeqAndStampTogether(t *testing.T) {
+	p := probeProxy()
+	var seq uint64
+	before := time.Now().Add(-10 * time.Millisecond) // the stamp of the ping before
+	lastPingAt := before
+	var duringWrite, writeEnd time.Time
+	write := func(wake bool, fail error) func(uint64, time.Time) error {
+		return func(s uint64, _ time.Time) error {
+			duringWrite = lastPingAt
+			if wake {
+				p.broadcastWake()
+			}
+			time.Sleep(2 * time.Millisecond) // a write takes time
+			writeEnd = time.Now()
+			return fail
+		}
+	}
+	if err := p.tickPing(&seq, &lastPingAt, time.Now(), write(false, nil)); err != nil || seq != 1 {
+		t.Fatalf("err %v seq %d", err, seq)
+	}
+	if !duringWrite.IsZero() {
+		t.Errorf("while ping 1 was being written lastPingAt read %v — the stamp of the ping before it, under the new seq", duringWrite)
+	}
+	if lastPingAt.IsZero() || !lastPingAt.After(before) {
+		t.Errorf("an ordinary tick ping must be adoptable: lastPingAt %v", lastPingAt)
+	}
+	if lastPingAt.Before(writeEnd) {
+		t.Errorf("lastPingAt lies %s before the end of the tick's write — a ping is sent when its write is over", writeEnd.Sub(lastPingAt))
+	}
+	if err := p.tickPing(&seq, &lastPingAt, time.Now(), write(true, nil)); err != nil || seq != 2 {
+		t.Fatalf("err %v seq %d", err, seq)
+	}
+	if !lastPingAt.IsZero() {
+		t.Errorf("a wake crossed the write of ping 2 and lastPingAt reads %v — want nothing", lastPingAt)
+	}
+	lastPingAt = time.Now()
+	if err := p.tickPing(&seq, &lastPingAt, time.Now().Add(-3*time.Second), write(false, nil)); err != nil || seq != 3 {
+		t.Fatalf("err %v seq %d", err, seq)
+	}
+	if !lastPingAt.IsZero() {
+		t.Errorf("the write of ping 3 took three seconds and lastPingAt reads %v — want nothing", lastPingAt)
+	}
+	lastPingAt = time.Now()
+	if err := p.tickPing(&seq, &lastPingAt, time.Now(), write(false, context.Canceled)); err == nil {
+		t.Fatal("a failed write must be reported")
+	}
+	if !lastPingAt.IsZero() {
+		t.Errorf("ping %d was never sent and lastPingAt reads %v", seq, lastPingAt)
+	}
+}
+
+// …and the probe's own pings keep the same pair: void while a ping is being
+// written, void after a write that a wake crossed.
+func TestTheProbesOwnPingsKeepSeqAndStampTogether(t *testing.T) {
+	shrinkWakeProbe(t)
+	p := probeProxy()
+	seq := uint64(46)
+	lastPingAt := time.Now().Add(-2 * time.Second) // the stamp of ping 46 — too old to be adopted
+	var sent sentPings
+	var duringWrite []time.Time
+	ctx, cancel := context.WithCancel(context.Background())
+	defer cancel()
+	_, _, err := p.runWakeProbe(ctx, 0, 0, "", &seq, &lastPingAt, func(s uint64, _ time.Time) error {
+		sent.add(s)
+		duringWrite = append(duringWrite, lastPingAt)
+		p.broadcastWake() // a wake crosses every write
+		if s == 49 {
+			cancel() // the third in a row: the probe owes its fresh ping and pauses — the session ends right there
+		}
+		return nil
+	})
+	if err == nil {
+		t.Fatal("the fixture is wrong: the probe reached a verdict while it owed its fresh ping")
+	}
+	if got := sent.all(); len(got) != 3 || got[0] != 47 || got[2] != 49 {
+		t.Fatalf("pings %v, want 47, 48 and 49 — three writes in a row at most", got)
+	}
+	for i, at := range duringWrite {
+		if !at.IsZero() {
+			t.Errorf("while ping %d was being written lastPingAt read %v — the stamp of the ping before it, under the new seq", 47+i, at)
+		}
+	}
+	if !lastPingAt.IsZero() {
+		t.Errorf("after a write that a wake crossed lastPingAt reads %v — want nothing: that ping may have left before the sleep", lastPingAt)
+	}
+	if seq != 49 {
+		t.Errorf("seq reads %d after pings 47–49: it names a ping that was never sent", seq)
+	}
+}
+
+// N2: the previous session's mark answers nothing in the next one.
+func TestAnOlderSessionsMarkAnswersNothing(t *testing.T) {
+	shrinkWakeProbe(t)
+	p := probeProxy()
+	p.notePongSeq(0, 40) // the session that died had been answered up to 40
+	p.lastPingSeq[0].Store(41)
+	p.resetProbeMarks(0) // a new session starts on this connection index
+	if pong, ping := p.lastPongSeq[0].Load(), p.lastPingSeq[0].Load(); pong != 0 || ping != 0 {
+		t.Fatalf("marks after the reset: pong %d ping %d, want 0 and 0", pong, ping)
+	}
+	var seq uint64 // the new session's pings start again from 1
+	var lastPingAt time.Time
+	alive, _, err := p.runWakeProbe(context.Background(), 0, 0, "", &seq, &lastPingAt, func(uint64, time.Time) error { return nil })
+	if err != nil || alive {
+		t.Errorf("alive %v err %v — nobody answered the new session; up to 421 the old mark did (\"echo received in 0s (sentSeq=1)\")", alive, err)
+	}
+}
+
+func TestThePongMarkMovesForwardOnly(t *testing.T) {
+	p := probeProxy()
+	for _, c := range []struct{ in, want uint64 }{{5, 5}, {3, 5}, {5, 5}, {7, 7}, {6, 7}} {
+		p.notePongSeq(0, c.in)
+		if got := p.lastPongSeq[0].Load(); got != c.want {
+			t.Errorf("after pong %d the mark reads %d, want %d", c.in, got, c.want)
+		}
+	}
+	p.notePongSeq(3, 9) // out of range: ignored, no panic
+	p.resetProbeMarks(3)
+}
+
+// The probe has ONE body. Both session kinds call it, keep no wait of their
+// own, record pongs through the forward-only mark and reset the marks before
+// their probe goroutine starts.
+func TestBothSessionKindsRunTheOneWakeProbe(t *testing.T) {
+	read := func(name string) string {
+		b, err := os.ReadFile(name)
+		if err != nil {
+			t.Fatal(err)
+		}
+		return stripComments(string(b))
+	}
+	src := read("proxy.go")
+	for what, want := range map[string]int{"wake.serve(": 2, "p.newWakeWatch()": 2, "if wake.pending() {": 2, "p.notePongSeq(": 2, "p.resetProbeMarks(": 2, "time.NewTicker(probeInterval)": 2} {
+		if got := strings.Count(src, what); got != want {
+			t.Errorf("proxy.go holds %d × %q, want %d — one per session kind", got, what, want)
+		}
+	}
+	for _, gone := range []string{"lastPongSeq[connIdx].Store(", ">= sentSeq", "probeStart", "sentSeq :=", "lastActiveProbeAt[connIdx]", "p.runWakeProbe("} {
+		if strings.Contains(src, gone) {
+			t.Errorf("proxy.go still holds %q — a session kind keeps a probe wait or a mark write of its own", gone)
+		}
+	}
+	// Each probe goroutine starts AFTER its session's marks were reset.
+	rest := src
+	for k := 1; k <= 2; k++ {
+		tick := strings.Index(rest, "time.NewTicker(probeInterval)")
+		if tick < 0 {
+			t.Fatalf("probe goroutine %d not found", k)
+		}
+		// the nearest "session established" line before this ticker
+		before := rest[:tick]
+		est := strings.LastIndex(before, "+TURN session established\", connIdx, credSlot)")
+		if est < 0 || !strings.Contains(before[est:], "p.resetProbeMarks(connIdx)") {
+			t.Errorf("probe goroutine %d: no p.resetProbeMarks(connIdx) between its session's \"established\" line and its ticker", k)
+		}
+		rest = rest[tick+len("time.NewTicker(probeInterval)"):]
+	}
+	// seq and lastPingAt — the ping's number and the stamp a wake probe may adopt it by — move TOGETHER, and only
+	// in wakeprobe.go. A session kind sends its tick's ping through the one body, writes its pings in ONE place
+	// (the closure it hands to the tick and to the wake alike), and only declares the pair and passes it on.
+	for what, want := range map[string]int{"p.tickPing(&seq, &lastPingAt, now, sendPing)": 2, "&seq, &lastPingAt, sendPing)": 2, ".Write(pingPkt)": 2} {
+		if got := strings.Count(src, what); got != want {
+			t.Errorf("proxy.go holds %d × %q, want %d — one per session kind", got, what, want)
+		}
+	}
+	for at := 0; ; {
+		k := strings.Index(src[at:], "lastPingAt")
+		if k < 0 {
+			break
+		}
+		k += at
+		at = k + 1
+		if !strings.HasSuffix(src[:k], "&") && !strings.HasSuffix(src[:k], "var ") {
+			line := src[strings.LastIndexByte(src[:k], '\n')+1:]
+			if nl := strings.IndexByte(line, '\n'); nl >= 0 {
+				line = line[:nl]
+			}
+			t.Errorf("proxy.go: %q — a session kind reads or writes the stamp itself; it may only declare it and pass it on", strings.TrimSpace(line))
+		}
+	}
+	if strings.Contains(src, "seq++") {
+		t.Error("proxy.go moves a ping's seq itself — seq and its stamp move together in wakeprobe.go alone")
+	}
+	// The wake is a level: each loop asks its watch right after it has read the channel, before its select…
+	for at, k := 0, 0; ; k++ {
+		i := strings.Index(src[at:], "wakeCh := p.wakeChannel()")
+		if i < 0 {
+			if k != 2 {
+				t.Errorf("proxy.go reads the wake channel in %d probe loops, want 2", k)
+			}
+			break
+		}
+		i += at
+		at = i + 1
+		sel := strings.Index(src[i:], "select {")
+		if sel < 0 || !strings.Contains(src[i:i+sel], "if wake.pending() {") || !strings.Contains(src[i:i+sel], "wakeCh = closedWakeCh") {
+			t.Errorf("probe loop %d: the watch is not asked between reading the wake channel and the select — a wake broadcast during the tick branch is lost", k+1)
+		}
+	}
+	// …and the epoch is bumped BEFORE the channel is swapped, under the same lock.
+	if b := strings.Index(src, "func (p *Proxy) broadcastWake() {"); b < 0 {
+		t.Error("broadcastWake not found")
+	} else {
+		fn := src[b : b+strings.Index(src[b:], "\n}\n")]
+		lock, add, cl, unlock := strings.Index(fn, "p.wakeMu.Lock()"), strings.Index(fn, "p.wakeEpoch.Add(1)"), strings.Index(fn, "close(p.wakeCh)"), strings.Index(fn, "p.wakeMu.Unlock()")
+		if !(lock >= 0 && lock < add && add < cl && cl < unlock) {
+			t.Errorf("broadcastWake: want Lock, wakeEpoch.Add(1), close, …, Unlock in that order — got offsets %d %d %d %d", lock, add, cl, unlock)
+		}
+	}
+	body := read("wakeprobe.go")
+	// The epoch a verdict covers is read BEFORE the pong mark, inside the loop — never after the probe has returned.
+	if e, m := strings.Index(body, "covered = p.wakeEpoch.Load()"), strings.Index(body, "st.step(took, p.lastPongSeq[connIdx].Load())"); e < 0 || m < 0 || e > m {
+		t.Errorf("runWakeProbe: the wake epoch must be read before the pong mark that decides the verdict (offsets %d, %d)", e, m)
+	}
+	if strings.Contains(body, "w.served = w.p.wakeEpoch.Load()") {
+		t.Error("serve takes the epoch as it stands AFTER the probe has returned — a wake nobody looked at is swallowed")
+	}
+	i := strings.Index(body, "func (p *Proxy) runWakeProbe(")
+	j := strings.Index(body, "func wakeProbeDetail(")
+	if i < 0 || j < i {
+		t.Fatal("runWakeProbe not found in wakeprobe.go")
+	}
+	for _, wall := range []string{".Before(", "Add(wakeProbeWindow)", "time.After(wakeProbeWindow)", "WithTimeout(", "WithDeadline("} {
+		if strings.Contains(body[i:j], wall) {
+			t.Errorf("runWakeProbe holds %q — its wait is LISTENING counted step by step, never a wall-clock deadline", wall)
+		}
+	}
+	if n := strings.Count(body, ".Store("); n != 3 {
+		t.Errorf("wakeprobe.go stores %d times, want 3: the two marks' reset and the probe's stamp — the pong mark is otherwise moved by CompareAndSwap alone", n)
+	}
+	// The pair in wakeprobe.go: whenever seq moves the stamp is voided in the same breath, and every other write
+	// of the stamp is pingStamp's word, given after the write has returned. Two places move seq — the tick's ping
+	// and the probe's — and each of them SENDS what it numbers (426 stepped seq once more without a write).
+	moves := 0
+	for at := 0; ; {
+		k := strings.Index(body[at:], "*seq++")
+		if k < 0 {
+			break
+		}
+		k += at
+		at = k + 1
+		moves++
+		rest := strings.TrimLeft(body[k+len("*seq++"):], " \t\n")
+		if !strings.HasPrefix(rest, "*lastPingAt = time.Time{}") {
+			t.Errorf("wakeprobe.go: seq move %d is not followed at once by the stamp's voiding — the stamp of the ping before would stand under the new seq", moves)
+		}
+		send, stamp := strings.Index(rest, "send(*seq, "), strings.Index(rest, "*lastPingAt = pingStamp(")
+		if next := strings.Index(rest, "*seq++"); send < 0 || stamp < send || (next >= 0 && next < stamp) {
+			t.Errorf("wakeprobe.go: seq move %d is not followed by its write and then by pingStamp's word (offsets send %d, stamp %d)", moves, send, stamp)
+		}
+	}
+	if moves != 2 {
+		t.Errorf("wakeprobe.go moves seq in %d places, want 2: the tick's ping and the probe's — each sends what it numbers", moves)
+	}
+	if all, void, word := strings.Count(body, "*lastPingAt = "), strings.Count(body, "*lastPingAt = time.Time{}"), strings.Count(body, "*lastPingAt = pingStamp("); all != void+word || void != 2 || word != 2 {
+		t.Errorf("wakeprobe.go writes the stamp %d times: %d voidings and %d × pingStamp's word — want nothing else, two of each", all, void, word)
+	}
+}

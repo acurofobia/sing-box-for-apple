@@ -174,6 +174,13 @@ public struct SettingView: View {
                 #if !os(tvOS)
                     Tabs.packetTunnel.navigationLink
                 #endif
+                #if os(iOS)
+                    FormNavigationLink {
+                        VPNChoiceView()
+                    } label: {
+                        Label("Выбор VPN", systemImage: "network.badge.shield.half.filled")
+                    }
+                #endif
                 Tabs.onDemandRules.navigationLink
                 Tabs.profileOverride.navigationLink
                 #if !os(tvOS)

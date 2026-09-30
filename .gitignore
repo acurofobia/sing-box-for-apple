@@ -1,5 +1,7 @@
 /.idea/
 /Libbox.xcframework/
+/ThirdParty/VKTurnProxy/WireGuardBridge/build/
+/upstream/sing-box/Libbox.xcframework/
 xcuserdata/
 .DS_Store
 /build/

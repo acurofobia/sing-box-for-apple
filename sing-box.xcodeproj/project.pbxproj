@@ -53,7 +53,7 @@
 		3AE849112FC559A30016E814 /* GhosttyTheme in Frameworks */ = {isa = PBXBuildFile; platformFilters = (ios, macos, ); productRef = 3AE849102FC559A30016E814 /* GhosttyTheme */; };
 		3AEAEE992A4F16430059612D /* Extension.appex in Embed Foundation Extensions */ = {isa = PBXBuildFile; fileRef = 3A096F862A4ED3DE00D4A2ED /* Extension.appex */; settings = {ATTRIBUTES = (RemoveHeadersOnCopy, ); }; };
 		3AEECBF22A6DF40A006A0E0C /* NetworkExtension.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = 3AF342B12A4AA520002B34AC /* NetworkExtension.framework */; };
-		3AEECC1A2A6DFA79006A0E0C /* io.nekohasekai.sfamt.system.systemextension in Embed System Extensions */ = {isa = PBXBuildFile; fileRef = 3AEECBF12A6DF40A006A0E0C /* io.nekohasekai.sfamt.system.systemextension */; settings = {ATTRIBUTES = (RemoveHeadersOnCopy, ); }; };
+		3AEECC1A2A6DFA79006A0E0C /* ru.acurofobia.singbox.system.systemextension in Embed System Extensions */ = {isa = PBXBuildFile; fileRef = 3AEECBF12A6DF40A006A0E0C /* ru.acurofobia.singbox.system.systemextension */; settings = {ATTRIBUTES = (RemoveHeadersOnCopy, ); }; };
 		3AEECC1D2A6DFA79006A0E0C /* Library.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = 3AEC211D2A459B4700A63465 /* Library.framework */; };
 		3AEECC1E2A6DFA79006A0E0C /* Library.framework in Embed Frameworks */ = {isa = PBXBuildFile; fileRef = 3AEC211D2A459B4700A63465 /* Library.framework */; settings = {ATTRIBUTES = (CodeSignOnCopy, RemoveHeadersOnCopy, ); }; };
 		3AEECC352A6DFDAD006A0E0C /* MacLibrary.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = 3AEECC2F2A6DFDAD006A0E0C /* MacLibrary.framework */; };
@@ -80,6 +80,10 @@
 		9C37F1822C131100001B9FA8 /* Localizable.xcstrings in Resources */ = {isa = PBXBuildFile; fileRef = 9C37F17C2C131100001B9FA8 /* Localizable.xcstrings */; };
 		9C37F1832C131100001B9FA8 /* Localizable.xcstrings in Resources */ = {isa = PBXBuildFile; fileRef = 9C37F17C2C131100001B9FA8 /* Localizable.xcstrings */; };
 		9C37F1842C131100001B9FA8 /* Localizable.xcstrings in Resources */ = {isa = PBXBuildFile; fileRef = 9C37F17C2C131100001B9FA8 /* Localizable.xcstrings */; };
+		BCA000000000000000000007 /* PacketTunnelProvider.swift in Sources */ = {isa = PBXBuildFile; fileRef = BCA000000000000000000004 /* PacketTunnelProvider.swift */; };
+		BCA000000000000000000008 /* VKTurnConfiguration.swift in Sources */ = {isa = PBXBuildFile; fileRef = BCA000000000000000000005 /* VKTurnConfiguration.swift */; };
+		BCA000000000000000000009 /* WireGuardTURN.xcframework in Frameworks */ = {isa = PBXBuildFile; fileRef = BCA000000000000000000006 /* WireGuardTURN.xcframework */; };
+		BCA00000000000000000000A /* VKTurnExtension.appex in Embed Foundation Extensions */ = {isa = PBXBuildFile; fileRef = BCA000000000000000000002 /* VKTurnExtension.appex */; settings = {ATTRIBUTES = (RemoveHeadersOnCopy, ); }; };
 /* End PBXBuildFile section */
 
 /* Begin PBXContainerItemProxy section */
@@ -342,6 +346,13 @@
 			remoteGlobalIDString = 3AEC211C2A459B4700A63465;
 			remoteInfo = Library;
 		};
+		BCA000000000000000000010 /* PBXContainerItemProxy */ = {
+			isa = PBXContainerItemProxy;
+			containerPortal = 3AEC20BD2A45991900A63465 /* Project object */;
+			proxyType = 1;
+			remoteGlobalIDString = BCA000000000000000000001;
+			remoteInfo = VKTurnExtension;
+		};
 /* End PBXContainerItemProxy section */
 
 /* Begin PBXCopyFilesBuildPhase section */
@@ -365,6 +376,7 @@
 			files = (
 				3AE396032C21A5CC00647718 /* WidgetExtension.appex in Embed Foundation Extensions */,
 				3AEAEE992A4F16430059612D /* Extension.appex in Embed Foundation Extensions */,
+				BCA00000000000000000000A /* VKTurnExtension.appex in Embed Foundation Extensions */,
 				3AAAFB2E2EF5218F004C69AD /* FileProviderExtension.appex in Embed Foundation Extensions */,
 				3AF7B00D2FF10001000A0001 /* ShareExtension.appex in Embed Foundation Extensions */,
 				3AF7B10D2FF10002000A0001 /* ActionExtension.appex in Embed Foundation Extensions */,
@@ -506,7 +518,7 @@
 			dstPath = "$(SYSTEM_EXTENSIONS_FOLDER_PATH)";
 			dstSubfolderSpec = 16;
 			files = (
-				3AEECC1A2A6DFA79006A0E0C /* io.nekohasekai.sfamt.system.systemextension in Embed System Extensions */,
+				3AEECC1A2A6DFA79006A0E0C /* ru.acurofobia.singbox.system.systemextension in Embed System Extensions */,
 			);
 			name = "Embed System Extensions";
 			runOnlyForDeploymentPostprocessing = 0;
@@ -552,11 +564,11 @@
 		3AE595A32F08C4ED00C13426 /* UserNotifications.framework */ = {isa = PBXFileReference; lastKnownFileType = wrapper.framework; name = UserNotifications.framework; path = System/Library/Frameworks/UserNotifications.framework; sourceTree = SDKROOT; };
 		3AE595AE2F08D00000C13426 /* HelperService/LaunchDaemons/io.nekohasekai.sfamt.helper.plist */ = {isa = PBXFileReference; lastKnownFileType = text.plist.xml; path = HelperService/LaunchDaemons/io.nekohasekai.sfamt.helper.plist; sourceTree = "<group>"; };
 		3AE595AF2F08D00000C13426 /* UserHelper/LaunchAgents/io.nekohasekai.sfamt.userhelper.plist */ = {isa = PBXFileReference; lastKnownFileType = text.plist.xml; path = UserHelper/LaunchAgents/io.nekohasekai.sfamt.userhelper.plist; sourceTree = "<group>"; };
-		3AEC20DB2A4599D000A63465 /* Libbox.xcframework */ = {isa = PBXFileReference; lastKnownFileType = wrapper.xcframework; path = Libbox.xcframework; sourceTree = "<group>"; };
+		3AEC20DB2A4599D000A63465 /* Libbox.xcframework */ = {isa = PBXFileReference; lastKnownFileType = wrapper.xcframework; path = upstream/sing-box/Libbox.xcframework; sourceTree = "<group>"; };
 		3AEC20F32A459AB400A63465 /* sing-box.app */ = {isa = PBXFileReference; explicitFileType = wrapper.application; includeInIndex = 0; path = "sing-box.app"; sourceTree = BUILT_PRODUCTS_DIR; };
 		3AEC21092A459B1900A63465 /* sing-box.app */ = {isa = PBXFileReference; explicitFileType = wrapper.application; includeInIndex = 0; path = "sing-box.app"; sourceTree = BUILT_PRODUCTS_DIR; };
 		3AEC211D2A459B4700A63465 /* Library.framework */ = {isa = PBXFileReference; explicitFileType = wrapper.framework; includeInIndex = 0; path = Library.framework; sourceTree = BUILT_PRODUCTS_DIR; };
-		3AEECBF12A6DF40A006A0E0C /* io.nekohasekai.sfamt.system.systemextension */ = {isa = PBXFileReference; explicitFileType = "wrapper.system-extension"; includeInIndex = 0; path = io.nekohasekai.sfamt.system.systemextension; sourceTree = BUILT_PRODUCTS_DIR; };
+		3AEECBF12A6DF40A006A0E0C /* ru.acurofobia.singbox.system.systemextension */ = {isa = PBXFileReference; explicitFileType = "wrapper.system-extension"; includeInIndex = 0; path = ru.acurofobia.singbox.system.systemextension; sourceTree = BUILT_PRODUCTS_DIR; };
 		3AEECC042A6DF9CA006A0E0C /* SFM.app */ = {isa = PBXFileReference; explicitFileType = wrapper.application; includeInIndex = 0; path = SFM.app; sourceTree = BUILT_PRODUCTS_DIR; };
 		3AEECC2F2A6DFDAD006A0E0C /* MacLibrary.framework */ = {isa = PBXFileReference; explicitFileType = wrapper.framework; includeInIndex = 0; path = MacLibrary.framework; sourceTree = BUILT_PRODUCTS_DIR; };
 		3AF342B12A4AA520002B34AC /* NetworkExtension.framework */ = {isa = PBXFileReference; lastKnownFileType = wrapper.framework; name = NetworkExtension.framework; path = System/Library/Frameworks/NetworkExtension.framework; sourceTree = SDKROOT; };
@@ -566,6 +578,10 @@
 		3AF7B1022FF10002000A0001 /* ActionExtension.appex */ = {isa = PBXFileReference; explicitFileType = "wrapper.app-extension"; includeInIndex = 0; path = ActionExtension.appex; sourceTree = BUILT_PRODUCTS_DIR; };
 		3AF7B2022FF10003000A0001 /* ShareExtension.System.appex */ = {isa = PBXFileReference; explicitFileType = "wrapper.app-extension"; includeInIndex = 0; path = ShareExtension.System.appex; sourceTree = BUILT_PRODUCTS_DIR; };
 		9C37F17C2C131100001B9FA8 /* Localizable.xcstrings */ = {isa = PBXFileReference; lastKnownFileType = text.json.xcstrings; path = Localizable.xcstrings; sourceTree = "<group>"; };
+		BCA000000000000000000002 /* VKTurnExtension.appex */ = {isa = PBXFileReference; explicitFileType = "wrapper.app-extension"; includeInIndex = 0; path = VKTurnExtension.appex; sourceTree = BUILT_PRODUCTS_DIR; };
+		BCA000000000000000000004 /* PacketTunnelProvider.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = PacketTunnelProvider.swift; sourceTree = "<group>"; };
+		BCA000000000000000000005 /* VKTurnConfiguration.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ../Library/Network/VKTurnConfiguration.swift; sourceTree = "<group>"; };
+		BCA000000000000000000006 /* WireGuardTURN.xcframework */ = {isa = PBXFileReference; lastKnownFileType = wrapper.xcframework; path = ThirdParty/VKTurnProxy/WireGuardBridge/build/WireGuardTURN.xcframework; sourceTree = "<group>"; };
 /* End PBXFileReference section */
 
 /* Begin PBXFileSystemSynchronizedBuildFileExceptionSet section */
@@ -958,6 +974,12 @@
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};
+		BCA00000000000000000000C /* Frameworks */ = {
+			isa = PBXFrameworksBuildPhase;
+			buildActionMask = 2147483647;
+			files = (BCA000000000000000000009 /* WireGuardTURN.xcframework in Frameworks */, );
+			runOnlyForDeploymentPostprocessing = 0;
+		};
 /* End PBXFrameworksBuildPhase section */
 
 /* Begin PBXGroup section */
@@ -983,6 +1005,8 @@
 				3ADDCF5A2E8B7291009ACE1D /* ApplicationLibrary */,
 				3ADDCFA02E8B72A6009ACE1D /* MacLibrary */,
 				3ADDCFB72E8B72AB009ACE1D /* Extension */,
+				BCA000000000000000000003 /* VKTurnExtension */,
+				BCA000000000000000000006 /* WireGuardTURN.xcframework */,
 				3ADDCFBE2E8B72B0009ACE1D /* SystemExtension */,
 				3ADDCFC62E8B72B4009ACE1D /* IntentsExtension */,
 				3ADDCFCD2E8B72B8009ACE1D /* TVExtension */,
@@ -1011,8 +1035,9 @@
 				3AEC211D2A459B4700A63465 /* Library.framework */,
 				3A77016D2A4E6B34008F031F /* IntentsExtension.appex */,
 				3A096F862A4ED3DE00D4A2ED /* Extension.appex */,
+				BCA000000000000000000002 /* VKTurnExtension.appex */,
 				3A4EAD102A4FEAE6005435B3 /* ApplicationLibrary.framework */,
-				3AEECBF12A6DF40A006A0E0C /* io.nekohasekai.sfamt.system.systemextension */,
+				3AEECBF12A6DF40A006A0E0C /* ru.acurofobia.singbox.system.systemextension */,
 				3AEECC042A6DF9CA006A0E0C /* SFM.app */,
 				3AEECC2F2A6DFDAD006A0E0C /* MacLibrary.framework */,
 				3AC03B962A72BF3300B7946F /* sing-box.app */,
@@ -1052,6 +1077,15 @@
 				3AAAFB212EF5218F004C69AD /* UniformTypeIdentifiers.framework */,
 			);
 			name = Frameworks;
+			sourceTree = "<group>";
+		};
+		BCA000000000000000000003 /* VKTurnExtension */ = {
+			isa = PBXGroup;
+			children = (
+				BCA000000000000000000004 /* PacketTunnelProvider.swift */,
+				BCA000000000000000000005 /* VKTurnConfiguration.swift */,
+			);
+			path = VKTurnExtension;
 			sourceTree = "<group>";
 		};
 /* End PBXGroup section */
@@ -1361,6 +1395,7 @@
 				3A44BB7F2A4DC1D800E4C9F8 /* PBXTargetDependency */,
 				3AEAEE9B2A4F16430059612D /* PBXTargetDependency */,
 				3A8655162A4FA26600B7181F /* PBXTargetDependency */,
+				BCA000000000000000000011 /* PBXTargetDependency */,
 				3A4EAD3A2A4FEC20005435B3 /* PBXTargetDependency */,
 				3AE396022C21A5CC00647718 /* PBXTargetDependency */,
 				3AAAFB2D2EF5218F004C69AD /* PBXTargetDependency */,
@@ -1451,7 +1486,7 @@
 			);
 			name = SystemExtension;
 			productName = SystemExtension;
-			productReference = 3AEECBF12A6DF40A006A0E0C /* io.nekohasekai.sfamt.system.systemextension */;
+			productReference = 3AEECBF12A6DF40A006A0E0C /* ru.acurofobia.singbox.system.systemextension */;
 			productType = "com.apple.product-type.system-extension";
 		};
 		3AEECC032A6DF9CA006A0E0C /* SFM.System */ = {
@@ -1579,6 +1614,17 @@
 			productReference = 3AF7B2022FF10003000A0001 /* ShareExtension.System.appex */;
 			productType = "com.apple.product-type.app-extension";
 		};
+		BCA000000000000000000001 /* VKTurnExtension */ = {
+			isa = PBXNativeTarget;
+			buildConfigurationList = BCA00000000000000000000F /* Build configuration list for PBXNativeTarget "VKTurnExtension" */;
+			buildPhases = (BCA00000000000000000000B /* Sources */, BCA00000000000000000000C /* Frameworks */, );
+			buildRules = ( );
+			dependencies = ( );
+			name = VKTurnExtension;
+			productName = VKTurnExtension;
+			productReference = BCA000000000000000000002 /* VKTurnExtension.appex */;
+			productType = "com.apple.product-type.app-extension";
+		};
 /* End PBXNativeTarget section */
 
 /* Begin PBXProject section */
@@ -1688,6 +1734,7 @@
 				3A4EAD0F2A4FEAE6005435B3 /* ApplicationLibrary */,
 				3AEECC2E2A6DFDAD006A0E0C /* MacLibrary */,
 				3A096F852A4ED3DE00D4A2ED /* Extension */,
+				BCA000000000000000000001 /* VKTurnExtension */,
 				3AE171982A8128DD00393060 /* TVExtension */,
 				3A77016C2A4E6B34008F031F /* IntentsExtension */,
 				3AE395F12C21A5CA00647718 /* WidgetExtension */,
@@ -1984,6 +2031,15 @@
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};
+		BCA00000000000000000000B /* Sources */ = {
+			isa = PBXSourcesBuildPhase;
+			buildActionMask = 2147483647;
+			files = (
+				BCA000000000000000000007 /* PacketTunnelProvider.swift in Sources */,
+				BCA000000000000000000008 /* VKTurnConfiguration.swift in Sources */,
+			);
+			runOnlyForDeploymentPostprocessing = 0;
+		};
 /* End PBXSourcesBuildPhase section */
 
 /* Begin PBXTargetDependency section */
@@ -2172,6 +2228,11 @@
 			target = 3AEC211C2A459B4700A63465 /* Library */;
 			targetProxy = 3AF7B2132FF10003000A0001 /* PBXContainerItemProxy */;
 		};
+		BCA000000000000000000011 /* PBXTargetDependency */ = {
+			isa = PBXTargetDependency;
+			target = BCA000000000000000000001 /* VKTurnExtension */;
+			targetProxy = BCA000000000000000000010 /* PBXContainerItemProxy */;
+		};
 /* End PBXTargetDependency section */
 
 /* Begin XCBuildConfiguration section */
@@ -2183,7 +2244,7 @@
 				CODE_SIGN_IDENTITY = "Apple Development";
 				CODE_SIGN_STYLE = Automatic;
 				CURRENT_PROJECT_VERSION = 1;
-				DEVELOPMENT_TEAM = P8XK3KHB48;
+				DEVELOPMENT_TEAM = YG7A3W5844;
 				ENABLE_HARDENED_RUNTIME = YES;
 				GENERATE_INFOPLIST_FILE = YES;
 				INFOPLIST_FILE = Extension/Info.plist;
@@ -2223,7 +2284,7 @@
 				CODE_SIGN_IDENTITY = "Apple Development";
 				CODE_SIGN_STYLE = Automatic;
 				CURRENT_PROJECT_VERSION = 1;
-				DEVELOPMENT_TEAM = P8XK3KHB48;
+				DEVELOPMENT_TEAM = YG7A3W5844;
 				ENABLE_HARDENED_RUNTIME = YES;
 				GENERATE_INFOPLIST_FILE = YES;
 				INFOPLIST_FILE = Extension/Info.plist;
@@ -2476,7 +2537,7 @@
 				CODE_SIGN_IDENTITY = "Apple Development";
 				CODE_SIGN_STYLE = Automatic;
 				CURRENT_PROJECT_VERSION = 1;
-				DEVELOPMENT_TEAM = P8XK3KHB48;
+				DEVELOPMENT_TEAM = YG7A3W5844;
 				GENERATE_INFOPLIST_FILE = YES;
 				INFOPLIST_FILE = IntentsExtension/Info.plist;
 				INFOPLIST_KEY_CFBundleDisplayName = IntentsExtension;
@@ -2515,7 +2576,7 @@
 				CODE_SIGN_IDENTITY = "Apple Development";
 				CODE_SIGN_STYLE = Automatic;
 				CURRENT_PROJECT_VERSION = 1;
-				DEVELOPMENT_TEAM = P8XK3KHB48;
+				DEVELOPMENT_TEAM = YG7A3W5844;
 				GENERATE_INFOPLIST_FILE = YES;
 				INFOPLIST_FILE = IntentsExtension/Info.plist;
 				INFOPLIST_KEY_CFBundleDisplayName = IntentsExtension;
@@ -2606,7 +2667,7 @@
 				CODE_SIGN_IDENTITY = "Apple Development";
 				CODE_SIGN_STYLE = Automatic;
 				CURRENT_PROJECT_VERSION = 1;
-				DEVELOPMENT_TEAM = P8XK3KHB48;
+				DEVELOPMENT_TEAM = YG7A3W5844;
 				GENERATE_INFOPLIST_FILE = YES;
 				INFOPLIST_FILE = FileProviderExtension/Info.plist;
 				INFOPLIST_KEY_CFBundleDisplayName = FileProviderExtension;
@@ -2639,7 +2700,7 @@
 				CODE_SIGN_IDENTITY = "Apple Development";
 				CODE_SIGN_STYLE = Automatic;
 				CURRENT_PROJECT_VERSION = 1;
-				DEVELOPMENT_TEAM = P8XK3KHB48;
+				DEVELOPMENT_TEAM = YG7A3W5844;
 				GENERATE_INFOPLIST_FILE = YES;
 				INFOPLIST_FILE = FileProviderExtension/Info.plist;
 				INFOPLIST_KEY_CFBundleDisplayName = FileProviderExtension;
@@ -2820,7 +2881,7 @@
 				CODE_SIGN_IDENTITY = "Apple Development";
 				CODE_SIGN_STYLE = Automatic;
 				CURRENT_PROJECT_VERSION = 1;
-				DEVELOPMENT_TEAM = P8XK3KHB48;
+				DEVELOPMENT_TEAM = YG7A3W5844;
 				GENERATE_INFOPLIST_FILE = YES;
 				INFOPLIST_FILE = WidgetExtension/Info.plist;
 				INFOPLIST_KEY_CFBundleDisplayName = WidgetExtension;
@@ -2851,7 +2912,7 @@
 				CODE_SIGN_IDENTITY = "Apple Development";
 				CODE_SIGN_STYLE = Automatic;
 				CURRENT_PROJECT_VERSION = 1;
-				DEVELOPMENT_TEAM = P8XK3KHB48;
+				DEVELOPMENT_TEAM = YG7A3W5844;
 				GENERATE_INFOPLIST_FILE = YES;
 				INFOPLIST_FILE = WidgetExtension/Info.plist;
 				INFOPLIST_KEY_CFBundleDisplayName = WidgetExtension;
@@ -2962,7 +3023,7 @@
 				ALWAYS_SEARCH_USER_PATHS = NO;
 				APP_GROUP_IDENTIFIER = "group.$(BASE_PACKAGE_IDENTIFIER)";
 				ASSETCATALOG_COMPILER_GENERATE_SWIFT_ASSET_SYMBOL_EXTENSIONS = YES;
-				BASE_PACKAGE_IDENTIFIER = io.nekohasekai.sfamt;
+				BASE_PACKAGE_IDENTIFIER = ru.acurofobia.singbox;
 				CLANG_ANALYZER_LOCALIZABILITY_NONLOCALIZED = YES;
 				CLANG_ANALYZER_NONNULL = YES;
 				CLANG_ANALYZER_NUMBER_OBJECT_CONVERSION = YES_AGGRESSIVE;
@@ -3032,7 +3093,7 @@
 				ALWAYS_SEARCH_USER_PATHS = NO;
 				APP_GROUP_IDENTIFIER = "group.$(BASE_PACKAGE_IDENTIFIER)";
 				ASSETCATALOG_COMPILER_GENERATE_SWIFT_ASSET_SYMBOL_EXTENSIONS = YES;
-				BASE_PACKAGE_IDENTIFIER = io.nekohasekai.sfamt;
+				BASE_PACKAGE_IDENTIFIER = ru.acurofobia.singbox;
 				CLANG_ANALYZER_LOCALIZABILITY_NONLOCALIZED = YES;
 				CLANG_ANALYZER_NONNULL = YES;
 				CLANG_ANALYZER_NUMBER_OBJECT_CONVERSION = YES_AGGRESSIVE;
@@ -3099,7 +3160,7 @@
 				CODE_SIGN_STYLE = Automatic;
 				CURRENT_PROJECT_VERSION = 1;
 				DEVELOPMENT_ASSET_PATHS = "";
-				DEVELOPMENT_TEAM = P8XK3KHB48;
+				DEVELOPMENT_TEAM = YG7A3W5844;
 				ENABLE_PREVIEWS = YES;
 				GENERATE_INFOPLIST_FILE = YES;
 				INFOPLIST_FILE = SFI/Info.plist;
@@ -3123,6 +3184,7 @@
 				MARKETING_VERSION = 1.14.6;
 				OTHER_CODE_SIGN_FLAGS = "--deep";
 				PRODUCT_BUNDLE_IDENTIFIER = "$(BASE_PACKAGE_IDENTIFIER)";
+				"PRODUCT_BUNDLE_IDENTIFIER[sdk=iphoneos*]" = ru.acurofobia.singbox;
 				PRODUCT_NAME = "sing-box";
 				PROVISIONING_PROFILE_SPECIFIER = "";
 				SDKROOT = iphoneos;
@@ -3143,7 +3205,7 @@
 				CODE_SIGN_STYLE = Automatic;
 				CURRENT_PROJECT_VERSION = 1;
 				DEVELOPMENT_ASSET_PATHS = "";
-				DEVELOPMENT_TEAM = P8XK3KHB48;
+				DEVELOPMENT_TEAM = YG7A3W5844;
 				ENABLE_PREVIEWS = YES;
 				GENERATE_INFOPLIST_FILE = YES;
 				INFOPLIST_FILE = SFI/Info.plist;
@@ -3167,6 +3229,7 @@
 				MARKETING_VERSION = 1.14.6;
 				OTHER_CODE_SIGN_FLAGS = "--deep";
 				PRODUCT_BUNDLE_IDENTIFIER = "$(BASE_PACKAGE_IDENTIFIER)";
+				"PRODUCT_BUNDLE_IDENTIFIER[sdk=iphoneos*]" = ru.acurofobia.singbox;
 				PRODUCT_NAME = "sing-box";
 				PROVISIONING_PROFILE_SPECIFIER = "";
 				SDKROOT = iphoneos;
@@ -3266,7 +3329,7 @@
 				CURRENT_PROJECT_VERSION = 1;
 				DEAD_CODE_STRIPPING = YES;
 				DEFINES_MODULE = YES;
-				DEVELOPMENT_TEAM = P8XK3KHB48;
+				DEVELOPMENT_TEAM = YG7A3W5844;
 				DYLIB_COMPATIBILITY_VERSION = 1;
 				DYLIB_CURRENT_VERSION = 1;
 				DYLIB_INSTALL_NAME_BASE = "@rpath";
@@ -3314,7 +3377,7 @@
 				CURRENT_PROJECT_VERSION = 1;
 				DEAD_CODE_STRIPPING = YES;
 				DEFINES_MODULE = YES;
-				DEVELOPMENT_TEAM = P8XK3KHB48;
+				DEVELOPMENT_TEAM = YG7A3W5844;
 				DYLIB_COMPATIBILITY_VERSION = 1;
 				DYLIB_CURRENT_VERSION = 1;
 				DYLIB_INSTALL_NAME_BASE = "@rpath";
@@ -3615,7 +3678,7 @@
 				CODE_SIGN_IDENTITY = "Apple Development";
 				CODE_SIGN_STYLE = Automatic;
 				CURRENT_PROJECT_VERSION = 1;
-				DEVELOPMENT_TEAM = P8XK3KHB48;
+				DEVELOPMENT_TEAM = YG7A3W5844;
 				ENABLE_HARDENED_RUNTIME = YES;
 				GENERATE_INFOPLIST_FILE = YES;
 				INFOPLIST_FILE = ShareExtension/Info.plist;
@@ -3654,7 +3717,7 @@
 				CODE_SIGN_IDENTITY = "Apple Development";
 				CODE_SIGN_STYLE = Automatic;
 				CURRENT_PROJECT_VERSION = 1;
-				DEVELOPMENT_TEAM = P8XK3KHB48;
+				DEVELOPMENT_TEAM = YG7A3W5844;
 				ENABLE_HARDENED_RUNTIME = YES;
 				GENERATE_INFOPLIST_FILE = YES;
 				INFOPLIST_FILE = ShareExtension/Info.plist;
@@ -3694,7 +3757,7 @@
 				CODE_SIGN_IDENTITY = "Apple Development";
 				CODE_SIGN_STYLE = Automatic;
 				CURRENT_PROJECT_VERSION = 1;
-				DEVELOPMENT_TEAM = P8XK3KHB48;
+				DEVELOPMENT_TEAM = YG7A3W5844;
 				GENERATE_INFOPLIST_FILE = YES;
 				INFOPLIST_FILE = ActionExtension/Info.plist;
 				INFOPLIST_KEY_CFBundleDisplayName = "Send with Taildrop";
@@ -3732,7 +3795,7 @@
 				CODE_SIGN_IDENTITY = "Apple Development";
 				CODE_SIGN_STYLE = Automatic;
 				CURRENT_PROJECT_VERSION = 1;
-				DEVELOPMENT_TEAM = P8XK3KHB48;
+				DEVELOPMENT_TEAM = YG7A3W5844;
 				GENERATE_INFOPLIST_FILE = YES;
 				INFOPLIST_FILE = ActionExtension/Info.plist;
 				INFOPLIST_KEY_CFBundleDisplayName = "Send with Taildrop";
@@ -3833,6 +3896,57 @@
 			};
 			name = Release;
 		};
+		BCA00000000000000000000D /* Debug */ = {isa = XCBuildConfiguration; buildSettings = {
+				APPLICATION_EXTENSION_API_ONLY = YES;
+				CLANG_ENABLE_MODULES = YES;
+				CODE_SIGN_ENTITLEMENTS = VKTurnExtension/VKTurnExtension.entitlements;
+				CODE_SIGN_IDENTITY = "Apple Development";
+				CODE_SIGN_STYLE = Automatic;
+				CURRENT_PROJECT_VERSION = 1;
+				DEVELOPMENT_TEAM = YG7A3W5844;
+				GENERATE_INFOPLIST_FILE = YES;
+				HEADER_SEARCH_PATHS = "$(PROJECT_DIR)/ThirdParty/VKTurnProxy/WireGuardBridge/include";
+				INFOPLIST_FILE = VKTurnExtension/Info.plist;
+				INFOPLIST_KEY_CFBundleDisplayName = "VK TURN";
+				IPHONEOS_DEPLOYMENT_TARGET = 15.0;
+				LD_RUNPATH_SEARCH_PATHS = ("$(inherited)", "@executable_path/Frameworks", "@executable_path/../../Frameworks", );
+				MARKETING_VERSION = 1.14.6;
+				OTHER_LDFLAGS = ("$(inherited)", "-lresolv", );
+				PRODUCT_BUNDLE_IDENTIFIER = "$(BASE_PACKAGE_IDENTIFIER).vkturn";
+				PRODUCT_NAME = "$(TARGET_NAME)";
+				SDKROOT = iphoneos;
+				SKIP_INSTALL = YES;
+				SUPPORTED_PLATFORMS = "iphoneos iphonesimulator";
+				SWIFT_OBJC_BRIDGING_HEADER = VKTurnExtension/BridgeHeader.h;
+				SWIFT_VERSION = 5.0;
+				TARGETED_DEVICE_FAMILY = "1,2";
+				SWIFT_OPTIMIZATION_LEVEL = "-Onone";
+			}; name = Debug; };
+		BCA00000000000000000000E /* Release */ = {isa = XCBuildConfiguration; buildSettings = {
+				APPLICATION_EXTENSION_API_ONLY = YES;
+				CLANG_ENABLE_MODULES = YES;
+				CODE_SIGN_ENTITLEMENTS = VKTurnExtension/VKTurnExtension.entitlements;
+				CODE_SIGN_IDENTITY = "Apple Development";
+				CODE_SIGN_STYLE = Automatic;
+				CURRENT_PROJECT_VERSION = 1;
+				DEVELOPMENT_TEAM = YG7A3W5844;
+				GENERATE_INFOPLIST_FILE = YES;
+				HEADER_SEARCH_PATHS = "$(PROJECT_DIR)/ThirdParty/VKTurnProxy/WireGuardBridge/include";
+				INFOPLIST_FILE = VKTurnExtension/Info.plist;
+				INFOPLIST_KEY_CFBundleDisplayName = "VK TURN";
+				IPHONEOS_DEPLOYMENT_TARGET = 15.0;
+				LD_RUNPATH_SEARCH_PATHS = ("$(inherited)", "@executable_path/Frameworks", "@executable_path/../../Frameworks", );
+				MARKETING_VERSION = 1.14.6;
+				OTHER_LDFLAGS = ("$(inherited)", "-lresolv", );
+				PRODUCT_BUNDLE_IDENTIFIER = "$(BASE_PACKAGE_IDENTIFIER).vkturn";
+				PRODUCT_NAME = "$(TARGET_NAME)";
+				SDKROOT = iphoneos;
+				SKIP_INSTALL = YES;
+				SUPPORTED_PLATFORMS = "iphoneos iphonesimulator";
+				SWIFT_OBJC_BRIDGING_HEADER = VKTurnExtension/BridgeHeader.h;
+				SWIFT_VERSION = 5.0;
+				TARGETED_DEVICE_FAMILY = "1,2";
+			}; name = Release; };
 /* End XCBuildConfiguration section */
 
 /* Begin XCConfigurationList section */
@@ -4031,6 +4145,12 @@
 				3AF7B2092FF10003000A0001 /* Debug */,
 				3AF7B20A2FF10003000A0001 /* Release */,
 			);
+			defaultConfigurationIsVisible = 0;
+			defaultConfigurationName = Release;
+		};
+		BCA00000000000000000000F /* Build configuration list for PBXNativeTarget "VKTurnExtension" */ = {
+			isa = XCConfigurationList;
+			buildConfigurations = (BCA00000000000000000000D /* Debug */, BCA00000000000000000000E /* Release */, );
 			defaultConfigurationIsVisible = 0;
 			defaultConfigurationName = Release;
 		};

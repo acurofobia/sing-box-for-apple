@@ -37,14 +37,14 @@ import SwiftUI
             #endif
         } else {
             content.onAppear {
-                guard !Variant.screenshotMode, profile.status.isConnected else {
+                guard !Variant.screenshotMode, profile.activeProvider == .singBox, profile.status.isConnected else {
                     return
                 }
                 Task {
                     await coordinator.reloadSystemProxy()
                 }
             }.onChangeCompat(of: profile.status) { status in
-                guard !Variant.screenshotMode, status == .connected else {
+                guard !Variant.screenshotMode, profile.activeProvider == .singBox, status == .connected else {
                     return
                 }
                 Task {
@@ -121,7 +121,7 @@ import SwiftUI
         }.onReceive(environments.selectedProfileUpdate) { _ in
             Task {
                 await coordinator.updateSelectedProfile()
-                if profile.status.isConnected {
+                if profile.activeProvider == .singBox, profile.status.isConnected {
                     await coordinator.reloadSystemProxy()
                 }
             }
