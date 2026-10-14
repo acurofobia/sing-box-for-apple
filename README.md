@@ -1,10 +1,19 @@
-# sing-box-for-apple
+# Sing VPN for iOS
 
-Experimental iOS/macOS/tvOS client for sing-box, the universal proxy platform.
+The routing application in `PrototypeApp/` is the primary application on `main`.
+It supports VLESS and VK TURN with application-owned DNS and routing rule sets.
+The original standalone iOS interface has been retired; shared libraries and
+other upstream platform targets remain available where required.
 
-## Documentation
+```sh
+git clone --recurse-submodules https://github.com/acurofobia/sing-box-for-apple.git
+cd sing-box-for-apple
+scripts/build_vk_turn_prototype.sh
+```
 
-[SFI](https://sing-box.sagernet.org/installation/clients/sfi/) | [SFM](https://sing-box.sagernet.org/installation/clients/sfm/)
+Build requirements, daily Git commands and dependency updates are documented in
+[the development guide](docs/development.md). Device and runtime checks are in
+[the routing application verification notes](docs/testing/vk-turn-prototype.md).
 
 ## License
 
