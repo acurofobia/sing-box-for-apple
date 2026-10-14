@@ -10,13 +10,33 @@ The isolated iOS app is **VK TURN Prototype**, scheme `VKTurnPrototype`, bundle 
 
 Direct rules use sing-box direct. Reject rules remain reject. The source `route` is the only imported config section; source DNS, servers, keys and other outbound settings are not imported. Every `R3-N1` route target, including `final`, becomes `vk-wg`. Accordingly, this config also sends unmatched traffic through TURN; it is not limited to explicitly listed YouTube/GitHub rules.
 
-Twenty-one fixed copies of the same rule sets are bundled under `PrototypeApp/RuleSets`. Remote rule-set descriptors become local paths, preserving tags, rule conditions and order. Automatic rule-set updates are excluded from this experiment: sing-box downloads remote sets before the WireGuard endpoint starts, so fetching them through that endpoint introduces a startup dependency.
+Twenty-one rule sets from [RoscomVPN routing](https://github.com/hydraponique/roscomvpn-routing) are configured as native sing-box remote rule sets. The URLs use the live `release` branches of `hydraponique/roscomvpn-geosite` and `hydraponique/roscomvpn-geoip`. Downloads use `http_client.detour: vk-wg`, which is the selected WireGuard/TURN or VLESS connection. Native updates run every day while the VPN is running with routing enabled; valid updates apply to the running core.
+
+The bundled `.srs` files under `PrototypeApp/RuleSets` remain the initial fallback. The app copies them to the app group's `Library/Application Support/PrototypeRuleSets/Initial` and writes absolute `initial_path` values. Native startup loads its persistent cache first, then the fallback, so starting the VPN does not require a successful download. The native cache is stored separately at `Library/Application Support/PrototypeRuleSets/cache.db`, outside purgeable caches. Copying fallback files never replaces downloaded cache entries. Download or parse failures retain the last valid rules; updates are independent per rule set.
+
+The **Роутинги** tab saves **С роутингом** (the existing behavior, enabled by default) or **Без роутинга**. Without routing, only sniffing and DNS interception remain, `final` is still `vk-wg`, and no rule sets, direct exceptions or rejects are configured. DNS settings and the selected VPN transport are unchanged. The selection is persisted and the route snapshot for the extension is updated immediately; it applies to the next app or system VPN start without restarting the active tunnel.
 
 DNS is a minimal new UDP resolver at `1.1.1.1`, IPv4 only, via native WG in combined mode and directly in baseline. It is not the source config's DNS. Both modes use the same routing and rule-set data.
 
 The existing VK proxy library supplies only TURN/WRAP-A transport and provisioning. Its separate WireGuardBridge/device is not used. Both components run in one Go runtime inside the VPN extension. WireGuard uses one worker and MTU provisioned in the 1280–1500 range, with TUN MTU 1280. Existing proxy logging and credential cache remain confined to the isolated prototype container. User links are imported into its Keychain; the temporary app Documents seed is removed. The superclass's startup snapshot containing provisioned WG keys is removed after startup.
 
 ## Build and checks
+
+The routing Swift tests run with `python3 -m unittest discover -s scripts/tests -v`.
+The native cache integration test additionally uses `build/sing-box-check`; build
+it from the pinned core to enable the test (otherwise that test is skipped):
+
+```sh
+mkdir -p build
+(cd upstream/sing-box && go build -ldflags=-checklinkname=0 \
+  -tags with_wireguard,with_gvisor,with_utls,with_clash_api,with_low_memory,badlinkname,tfogo_checklinkname0 \
+  -o ../../build/sing-box-check ./cmd/sing-box)
+```
+
+The test uses a loopback HTTP proxy as the `vk-wg` transport, verifies a successful
+binary rule-set update, then a corrupt update, and restarts without the initial
+file to prove restoration from the last valid native cache. It creates no TUN
+and changes no system routes. Real VPN downloads still require device testing.
 
 Requirements: Xcode 27, Go (this run used 1.27.0), existing core and Runestone source checkouts, an Apple development signing account. The local replacement in core `go.mod` refers to `../../ThirdParty/VKTurnProxy`.
 
@@ -50,7 +70,7 @@ The analyzer excludes startup and the first 120 seconds from median/p95, retains
 
 ## Prototype limitations
 
-No automatic rule-set updates, no IPv6 configuration, no production subscription UI, and no long-run/reconnect soak test. TURN bind sends can wait at most one second for room in the queue; a timed-out UDP packet is dropped so WireGuard rebind/shutdown cannot wait forever. Legacy proxy `SendPacket` behavior is unchanged. Startup generations prevent a stopped asynchronous bootstrap from registering later.
+No IPv6 configuration, no production subscription UI, and no long-run/reconnect soak test. TURN bind sends can wait at most one second for room in the queue; a timed-out UDP packet is dropped so WireGuard rebind/shutdown cannot wait forever. Legacy proxy `SendPacket` behavior is unchanged. Startup generations prevent a stopped asynchronous bootstrap from registering later.
 
 ## Crash diagnosed during device testing
 
@@ -202,3 +222,26 @@ are disabled; changing a connected mode uses the existing stop/wait/start flow.
 The subscription URL is always a normal text field. The eye button controls
 only the manual VK TURN input. UI checks cover selected segments, persistence,
 and keeping the subscription URL readable when the eye button is toggled.
+
+## Russia inside routing
+
+The second routing segment is now **Russia inside**, replacing **Без роутинга**.
+The legacy stored value `disabled` maps to the new mode, so the existing selection
+survives an update. Only the official `russia_inside.srs` release asset from
+itdoginfo/allow-domains is used: listed domains go to `vk-wg`, with `direct` as
+the final outbound. The original RoscomVPN mode is unchanged. DNS sniffing and
+hijacking remain enabled in both modes. Russia inside additionally enables DNS
+reverse mapping so domain rules can match opaque TCP/UDP connections resolved
+through the application DNS server, without changing its resolver or detour.
+
+The bundled `RuleSets/russia-inside.srs` seeds the native daily updater and cache.
+Routing changes validate and prepare resources before stopping a connected VPN,
+wait up to 15 seconds for disconnection, then save the route and reconnect using
+the selected transport. Offline selections do not start a VPN. Selecting the same
+mode or changing modes while connecting/disconnecting does not restart the VPN.
+
+The Swift harness in `scripts/tests/test_vk_turn_switching.py` exercises connected
+and offline routing changes, transitions, unchanged selections, corrupt resources,
+and stop timeout. `PrototypeSmokeTests/testRoutingChoicePersistsAndDoesNotStartVPN`
+checks the new segment and persistence in the simulator. Physical-device tests
+remain opt-in because they temporarily change the active VPN.

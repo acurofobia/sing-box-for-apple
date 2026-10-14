@@ -81,8 +81,11 @@ final class PacketTunnelProvider: ExtensionProvider {
                 throw CancellationError()
             }
             capture.setSession(session.id_)
+            let cacheDirectory = FilePath.prototypeRuleSetDirectory
+            try FileManager.default.createDirectory(at: cacheDirectory, withIntermediateDirectories: true)
+            let configuration = try PrototypeRouting.configurationWithPersistentCache(Data(session.configuration.utf8), directory: cacheDirectory)
             var effective = options ?? [:]
-            effective["configContent"] = NSString(string: session.configuration)
+            effective["configContent"] = NSString(string: String(decoding: configuration, as: UTF8.self))
             effective["systemProxyEnabled"] = NSNumber(value: false)
             defer {
                 // Every start regenerates config; do not retain provisioned keys in the snapshot.
