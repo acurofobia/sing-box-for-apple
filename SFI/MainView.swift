@@ -50,6 +50,21 @@ struct MainView: View {
     }
 
     var body: some View {
+        #if DEBUG
+            if ProcessInfo.processInfo.arguments.contains("-SUBSCRIPTION_UI_TEST") {
+                SubscriptionUITestFixture()
+            } else if ProcessInfo.processInfo.arguments.contains("-PRIORITY_FAILOVER_UI_TEST") {
+                PriorityFailoverUITestFixture()
+            } else {
+                productionBody
+            }
+        #else
+            productionBody
+        #endif
+    }
+
+    @ViewBuilder
+    private var productionBody: some View {
         if Variant.screenshotMode {
             mainBody.preferredColorScheme(.dark)
         } else {
@@ -97,7 +112,9 @@ struct MainView: View {
 
     @ViewBuilder
     private var accessoryInset: some View {
-        if environments.remoteServer != nil {
+        if selection == .dashboard {
+            EmptyView()
+        } else if environments.remoteServer != nil {
             remoteStatusBarPill
         } else if let profile = environments.extensionProfile, !environments.extensionProfileLoading, !environments.emptyProfiles {
             AccessoryInset(profile: profile) {
@@ -282,12 +299,26 @@ struct MainView: View {
             }
             .onAppear {
                 environments.postReload()
+                InternetAvailability.shared.start()
+                Task {
+                    _ = await ManagedSubscriptionViewModel.shared.refresh()
+                    environments.emptyProfiles = ManagedSubscriptionViewModel.shared.snapshot == nil
+                    environments.profileUpdate.send()
+                }
             }
             .alert($alert)
             .globalChecks()
             .onChangeCompat(of: scenePhase) { newValue in
                 if newValue == .active {
                     environments.postReload()
+                    InternetAvailability.shared.start()
+                    Task {
+                        _ = await ManagedSubscriptionViewModel.shared.refresh()
+                        environments.emptyProfiles = ManagedSubscriptionViewModel.shared.snapshot == nil
+                        environments.profileUpdate.send()
+                    }
+                } else {
+                    InternetAvailability.shared.stop()
                 }
             }
             .onChangeCompat(of: selection) { newValue in
@@ -429,22 +460,10 @@ struct MainView: View {
         if url.schemeAction == "taildrop" {
             environments.pendingTaildropEndpointTag = url.schemeQueryValue("endpoint") ?? ""
             selection = .tools
-        } else if url.host == "import-remote-profile" {
-            var error: NSError?
-            importRemoteProfile = LibboxParseRemoteProfileImportLink(url.absoluteString, &error)
-            if let error {
-                alert = AlertState(action: "parse remote profile import link", error: error)
-            }
-        } else if url.pathExtension == "bpf" {
-            do {
-                importProfile = try url.withSecurityScopedAccess {
-                    try .from(Data(contentsOf: url))
-                }
-            } catch {
-                alert = AlertState(action: "import profile from URL", error: error)
-            }
+        } else if url.host == "import-remote-profile" || url.pathExtension == "bpf" {
+            alert = AlertState(errorMessage: ManagedSubscriptionError.importDisabled.localizedDescription)
         } else {
-            alert = AlertState(errorMessage: String(localized: "Handled unknown URL \(url.absoluteString)"))
+            alert = AlertState(errorMessage: String(localized: "Handled unknown URL"))
         }
     }
 }

@@ -18,6 +18,10 @@ public class ExtensionProfile: ObservableObject {
         private var singManager: NETunnelProviderManager?
         private var vkManager: NETunnelProviderManager?
     #endif
+    #if os(iOS)
+        private var startingManagedConnection = false
+        private var connectionSubscription: ManagedSubscriptionSnapshot?
+    #endif
     private var connection: NEVPNConnection?
     private var observers: [Any] = []
     private let isMock: Bool
@@ -241,6 +245,12 @@ public class ExtensionProfile: ObservableObject {
             connectedDate = Date()
             return
         }
+        #if os(iOS)
+            if !startingManagedConnection {
+                try await startManual()
+                return
+            }
+        #endif
         guard let manager else { return }
         if activeProvider == .singBox {
             try await fetchProfile()
@@ -275,7 +285,12 @@ public class ExtensionProfile: ObservableObject {
             }
         #endif
         try await manager.saveToPreferences()
-        let options = activeProvider == .singBox ? try await prepareStartOptions() : nil
+        var options = activeProvider == .singBox ? try await prepareStartOptions() : nil
+        #if os(iOS)
+            if activeProvider == .vkTurn, let connectionSubscription {
+                options = ["subscriptionGeneration": NSString(string: connectionSubscription.generation.uuidString)]
+            }
+        #endif
         try manager.connection.startVPNTunnel(options: options)
     }
 
@@ -307,12 +322,61 @@ public class ExtensionProfile: ObservableObject {
         }
     }
 
+    public var canControlPriorityFailoverGroups: Bool {
+        !CommandTarget.isRemote && activeProvider == .singBox && status == .connected
+    }
+
+    public func priorityFailoverStatus() async throws -> PriorityFailoverStatus {
+        try await priorityFailoverRequest(.status)
+    }
+
+    public func resumePriorityFailover() async throws -> PriorityFailoverStatus {
+        try await priorityFailoverRequest(.resume)
+    }
+
+    #if DEBUG && os(iOS)
+        public func capturePriorityFailoverMemory(phase: String) async throws -> PriorityFailoverStatus {
+            try await priorityFailoverRequest(.captureMemory, phase: phase, seconds: 720)
+        }
+    #endif
+
+    private func priorityFailoverRequest(_ action: PriorityFailoverRequest.Action, phase: String? = nil, seconds: Int? = nil) async throws -> PriorityFailoverStatus {
+        guard activeProvider == .singBox, status == .connected,
+              let session = connection as? NETunnelProviderSession else {
+            throw NSError(domain: "PriorityFailover", code: -1, userInfo: [NSLocalizedDescriptionKey: "sing-box is not connected"])
+        }
+        let data = try JSONEncoder().encode(PriorityFailoverRequest(action: action, phase: phase, seconds: seconds))
+        let response: Data? = try await withCheckedThrowingContinuation { continuation in
+            do {
+                try session.sendProviderMessage(data) { continuation.resume(returning: $0) }
+            } catch { continuation.resume(throwing: error) }
+        }
+        guard let response else {
+            throw NSError(domain: "PriorityFailover", code: -1, userInfo: [NSLocalizedDescriptionKey: "Missing priority failover response"])
+        }
+        let result = try JSONDecoder().decode(PriorityFailoverResponse.self, from: response)
+        if let error = result.error {
+            throw NSError(domain: "PriorityFailover", code: -1, userInfo: [NSLocalizedDescriptionKey: error])
+        }
+        guard let status = result.status else {
+            throw NSError(domain: "PriorityFailover", code: -1, userInfo: [NSLocalizedDescriptionKey: "Missing priority failover status"])
+        }
+        return status
+    }
+
     private func prepareStartOptions() async throws -> [String: NSObject] {
         var options: [String: NSObject] = [
             "manualStart": NSNumber(value: true),
             "locale": NSString(string: ApplicationLocale.preferredIdentifier),
         ]
 
+        #if os(iOS)
+            let snapshot = try connectionSubscription ?? ManagedSubscriptionSnapshot.load()
+            options["configContent"] = NSString(string: snapshot.singBoxConfiguration)
+            if let connectionSubscription {
+                options["subscriptionGeneration"] = NSString(string: connectionSubscription.generation.uuidString)
+            }
+        #else
         let profileID = await SharedPreferences.selectedProfileID.get()
         guard let profile = try await ProfileManager.get(profileID) else {
             throw NSError(domain: "ExtensionProfile", code: -1, userInfo: [
@@ -322,6 +386,11 @@ public class ExtensionProfile: ObservableObject {
 
         let configContent = try await profile.readAsync()
         options["configContent"] = NSString(string: configContent)
+        if let policy = try await SharedPreferences.priorityFailover(profileID).getThrowing() {
+            try await BlockingIO.run { try policy.validate(configContent: configContent) }
+            options["priorityFailoverJSON"] = NSString(string: try policy.json())
+        }
+        #endif
 
         #if os(macOS)
             options["oomKillerEnabled"] = await NSNumber(value: SharedPreferences.oomKillerEnabled.get())
@@ -426,10 +495,17 @@ public class ExtensionProfile: ObservableObject {
                 throw NSError(domain: "VPNChoice", code: 1, userInfo: [NSLocalizedDescriptionKey: "Нет подключения к сети."])
             }
             startupError = nil
-            let onlyVK = await SharedPreferences.onlyVKTurn.get()
-            if onlyVK {
-                _ = try VKTurnConfigurationStore.load()
-                try await selectProvider(.vkTurn)
+            guard !startingManagedConnection else { throw ManagedSubscriptionError.refreshInProgress }
+            if status.isConnected { return }
+            startingManagedConnection = true
+            defer {
+                startingManagedConnection = false
+                connectionSubscription = nil
+            }
+            let snapshot = try await ManagedSubscriptionService.shared.prepareForStart()
+            connectionSubscription = snapshot
+            if snapshot.vkTurnLink == nil {
+                try await selectProvider(.singBox)
                 try await start()
                 return
             }
@@ -439,36 +515,44 @@ public class ExtensionProfile: ObservableObject {
             if let profile = try? await ProfileManager.get(profileID) {
                 do {
                     let content = try await profile.readAsync()
-                    let metadata = try await Task.detached(priority: .userInitiated) {
-                        var error: NSError?
-                        let result = LibboxProbeOutbounds(content, &error)
-                        if let error { throw error }
-                        guard let data = result.data(using: .utf8) else { throw VKTurnError.invalidField }
-                        return try JSONDecoder().decode(ProbeMetadata.self, from: data)
-                    }.value
-                    let preferred = await SharedPreferences.probeOutboundTag.get()
-                    let tag: String
-                    if !preferred.isEmpty, metadata.candidates.contains(preferred) {
-                        tag = preferred
-                    } else if metadata.defaultUsable {
-                        tag = ""
+                    if let policy = try await SharedPreferences.priorityFailover(profileID).getThrowing() {
+                        let policyJSON = try policy.json()
+                        singWorks = try await Task.detached(priority: .userInitiated) {
+                            var error: NSError?
+                            var success = ObjCBool(false)
+                            LibboxProbePriorityFailover(content, policyJSON, 30_000, &success, &error)
+                            if let error { throw error }
+                            return success.boolValue
+                        }.value
                     } else {
-                        throw NSError(domain: "VPNChoice", code: 3, userInfo: [NSLocalizedDescriptionKey: "route.final ведёт напрямую или выбранный outbound отсутствует в профиле. Выберите проверяемый outbound в настройках VPN."])
-                    }
-                    singWorks = try await Task.detached(priority: .userInitiated) {
-                        var error: NSError?
-                        var success = ObjCBool(false)
-                        LibboxProbeConfig(content, tag, 10_000, &success, &error)
-                        if let error {
-                            if error.localizedDescription.contains("choose a non-direct outbound") {
-                                throw NSError(domain: "VPNChoice", code: 3, userInfo: [NSLocalizedDescriptionKey: "Выбранный outbound ведёт напрямую. Выберите другой outbound в настройках VPN."])
-                            }
-                            throw error
+                        let metadata = try await Task.detached(priority: .userInitiated) {
+                            var error: NSError?
+                            let result = LibboxProbeOutbounds(content, &error)
+                            if let error { throw error }
+                            guard let data = result.data(using: .utf8) else { throw VKTurnError.invalidField }
+                            return try JSONDecoder().decode(ProbeMetadata.self, from: data)
+                        }.value
+                        let tag: String
+                        if metadata.defaultUsable {
+                            tag = ""
+                        } else if let candidate = metadata.candidates.first {
+                            tag = candidate
+                        } else {
+                            throw NSError(domain: "VPNChoice", code: 3, userInfo: [NSLocalizedDescriptionKey: "В подписке отсутствует outbound sing-box для проверки."])
                         }
-                        return success.boolValue
-                    }.value
-                } catch let error as NSError where error.domain == "VPNChoice" {
-                    throw error
+                        singWorks = try await Task.detached(priority: .userInitiated) {
+                            var error: NSError?
+                            var success = ObjCBool(false)
+                            LibboxProbeConfig(content, tag, 10_000, &success, &error)
+                            if let error {
+                                if error.localizedDescription.contains("choose a non-direct outbound") {
+                                    throw NSError(domain: "VPNChoice", code: 3, userInfo: [NSLocalizedDescriptionKey: "Выбранный outbound ведёт напрямую. Выберите другой outbound в настройках VPN."])
+                                }
+                                throw error
+                            }
+                            return success.boolValue
+                        }.value
+                    }
                 } catch {
                     logger.warning("sing-box probe failed: \(error.localizedDescription)")
                 }
@@ -478,7 +562,6 @@ public class ExtensionProfile: ObservableObject {
                 try await start()
                 return
             }
-            _ = try VKTurnConfigurationStore.load()
             try await selectProvider(.vkTurn)
             try await start()
         }
@@ -501,7 +584,9 @@ public class ExtensionProfile: ObservableObject {
         private func selectProvider(_ kind: ProviderKind) async throws {
             let selected: NETunnelProviderManager
             if kind == .vkTurn {
-                let configuration = try VKTurnConfigurationStore.load()
+                let snapshot = try connectionSubscription ?? ManagedSubscriptionSnapshot.load()
+                guard let link = snapshot.vkTurnLink else { throw VKTurnError.missingConfiguration }
+                let configuration = try VKTurnConfiguration.importLink(link)
                 if vkManager == nil {
                     let newManager = NETunnelProviderManager()
                     newManager.localizedDescription = "VK TURN"

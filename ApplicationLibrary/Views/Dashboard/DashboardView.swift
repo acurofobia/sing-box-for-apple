@@ -21,7 +21,13 @@ public struct DashboardView: View {
     public init() {}
 
     public var body: some View {
-        content
+        Group {
+            #if os(iOS)
+                SubscriptionDashboardView { content }
+            #else
+                content
+            #endif
+        }
             .alert($coordinator.alert)
             .onAppear {
                 coordinator.setEnvironments(environments)
@@ -30,11 +36,6 @@ public struct DashboardView: View {
                 #endif
             }
         #if os(iOS)
-            .toolbar {
-                ToolbarItem(placement: .topBarTrailing) {
-                    othersMenu
-                }
-            }
             .onAppear {
                 Task { await reloadRemoteServers() }
             }

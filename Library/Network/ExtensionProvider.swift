@@ -16,6 +16,11 @@ open class ExtensionProvider: NEPacketTunnelProvider {
     private lazy var platformInterface = ExtensionPlatformInterface(self)
     public var tunnelOptions: [String: NSObject]?
     private var startOptionsURL: URL?
+    #if DEBUG && os(iOS)
+        private let memoryCaptureLock = NSLock()
+        private var memoryCaptureTask: Task<Void, Never>?
+        private var memoryCaptureStopping = false
+    #endif
 
     public struct OverridePreferences {
         public var includeAllNetworks: Bool = false
@@ -56,6 +61,13 @@ open class ExtensionProvider: NEPacketTunnelProvider {
     }
 
     private func resolveStartOptions(_ startOptions: [String: NSObject]?) throws -> [String: NSObject] {
+        #if os(iOS)
+            let snapshot = try ManagedSubscriptionSnapshot.forStart(options: startOptions)
+            var options = startOptions ?? (try? loadPersistedStartOptions()) ?? [:]
+            options["configContent"] = NSString(string: snapshot.singBoxConfiguration)
+            options.removeValue(forKey: "priorityFailoverJSON")
+            return options
+        #else
         if let startOptions, startOptions["configContent"] as? String != nil {
             return startOptions
         }
@@ -72,6 +84,7 @@ open class ExtensionProvider: NEPacketTunnelProvider {
             return persistedOptions
         }
         throw ExtensionStartupError("(packet-tunnel) error: missing start options")
+        #endif
     }
 
     #if os(macOS)
@@ -100,6 +113,9 @@ open class ExtensionProvider: NEPacketTunnelProvider {
     }
 
     override open func startTunnel(options startOptions: [String: NSObject]?) async throws {
+        #if DEBUG && os(iOS)
+            memoryCaptureLock.withLock { memoryCaptureStopping = false }
+        #endif
         let basePath: String
         let workingPath: String
         let tempPath: String
@@ -235,6 +251,7 @@ open class ExtensionProvider: NEPacketTunnelProvider {
         }
 
         let options = LibboxOverrideOptions()
+        options.priorityFailoverJSON = tunnelOptions?["priorityFailoverJSON"] as? String ?? ""
         do {
             try commandServer!.startOrReloadService(configContent, options: options)
         } catch {
@@ -281,6 +298,16 @@ open class ExtensionProvider: NEPacketTunnelProvider {
     }
 
     override open func stopTunnel(with reason: NEProviderStopReason) async {
+        #if DEBUG && os(iOS)
+            let capture = memoryCaptureLock.withLock {
+                memoryCaptureStopping = true
+                let task = memoryCaptureTask
+                memoryCaptureTask = nil
+                task?.cancel()
+                return task
+            }
+            await capture?.value
+        #endif
         writeMessage("(packet-tunnel) stopping, reason: \(reason)")
         stopService()
         if let server = commandServer {
@@ -310,8 +337,55 @@ open class ExtensionProvider: NEPacketTunnelProvider {
     }
 
     override open func handleAppMessage(_ messageData: Data) async -> Data? {
+        if let object = try? JSONSerialization.jsonObject(with: messageData) as? [String: Any],
+           object["kind"] as? String == "priorityFailover" {
+            let response: PriorityFailoverResponse
+            do {
+                let request = try JSONDecoder().decode(PriorityFailoverRequest.self, from: messageData)
+                guard request.kind == "priorityFailover", let commandServer else {
+                    throw ExtensionStartupError("Priority failover service unavailable")
+                }
+                if request.action == .captureMemory {
+                    #if DEBUG && os(iOS)
+                        guard let phase = request.phase, PriorityFailoverMemoryCapture.phases.contains(phase),
+                              let seconds = request.seconds, (1 ... 3600).contains(seconds) else {
+                            throw ExtensionStartupError("Invalid memory capture parameters")
+                        }
+                        try memoryCaptureLock.withLock {
+                            guard !memoryCaptureStopping else {
+                                throw ExtensionStartupError("Memory capture unavailable during tunnel shutdown")
+                            }
+                            let previous = memoryCaptureTask
+                            previous?.cancel()
+                            memoryCaptureTask = Task { [weak self] in
+                                await previous?.value
+                                do {
+                                    try Task.checkCancellation()
+                                    try await PriorityFailoverMemoryCapture.run(server: commandServer, phase: phase, seconds: seconds)
+                                } catch is CancellationError {}
+                                catch { self?.writeMessage("Memory capture failed: \(error.localizedDescription)") }
+                            }
+                        }
+                    #else
+                        throw ExtensionStartupError("Memory capture requires an iOS Debug build")
+                    #endif
+                }
+                if request.action == .resume { try commandServer.resumePriorityFailover() }
+                var statusError: NSError?
+                let json = commandServer.priorityFailoverStatus(&statusError)
+                if let statusError { throw statusError }
+                let status = try JSONDecoder().decode(PriorityFailoverStatus.self, from: Data(json.utf8))
+                response = PriorityFailoverResponse(status: status, error: nil)
+            } catch {
+                response = PriorityFailoverResponse(status: nil, error: error.localizedDescription)
+            }
+            return try? JSONEncoder().encode(response)
+        }
         do {
-            let options = try ExtensionStartOptions.decode(messageData)
+            var options = try ExtensionStartOptions.decode(messageData)
+            #if os(iOS)
+                options = try ManagedSubscriptionSnapshot.preservingActiveConfiguration(options, active: tunnelOptions)
+            #endif
             try applyStartOptions(options)
             try persistStartOptions(options)
             try await reloadService()

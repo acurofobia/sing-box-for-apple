@@ -16,3 +16,6 @@ AGENTS.md
 /fastlane/test_output/
 /fastlane/.bundle/
 /fastlane/.cache/
+
+# Downloaded reference library; keep local rather than upload to GitHub.
+/output/design/apple-ios-library/

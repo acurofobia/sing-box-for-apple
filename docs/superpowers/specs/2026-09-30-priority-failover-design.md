@@ -6,7 +6,9 @@ The user wants one preferred sing-box server and three ordered backups in one
 profile. A healthy primary must remain selected regardless of latency. The user
 approved the selector-based design and explicitly requires memory measurements
 on a physical iPhone. Existing VPN provider selection, including VK TURN, must
-remain unchanged. No commits, pushes, or production server changes are authorized.
+remain unchanged. The user subsequently authorized a baseline commit before
+implementation; it was created as `cd7b5d5`. Further commits, pushes, and production
+server changes remain unauthorized.
 
 This is a new subsystem spanning profile settings, the tunnel lifecycle, and the
 Libbox bridge. This document records the agreed behavior before implementation.

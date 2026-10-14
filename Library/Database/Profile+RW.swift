@@ -38,7 +38,13 @@ public extension Profile {
         }
     }
 
+    func validatePriorityFailover(_ content: String) async throws {
+        guard let id, let policy = try await SharedPreferences.priorityFailover(id).getThrowing() else { return }
+        try await BlockingIO.run { try policy.validate(configContent: content) }
+    }
+
     func writeAsync(_ content: String) async throws {
+        try await validatePriorityFailover(content)
         let type = type
         let path = path
         let content = content

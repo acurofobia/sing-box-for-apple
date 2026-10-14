@@ -68,6 +68,8 @@ public struct EditProfileView: View {
                 }
             }
 
+            PriorityFailoverSettingsView()
+
             #if os(iOS) || os(tvOS)
                 ProfileActionToolbar(profile: profile, viewModel: viewModel)
             #endif

@@ -1,0 +1,1466 @@
+diff --git a/box.go b/box.go
+index 92cd1ecd..18981e2d 100644
+--- a/box.go
++++ b/box.go
+@@ -44,6 +44,7 @@ import (
+ var _ adapter.SimpleLifecycle = (*Box)(nil)
+ 
+ type Box struct {
++	onOutboundsReady    func(context.Context) error
+ 	ctx                 context.Context
+ 	createdAt           time.Time
+ 	debugOptions        option.DebugOptions
+@@ -66,6 +67,7 @@ type Box struct {
+ }
+ 
+ type Options struct {
++	OnOutboundsReady func(context.Context) error
+ 	option.Options
+ 	Context                    context.Context
+ 	PlatformLogWriter          log.PlatformWriter
+@@ -469,6 +471,7 @@ func New(options Options) (*Box, error) {
+ 	}
+ 	return &Box{
+ 		ctx:                 ctx,
++		onOutboundsReady:    options.OnOutboundsReady,
+ 		network:             networkManager,
+ 		endpoint:            endpointManager,
+ 		inbound:             inboundManager,
+@@ -556,6 +559,11 @@ func (s *Box) preStart() error {
+ 	if err != nil {
+ 		return err
+ 	}
++	if s.onOutboundsReady != nil {
++		if err = s.onOutboundsReady(s.ctx); err != nil {
++			return err
++		}
++	}
+ 	err = adapter.Start(s.ctx, s.logger, adapter.StartStateStart, s.router, s.dnsRouter)
+ 	if err != nil {
+ 		return err
+diff --git a/daemon/instance.go b/daemon/instance.go
+index 5e7502ce..fa183e23 100644
+--- a/daemon/instance.go
++++ b/daemon/instance.go
+@@ -3,6 +3,9 @@ package daemon
+ import (
+ 	"bytes"
+ 	"context"
++	"errors"
++	"github.com/sagernet/sing-box/protocol/group"
++	"github.com/sagernet/sing/common/x/list"
+ 
+ 	"github.com/sagernet/sing-box"
+ 	"github.com/sagernet/sing-box/adapter"
+@@ -22,6 +25,8 @@ import (
+ )
+ 
+ type Instance struct {
++	priorityFailover      *priorityFailoverController
++	priorityPauseCallback *list.Element[pause.Callback]
+ 	ctx                   context.Context
+ 	cancel                context.CancelFunc
+ 	instance              *box.Box
+@@ -74,9 +79,10 @@ func (s *StartedService) FormatConfig(ctx context.Context, configContent string)
+ }
+ 
+ type OverrideOptions struct {
+-	AutoRedirect   bool
+-	IncludePackage []string
+-	ExcludePackage []string
++	PriorityFailoverJSON string
++	AutoRedirect         bool
++	IncludePackage       []string
++	ExcludePackage       []string
+ }
+ 
+ func (s *StartedService) newInstance(ctx context.Context, profileContent string, overrideOptions *OverrideOptions) (*Instance, error) {
+@@ -100,6 +106,14 @@ func (s *StartedService) newInstance(ctx context.Context, profileContent string,
+ 			}
+ 		}
+ 	}
++	var policy *PriorityFailoverPolicy
++	if overrideOptions != nil {
++		policy, err = ParsePriorityFailover(options, overrideOptions.PriorityFailoverJSON)
++		if err != nil {
++			cancel()
++			return nil, err
++		}
++	}
+ 	if s.oomKillerEnabled {
+ 		if !common.Any(options.Services, func(it option.Service) bool {
+ 			return it.Type == C.TypeOOMKiller
+@@ -121,7 +135,12 @@ func (s *StartedService) newInstance(ctx context.Context, profileContent string,
+ 		cancel:                cancel,
+ 		urlTestHistoryStorage: urlTestHistoryStorage,
+ 	}
++	var onOutboundsReady func(context.Context) error
++	if policy != nil {
++		onOutboundsReady = func(ctx context.Context) error { i.priorityFailover.cycle(true); return ctx.Err() }
++	}
+ 	boxInstance, err := box.New(box.Options{
++		OnOutboundsReady:  onOutboundsReady,
+ 		Context:           ctx,
+ 		Options:           options,
+ 		PlatformLogWriter: s,
+@@ -139,6 +158,27 @@ func (s *StartedService) newInstance(ctx context.Context, profileContent string,
+ 	i.outboundManager = service.FromContext[adapter.OutboundManager](ctx)
+ 	i.endpointManager = service.FromContext[adapter.EndpointManager](ctx)
+ 	i.logFactory = boxInstance.LogFactory()
++	if policy != nil {
++		outbound, ok := i.outboundManager.Outbound(policy.Selector)
++		selector, isSelector := outbound.(*group.Selector)
++		if !ok || !isSelector {
++			cancel()
++			boxInstance.Close()
++			return nil, errors.New("priority failover selector missing")
++		}
++		i.priorityFailover, err = newPriorityFailoverController(ctx, *policy, &priorityInstanceBackend{i, selector})
++		if err != nil {
++			cancel()
++			boxInstance.Close()
++			return nil, err
++		}
++		selector.SetSelectOutboundHandler(func(tag string) bool { return i.priorityFailover.Manual(tag) == nil })
++		i.priorityFailover.transition = func(state PriorityFailoverState) {
++			i.logFactory.Logger().Info("priority failover: ", state.Mode, " selected=", state.Selected, " primary=", state.PrimaryHealth, " all_down=", state.AllDown)
++		}
++		i.priorityPauseCallback = i.pauseManager.RegisterCallback(func(event int) { i.priorityFailover.SetPaused(i.pauseManager.IsPaused()) })
++		i.priorityFailover.SetPaused(i.pauseManager.IsPaused())
++	}
+ 	log.SetStdLogger(boxInstance.LogFactory().Logger())
+ 	return i, nil
+ }
+@@ -159,11 +199,21 @@ func attachInstance(ctx context.Context) *Instance {
+ }
+ 
+ func (i *Instance) Start() error {
+-	return i.instance.Start()
++	if err := i.instance.Start(); err != nil {
++		return err
++	}
++	if i.priorityFailover != nil {
++		i.priorityFailover.Start()
++	}
++	return nil
+ }
+ 
+ func (i *Instance) Close() error {
+ 	i.cancel()
++	if i.priorityFailover != nil {
++		i.pauseManager.UnregisterCallback(i.priorityPauseCallback)
++		i.priorityFailover.Close()
++	}
+ 	i.urlTestHistoryStorage.Close()
+ 	return i.instance.Close()
+ }
+diff --git a/daemon/started_service.go b/daemon/started_service.go
+index 5e8c7998..bd6dd9b1 100644
+--- a/daemon/started_service.go
++++ b/daemon/started_service.go
+@@ -246,6 +246,15 @@ func (s *StartedService) followInstance(ctx context.Context, run func(ctx contex
+ }
+ 
+ func (s *StartedService) StartOrReloadService(ctx context.Context, profileContent string, options *OverrideOptions) error {
++	if options != nil && options.PriorityFailoverJSON != "" {
++		parsed, err := parseConfig(s.ctx, profileContent)
++		if err != nil {
++			return err
++		}
++		if _, err = ParsePriorityFailover(parsed, options.PriorityFailoverJSON); err != nil {
++			return err
++		}
++	}
+ 	s.interruptStart()
+ 	s.lifecycleAccess.Lock()
+ 	defer s.lifecycleAccess.Unlock()
+@@ -744,6 +753,8 @@ func (s *StartedService) URLTest(ctx context.Context, request *URLTestRequest) (
+ }
+ 
+ func (s *StartedService) SelectOutbound(ctx context.Context, request *SelectOutboundRequest) (*emptypb.Empty, error) {
++	s.lifecycleAccess.Lock()
++	defer s.lifecycleAccess.Unlock()
+ 	s.serviceAccess.RLock()
+ 	boxService := s.instance
+ 	s.serviceAccess.RUnlock()
+@@ -758,6 +769,12 @@ func (s *StartedService) SelectOutbound(ctx context.Context, request *SelectOutb
+ 	if !isSelector {
+ 		return nil, status.Error(codes.InvalidArgument, "outbound is not a selector: "+request.GroupTag)
+ 	}
++	if boxService.priorityFailover != nil && request.GroupTag == boxService.priorityFailover.policy.Selector {
++		if err := boxService.priorityFailover.Manual(request.OutboundTag); err != nil {
++			return nil, err
++		}
++		return &emptypb.Empty{}, nil
++	}
+ 	if !selector.SelectOutbound(request.OutboundTag) {
+ 		return nil, status.Error(codes.NotFound, "outbound not found in selector: "+request.OutboundTag)
+ 	}
+diff --git a/experimental/libbox/command_server.go b/experimental/libbox/command_server.go
+index 5f62d03d..d0750c2f 100644
+--- a/experimental/libbox/command_server.go
++++ b/experimental/libbox/command_server.go
+@@ -206,9 +206,10 @@ func (s *CommandServer) Close() {
+ }
+ 
+ type OverrideOptions struct {
+-	AutoRedirect   bool
+-	IncludePackage StringIterator
+-	ExcludePackage StringIterator
++	PriorityFailoverJSON string
++	AutoRedirect         bool
++	IncludePackage       StringIterator
++	ExcludePackage       StringIterator
+ }
+ 
+ func (s *CommandServer) StartOrReloadService(configContent string, options *OverrideOptions) error {
+@@ -217,9 +218,10 @@ func (s *CommandServer) StartOrReloadService(configContent string, options *Over
+ 		copyConfigSnapshot(filepath.Join(sWorkingPath, powerreport.DraftDirectoryName))
+ 	}
+ 	err := s.StartedService.StartOrReloadService(s.ctx, configContent, &daemon.OverrideOptions{
+-		AutoRedirect:   options.AutoRedirect,
+-		IncludePackage: iteratorToArray(options.IncludePackage),
+-		ExcludePackage: iteratorToArray(options.ExcludePackage),
++		PriorityFailoverJSON: options.PriorityFailoverJSON,
++		AutoRedirect:         options.AutoRedirect,
++		IncludePackage:       iteratorToArray(options.IncludePackage),
++		ExcludePackage:       iteratorToArray(options.ExcludePackage),
+ 	})
+ 	if err != nil {
+ 		return E.Cause(err, "start or reload service")
+diff --git a/protocol/group/selector.go b/protocol/group/selector.go
+index 3d1a8bf4..f4ae551d 100644
+--- a/protocol/group/selector.go
++++ b/protocol/group/selector.go
+@@ -30,6 +30,7 @@ var (
+ )
+ 
+ type Selector struct {
++	selectOutboundHandler func(string) bool
+ 	outbound.Adapter
+ 	ctx                          context.Context
+ 	outbound                     adapter.OutboundManager
+@@ -120,7 +121,20 @@ func (s *Selector) All() []string {
+ 	return s.tags
+ }
+ 
++// SetSelectOutboundHandler is configured before Start by an instance-owned policy.
++func (s *Selector) SetSelectOutboundHandler(handler func(string) bool) {
++	s.selectOutboundHandler = handler
++}
++
+ func (s *Selector) SelectOutbound(tag string) bool {
++	if s.selectOutboundHandler != nil {
++		return s.selectOutboundHandler(tag)
++	}
++	return s.SelectOutboundAutomatic(tag)
++}
++
++// SelectOutboundAutomatic bypasses the external-selection handler for policy decisions.
++func (s *Selector) SelectOutboundAutomatic(tag string) bool {
+ 	detour, loaded := s.outbounds[tag]
+ 	if !loaded {
+ 		return false
+diff --git a/daemon/priority_failover.go b/daemon/priority_failover.go
+new file mode 100644
+index 00000000..21585ddf
+--- /dev/null
++++ b/daemon/priority_failover.go
+@@ -0,0 +1,271 @@
++package daemon
++
++import (
++	"context"
++	"errors"
++	"slices"
++	"sync"
++	"time"
++)
++
++type PriorityFailoverPolicy struct {
++	Selector             string   `json:"selector"`
++	Primary              string   `json:"primary"`
++	Backups              []string `json:"backups"`
++	IntervalMilliseconds int32    `json:"intervalMilliseconds"`
++	TimeoutMilliseconds  int32    `json:"timeoutMilliseconds"`
++	FailureThreshold     int32    `json:"failureThreshold"`
++	RecoveryThreshold    int32    `json:"recoveryThreshold"`
++}
++
++func (p PriorityFailoverPolicy) Validate() error {
++	if p.Selector == "" || p.Primary == "" || len(p.Backups) != 3 {
++		return errors.New("priority failover requires a selector, primary and three backups")
++	}
++	tags := append([]string{p.Selector, p.Primary}, p.Backups...)
++	seen := make(map[string]bool, len(tags))
++	for _, tag := range tags {
++		if tag == "" || seen[tag] {
++			return errors.New("priority failover tags must be nonempty and distinct")
++		}
++		seen[tag] = true
++	}
++	if p.IntervalMilliseconds < 1000 || p.IntervalMilliseconds > 3600000 || p.TimeoutMilliseconds < 1000 || p.TimeoutMilliseconds > 10000 || p.FailureThreshold < 1 || p.FailureThreshold > 10 || p.RecoveryThreshold < 1 || p.RecoveryThreshold > 10 {
++		return errors.New("priority failover timing or thresholds outside supported range")
++	}
++	return nil
++}
++
++type PriorityFailoverState struct {
++	Mode          string `json:"mode"`
++	Selector      string `json:"selector,omitempty"`
++	Selected      string `json:"selected,omitempty"`
++	PrimaryHealth string `json:"primaryHealth,omitempty"`
++	AllDown       bool   `json:"allDown"`
++}
++type priorityFailoverBackend interface {
++	Probe(context.Context, string) (bool, error)
++	Selected() string
++	Select(string) error
++}
++
++// cycleAccess serializes probes; access makes generation validation and selection atomic.
++type priorityFailoverController struct {
++	ctx                    context.Context
++	cancel                 context.CancelFunc
++	policy                 PriorityFailoverPolicy
++	backend                priorityFailoverBackend
++	cycleAccess            sync.Mutex
++	access                 sync.Mutex
++	generation             uint64
++	operationCancel        context.CancelFunc
++	manual, paused, closed bool
++	failures, recoveries   int32
++	state                  PriorityFailoverState
++	wake                   chan struct{}
++	done                   chan struct{}
++	started                bool
++	transition             func(PriorityFailoverState)
++}
++
++func newPriorityFailoverController(ctx context.Context, p PriorityFailoverPolicy, b priorityFailoverBackend) (*priorityFailoverController, error) {
++	if err := p.Validate(); err != nil {
++		return nil, err
++	}
++	p.Backups = slices.Clone(p.Backups)
++	ctx, cancel := context.WithCancel(ctx)
++	return &priorityFailoverController{ctx: ctx, cancel: cancel, policy: p, backend: b, wake: make(chan struct{}, 1), done: make(chan struct{}), state: PriorityFailoverState{Mode: "automatic", Selector: p.Selector, PrimaryHealth: "unknown"}}, nil
++}
++func (c *priorityFailoverController) Status() PriorityFailoverState {
++	c.access.Lock()
++	defer c.access.Unlock()
++	s := c.state
++	s.Selected = c.backend.Selected()
++	return s
++}
++func (c *priorityFailoverController) invalidateLocked() {
++	c.generation++
++	c.failures = 0
++	c.recoveries = 0
++	if c.operationCancel != nil {
++		c.operationCancel()
++	}
++}
++func (c *priorityFailoverController) Manual(tag string) error {
++	c.access.Lock()
++	defer c.access.Unlock()
++	if c.closed {
++		return errors.New("priority failover is closed")
++	}
++	if tag != c.policy.Primary && !slices.Contains(c.policy.Backups, tag) {
++		return errors.New("outbound is not a priority failover candidate")
++	}
++	c.invalidateLocked()
++	c.manual = true
++	c.state.Mode = "manual"
++	c.state.PrimaryHealth = "unknown"
++	c.state.AllDown = false
++	if err := c.backend.Select(tag); err != nil {
++		return err
++	}
++	c.state.Selected = c.backend.Selected()
++	if c.transition != nil {
++		c.transition(c.state)
++	}
++	return nil
++}
++func (c *priorityFailoverController) Resume() {
++	c.access.Lock()
++	if !c.closed {
++		c.invalidateLocked()
++		c.manual = false
++		c.state.Mode = "automatic"
++	}
++	c.access.Unlock()
++	c.signal()
++}
++func (c *priorityFailoverController) SetPaused(paused bool) {
++	c.access.Lock()
++	changed := c.paused != paused
++	if changed {
++		c.invalidateLocked()
++		c.paused = paused
++	}
++	c.access.Unlock()
++	if changed && !paused {
++		c.signal()
++	}
++}
++func (c *priorityFailoverController) signal() {
++	select {
++	case c.wake <- struct{}{}:
++	default:
++	}
++}
++func (c *priorityFailoverController) Start() {
++	c.access.Lock()
++	defer c.access.Unlock()
++	if c.started || c.closed {
++		return
++	}
++	c.started = true
++	go c.loop()
++}
++func (c *priorityFailoverController) loop() {
++	defer close(c.done)
++	timer := time.NewTimer(time.Duration(c.policy.IntervalMilliseconds) * time.Millisecond)
++	defer timer.Stop()
++	for {
++		select {
++		case <-c.ctx.Done():
++			return
++		case <-c.wake:
++		case <-timer.C:
++		}
++		c.cycle(false)
++		if !timer.Stop() {
++			select {
++			case <-timer.C:
++			default:
++			}
++		}
++		timer.Reset(time.Duration(c.policy.IntervalMilliseconds) * time.Millisecond)
++	}
++}
++func (c *priorityFailoverController) Close() {
++	c.access.Lock()
++	c.closed = true
++	c.invalidateLocked()
++	c.cancel()
++	started := c.started
++	c.access.Unlock()
++	if started {
++		<-c.done
++	}
++	c.cycleAccess.Lock()
++	c.cycleAccess.Unlock()
++}
++func (c *priorityFailoverController) cycle(initial bool) {
++	c.cycleAccess.Lock()
++	defer c.cycleAccess.Unlock()
++	c.access.Lock()
++	if c.closed || c.paused || c.manual || c.ctx.Err() != nil {
++		c.access.Unlock()
++		return
++	}
++	generation := c.generation
++	ctx, cancel := context.WithCancel(c.ctx)
++	c.operationCancel = cancel
++	active := c.backend.Selected()
++	failures, recoveries := c.failures, c.recoveries
++	allDown := c.state.AllDown
++	oldState := c.state
++	c.access.Unlock()
++	defer cancel()
++	known := make(map[string]bool, 4)
++	probe := func(tag string) bool {
++		if value, ok := known[tag]; ok {
++			return value
++		}
++		probeCtx, probeCancel := context.WithTimeout(ctx, time.Duration(c.policy.TimeoutMilliseconds)*time.Millisecond)
++		ok, err := c.backend.Probe(probeCtx, tag)
++		probeCancel()
++		known[tag] = ok && err == nil
++		return known[tag]
++	}
++	primaryOK := probe(c.policy.Primary)
++	primaryHealth := "down"
++	if primaryOK {
++		primaryHealth = "up"
++		if recoveries < c.policy.RecoveryThreshold {
++			recoveries++
++		}
++	} else {
++		recoveries = 0
++	}
++	target := ""
++	if initial && primaryOK || active == c.policy.Primary && primaryOK || active != c.policy.Primary && recoveries >= c.policy.RecoveryThreshold {
++		target = c.policy.Primary
++		failures = 0
++		allDown = false
++	} else if initial || allDown || !probe(active) {
++		if failures < c.policy.FailureThreshold {
++			failures++
++		}
++		if initial || allDown || failures >= c.policy.FailureThreshold {
++			allDown = true
++			for _, tag := range append([]string{c.policy.Primary}, c.policy.Backups...) {
++				if ctx.Err() != nil {
++					break
++				}
++				if probe(tag) {
++					target = tag
++					allDown = false
++					failures = 0
++					break
++				}
++			}
++		}
++	} else {
++		failures = 0
++		allDown = false
++	}
++	c.access.Lock()
++	defer c.access.Unlock()
++	if c.generation != generation || c.closed || c.manual || c.paused || ctx.Err() != nil {
++		return
++	}
++	if target != "" && target != c.backend.Selected() {
++		if c.backend.Select(target) != nil {
++			return
++		}
++	}
++	c.failures = failures
++	c.recoveries = recoveries
++	c.state.PrimaryHealth = primaryHealth
++	c.state.AllDown = allDown
++	c.state.Selected = c.backend.Selected()
++	if c.transition != nil && oldState != c.state {
++		c.transition(c.state)
++	}
++}
+diff --git a/daemon/priority_failover_config.go b/daemon/priority_failover_config.go
+new file mode 100644
+index 00000000..b98cad7c
+--- /dev/null
++++ b/daemon/priority_failover_config.go
+@@ -0,0 +1,103 @@
++package daemon
++
++import (
++	"encoding/json"
++	"errors"
++	"slices"
++	"strings"
++
++	"github.com/sagernet/sing-box/option"
++)
++
++type PrioritySelectorMetadata struct {
++	Tag        string   `json:"tag"`
++	Candidates []string `json:"candidates"`
++	Default    string   `json:"default"`
++}
++type PriorityOutboundMetadata struct {
++	Tag  string `json:"tag"`
++	Type string `json:"type"`
++}
++type PriorityMetadata struct {
++	Selectors []PrioritySelectorMetadata `json:"selectors"`
++	Outbounds []PriorityOutboundMetadata `json:"outbounds"`
++}
++
++func priorityConcrete(outbound option.Outbound) bool {
++	switch outbound.Type {
++	case "socks", "http", "shadowsocks", "vmess", "trojan", "vless", "hysteria", "hysteria2", "tuic", "ssh", "shadowtls", "anytls", "naive":
++		if options, ok := outbound.Options.(option.DialerOptionsWrapper); ok && options.TakeDialerOptions().Detour != "" {
++			return false
++		}
++		return true
++	default:
++		return false
++	}
++}
++func PriorityFailoverMetadata(options option.Options) PriorityMetadata {
++	m := PriorityMetadata{Selectors: []PrioritySelectorMetadata{}, Outbounds: []PriorityOutboundMetadata{}}
++	concrete := make(map[string]bool)
++	for _, o := range options.Outbounds {
++		if o.Tag != "" && priorityConcrete(o) {
++			concrete[o.Tag] = true
++			m.Outbounds = append(m.Outbounds, PriorityOutboundMetadata{o.Tag, o.Type})
++		}
++	}
++	for _, o := range options.Outbounds {
++		if s, ok := o.Options.(*option.SelectorOutboundOptions); ok {
++			candidates := []string{}
++			for _, tag := range s.Outbounds {
++				if concrete[tag] {
++					candidates = append(candidates, tag)
++				}
++			}
++			m.Selectors = append(m.Selectors, PrioritySelectorMetadata{o.Tag, candidates, s.Default})
++		}
++	}
++	return m
++}
++func ParsePriorityFailover(options option.Options, content string) (*PriorityFailoverPolicy, error) {
++	if content == "" {
++		return nil, nil
++	}
++	var p PriorityFailoverPolicy
++	decoder := json.NewDecoder(strings.NewReader(content))
++	decoder.DisallowUnknownFields()
++	if err := decoder.Decode(&p); err != nil {
++		return nil, errors.New("invalid priority failover policy JSON")
++	}
++	if err := p.Validate(); err != nil {
++		return nil, err
++	}
++	candidates := append([]string{p.Primary}, p.Backups...)
++	found := false
++	for _, o := range options.Outbounds {
++		if o.Tag == p.Selector {
++			s, ok := o.Options.(*option.SelectorOutboundOptions)
++			if !ok || len(s.Outbounds) != 4 {
++				return nil, errors.New("priority failover selector must contain exactly four candidates")
++			}
++			for _, tag := range candidates {
++				if !slices.Contains(s.Outbounds, tag) {
++					return nil, errors.New("priority failover candidate missing from selector")
++				}
++			}
++			found = true
++		}
++	}
++	if !found {
++		return nil, errors.New("priority failover selector missing")
++	}
++	for _, tag := range candidates {
++		count := 0
++		for _, o := range options.Outbounds {
++			if o.Tag == tag && priorityConcrete(o) {
++				count++
++			}
++		}
++		if count != 1 {
++			return nil, errors.New("priority failover candidate must be a unique concrete proxy outbound")
++		}
++	}
++	return &p, nil
++}
+diff --git a/daemon/priority_failover_integration_test.go b/daemon/priority_failover_integration_test.go
+new file mode 100644
+index 00000000..0d5f767b
+--- /dev/null
++++ b/daemon/priority_failover_integration_test.go
+@@ -0,0 +1,298 @@
++package daemon
++
++import (
++	"context"
++	"encoding/json"
++	"fmt"
++	"io"
++	"net"
++	"net/http"
++	"net/http/httptest"
++	"strconv"
++	"sync/atomic"
++	"testing"
++	"time"
++
++	box "github.com/sagernet/sing-box"
++	"github.com/sagernet/sing-box/adapter/certificate"
++	"github.com/sagernet/sing-box/adapter/endpoint"
++	"github.com/sagernet/sing-box/adapter/inbound"
++	"github.com/sagernet/sing-box/adapter/outbound"
++	boxservice "github.com/sagernet/sing-box/adapter/service"
++	"github.com/sagernet/sing-box/dns"
++	"github.com/sagernet/sing-box/dns/transport/local"
++	"github.com/sagernet/sing-box/protocol/direct"
++	"github.com/sagernet/sing-box/protocol/group"
++	"github.com/sagernet/sing-box/protocol/socks"
++	M "github.com/sagernet/sing/common/metadata"
++	"github.com/sagernet/sing/service"
++	"github.com/sagernet/sing/service/filemanager"
++)
++
++type priorityNetDialer struct{ net.Dialer }
++
++func (d priorityNetDialer) DialContext(ctx context.Context, network string, destination M.Socksaddr) (net.Conn, error) {
++	return d.Dialer.DialContext(ctx, network, destination.String())
++}
++func (d priorityNetDialer) ListenPacket(ctx context.Context, destination M.Socksaddr) (net.PacketConn, error) {
++	return nil, fmt.Errorf("unused")
++}
++func TestPriorityHTTPProbe(t *testing.T) {
++	var connections atomic.Int32
++	server := httptest.NewUnstartedServer(http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
++		if r.URL.Path == "/ok" {
++			w.WriteHeader(204)
++		} else {
++			w.WriteHeader(503)
++		}
++	}))
++	server.Config.ConnState = func(_ net.Conn, state http.ConnState) {
++		if state == http.StateNew {
++			connections.Add(1)
++		}
++		if state == http.StateClosed {
++			connections.Add(-1)
++		}
++	}
++	server.Start()
++	defer server.Close()
++	ctx, cancel := context.WithTimeout(context.Background(), time.Second)
++	defer cancel()
++	if ok, err := probePriorityHTTP(ctx, priorityNetDialer{}, []string{server.URL + "/bad", server.URL + "/ok"}); err != nil || !ok {
++		t.Fatal(ok, err)
++	}
++	if ok, _ := probePriorityHTTP(ctx, priorityNetDialer{}, []string{server.URL + "/bad"}); ok {
++		t.Fatal("503 is not healthy")
++	}
++	server.CloseClientConnections()
++}
++func TestPriorityHTTPDeadline(t *testing.T) {
++	entered := make(chan struct{})
++	exited := make(chan struct{})
++	server := httptest.NewServer(http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) { close(entered); <-r.Context().Done(); close(exited) }))
++	defer server.Close()
++	ctx, cancel := context.WithCancel(context.Background())
++	done := make(chan struct{})
++	go func() {
++		defer close(done)
++		ok, _ := probePriorityHTTP(ctx, priorityNetDialer{}, []string{server.URL, server.URL})
++		if ok {
++			t.Error("cancelled probe succeeded")
++		}
++	}()
++	<-entered
++	cancel()
++	<-done
++	select {
++	case <-exited:
++	case <-time.After(time.Second):
++		t.Fatal("connection retained")
++	}
++}
++
++// A small local SOCKS5 transport exercises the concrete outbound, without a second box.
++func prioritySOCKS(t *testing.T) uint16 {
++	t.Helper()
++	listener, err := net.Listen("tcp", "127.0.0.1:0")
++	if err != nil {
++		t.Fatal(err)
++	}
++	t.Cleanup(func() { listener.Close() })
++	go func() {
++		for {
++			conn, err := listener.Accept()
++			if err != nil {
++				return
++			}
++			go func() {
++				var err error
++				defer conn.Close()
++				conn.SetDeadline(time.Now().Add(5 * time.Second))
++				header := make([]byte, 2)
++				if _, err = io.ReadFull(conn, header); err != nil {
++					return
++				}
++				methods := make([]byte, int(header[1]))
++				if _, err = io.ReadFull(conn, methods); err != nil {
++					return
++				}
++				conn.Write([]byte{5, 0})
++				request := make([]byte, 4)
++				if _, err = io.ReadFull(conn, request); err != nil {
++					return
++				}
++				var host string
++				switch request[3] {
++				case 1:
++					address := make([]byte, 4)
++					if _, err = io.ReadFull(conn, address); err != nil {
++						return
++					}
++					host = net.IP(address).String()
++				case 3:
++					var size [1]byte
++					if _, err = io.ReadFull(conn, size[:]); err != nil {
++						return
++					}
++					address := make([]byte, int(size[0]))
++					if _, err = io.ReadFull(conn, address); err != nil {
++						return
++					}
++					host = string(address)
++				default:
++					return
++				}
++				port := make([]byte, 2)
++				if _, err = io.ReadFull(conn, port); err != nil {
++					return
++				}
++				target, err := net.DialTimeout("tcp", net.JoinHostPort(host, strconv.Itoa(int(port[0])<<8|int(port[1]))), time.Second)
++				if err != nil {
++					return
++				}
++				defer target.Close()
++				conn.Write([]byte{5, 0, 0, 1, 127, 0, 0, 1, 0, 0})
++				finished := make(chan struct{})
++				go func() { io.Copy(target, conn); target.Close(); close(finished) }()
++				io.Copy(conn, target)
++				conn.Close()
++				<-finished
++			}()
++		}
++	}()
++	return uint16(listener.Addr().(*net.TCPAddr).Port)
++}
++func TestPriorityColdStartupBeforeRuleSet(t *testing.T) {
++	var instance *Instance
++	var selectedAtFetch string
++	server := httptest.NewServer(http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
++		if r.URL.Path == "/health" {
++			w.WriteHeader(204)
++			return
++		}
++		selectedAtFetch = instance.priorityFailover.Status().Selected
++		io.WriteString(w, `{"version":4,"rules":[{"domain":["example.test"]}]}`)
++	}))
++	defer server.Close()
++	oldURLs := priorityProbeURLs
++	priorityProbeURLs = []string{server.URL + "/health", server.URL + "/health"}
++	defer func() { priorityProbeURLs = oldURLs }()
++	port := prioritySOCKS(t)
++	config := fmt.Sprintf(`{"outbounds":[{"type":"socks","tag":"p","server":"127.0.0.1","server_port":1},{"type":"socks","tag":"b1","server":"127.0.0.1","server_port":%d},{"type":"socks","tag":"b2","server":"127.0.0.1","server_port":1},{"type":"socks","tag":"b3","server":"127.0.0.1","server_port":1},{"type":"selector","tag":"proxy","outbounds":["p","b1","b2","b3"],"default":"p"}],"route":{"final":"proxy","rule_set":[{"type":"remote","tag":"fixture","format":"source","url":%q,"download_detour":"proxy"}]}}`, port, server.URL+"/rules.json")
++	outboundRegistry := outbound.NewRegistry()
++	socks.RegisterOutbound(outboundRegistry)
++	group.RegisterSelector(outboundRegistry)
++	direct.RegisterOutbound(outboundRegistry)
++	dnsRegistry := dns.NewTransportRegistry()
++	local.RegisterTransport(dnsRegistry)
++	ctx := box.Context(context.Background(), inbound.NewRegistry(), outboundRegistry, endpoint.NewRegistry(), dnsRegistry, boxservice.NewRegistry(), certificate.NewRegistry())
++	ctx = filemanager.WithDefault(service.ExtendContext(ctx), t.TempDir(), t.TempDir(), -1, -1)
++	started := NewStartedService(ServiceOptions{Context: ctx})
++	defer started.Close()
++	policy, _ := json.Marshal(testPriorityPolicy())
++	var err error
++	instance, err = started.newInstance(ctx, config, &OverrideOptions{PriorityFailoverJSON: string(policy)})
++	if err != nil {
++		t.Fatal(err)
++	}
++	defer instance.Close()
++	if err = instance.Start(); err != nil {
++		t.Fatal(err)
++	}
++	if selectedAtFetch != "b1" || instance.priorityFailover.Status().Selected != "b1" {
++		t.Fatal("rule-set fetch preceded failover", selectedAtFetch)
++	}
++}
++
++func TestPriorityHangingEndpointFallback(t *testing.T) {
++	var fallbackCalls atomic.Int32
++	server := httptest.NewServer(http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
++		if r.URL.Path == "/hang" {
++			<-r.Context().Done()
++			return
++		}
++		fallbackCalls.Add(1)
++		w.WriteHeader(http.StatusNoContent)
++	}))
++	defer server.Close()
++	ctx, cancel := context.WithTimeout(context.Background(), 500*time.Millisecond)
++	defer cancel()
++	ok, err := probePriorityHTTP(ctx, priorityNetDialer{}, []string{server.URL + "/hang", server.URL + "/ok"})
++	if !ok || err != nil || fallbackCalls.Load() != 1 {
++		t.Fatal("healthy second endpoint was starved", ok, err)
++	}
++}
++
++func TestPriorityProviderPreflight(t *testing.T) {
++	var ruleFetches atomic.Int32
++	server := httptest.NewServer(http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
++		if r.URL.Path == "/health" {
++			w.WriteHeader(http.StatusNoContent)
++			return
++		}
++		ruleFetches.Add(1)
++		io.WriteString(w, `{"version":4,"rules":[{"domain":["example.test"]}]}`)
++	}))
++	defer server.Close()
++	oldURLs := priorityProbeURLs
++	priorityProbeURLs = []string{server.URL + "/health", server.URL + "/health"}
++	defer func() { priorityProbeURLs = oldURLs }()
++	port := prioritySOCKS(t)
++	config := fmt.Sprintf(`{"outbounds":[{"type":"socks","tag":"p","server":"127.0.0.1","server_port":1},{"type":"socks","tag":"b1","server":"127.0.0.1","server_port":%d},{"type":"socks","tag":"b2","server":"127.0.0.1","server_port":1},{"type":"socks","tag":"b3","server":"127.0.0.1","server_port":1},{"type":"selector","tag":"proxy","outbounds":["p","b1","b2","b3"],"default":"p"}],"route":{"final":"proxy","rule_set":[{"type":"remote","tag":"fixture","format":"source","url":%q,"download_detour":"proxy"}]}}`, port, server.URL+"/rules.json")
++	outboundRegistry := outbound.NewRegistry()
++	socks.RegisterOutbound(outboundRegistry)
++	group.RegisterSelector(outboundRegistry)
++	dnsRegistry := dns.NewTransportRegistry()
++	local.RegisterTransport(dnsRegistry)
++	ctx := box.Context(context.Background(), inbound.NewRegistry(), outboundRegistry, endpoint.NewRegistry(), dnsRegistry, boxservice.NewRegistry(), certificate.NewRegistry())
++	ctx = filemanager.WithDefault(service.ExtendContext(ctx), t.TempDir(), t.TempDir(), -1, -1)
++	started := NewStartedService(ServiceOptions{Context: ctx, LogMaxLines: 32})
++	defer started.Close()
++	policy, _ := json.Marshal(testPriorityPolicy())
++	works, err := started.ProbePriorityFailover(ctx, config, string(policy))
++	if err != nil || !works || ruleFetches.Load() != 1 {
++		t.Fatal("healthy backup must pass provider preflight before fetching rule sets", works, err)
++	}
++	if started.instance != nil {
++		t.Fatal("one-shot preflight retained an instance")
++	}
++	// A reachable rules endpoint must not turn an all-down policy into success.
++	config = fmt.Sprintf(`{"outbounds":[{"type":"socks","tag":"p","server":"127.0.0.1","server_port":1},{"type":"socks","tag":"b1","server":"127.0.0.1","server_port":1},{"type":"socks","tag":"b2","server":"127.0.0.1","server_port":1},{"type":"socks","tag":"b3","server":"127.0.0.1","server_port":1},{"type":"selector","tag":"proxy","outbounds":["p","b1","b2","b3"],"default":"p"}],"route":{"final":"proxy"}}`)
++	works, err = started.ProbePriorityFailover(ctx, config, string(policy))
++	if err != nil || works {
++		t.Fatal("all-down policy passed provider preflight", works, err)
++	}
++	if _, err = started.ProbePriorityFailover(ctx, config, ""); err == nil {
++		t.Fatal("missing policy accepted")
++	}
++}
++
++func TestPriorityExternalSelectorManual(t *testing.T) {
++	outboundRegistry := outbound.NewRegistry()
++	socks.RegisterOutbound(outboundRegistry)
++	group.RegisterSelector(outboundRegistry)
++	direct.RegisterOutbound(outboundRegistry)
++	dnsRegistry := dns.NewTransportRegistry()
++	local.RegisterTransport(dnsRegistry)
++	ctx := box.Context(context.Background(), inbound.NewRegistry(), outboundRegistry, endpoint.NewRegistry(), dnsRegistry, boxservice.NewRegistry(), certificate.NewRegistry())
++	ctx = filemanager.WithDefault(service.ExtendContext(ctx), t.TempDir(), t.TempDir(), -1, -1)
++	config := `{"outbounds":[{"type":"socks","tag":"p","server":"127.0.0.1","server_port":1},{"type":"socks","tag":"b1","server":"127.0.0.1","server_port":1},{"type":"socks","tag":"b2","server":"127.0.0.1","server_port":1},{"type":"socks","tag":"b3","server":"127.0.0.1","server_port":1},{"type":"selector","tag":"proxy","outbounds":["p","b1","b2","b3"],"default":"p"}],"route":{"final":"proxy"}}`
++	started := NewStartedService(ServiceOptions{Context: ctx, LogMaxLines: 32})
++	defer started.Close()
++	policy, _ := json.Marshal(testPriorityPolicy())
++	instance, err := started.newInstance(ctx, config, &OverrideOptions{PriorityFailoverJSON: string(policy)})
++	if err != nil {
++		t.Fatal(err)
++	}
++	defer instance.Close()
++	if err = instance.Start(); err != nil {
++		t.Fatal(err)
++	}
++	selected, _ := instance.outboundManager.Outbound("proxy")
++	if !selected.(*group.Selector).SelectOutbound("b2") {
++		t.Fatal("manual selection failed")
++	}
++	if instance.priorityFailover.Status().Mode != "manual" {
++		t.Fatal("external selector API bypassed manual mode")
++	}
++}
+diff --git a/daemon/priority_failover_probe.go b/daemon/priority_failover_probe.go
+new file mode 100644
+index 00000000..9fe269b8
+--- /dev/null
++++ b/daemon/priority_failover_probe.go
+@@ -0,0 +1,116 @@
++package daemon
++
++import (
++	"context"
++	"crypto/tls"
++	"errors"
++	"net"
++	"net/http"
++	"time"
++
++	"github.com/sagernet/sing-box/adapter"
++	"github.com/sagernet/sing-box/protocol/group"
++	M "github.com/sagernet/sing/common/metadata"
++	N "github.com/sagernet/sing/common/network"
++	"github.com/sagernet/sing/common/ntp"
++)
++
++var priorityProbeURLs = []string{"https://www.gstatic.com/generate_204", "https://cp.cloudflare.com/generate_204"}
++
++// ProbePriorityFailover performs the app's one-shot provider check with the same
++// cold selection as the extension. PreStart never starts inbounds or periodic work.
++func (s *StartedService) ProbePriorityFailover(ctx context.Context, configContent, policyJSON string) (bool, error) {
++	if policyJSON == "" {
++		return false, errors.New("priority failover policy required")
++	}
++	instance, err := s.newInstance(ctx, configContent, &OverrideOptions{PriorityFailoverJSON: policyJSON})
++	if err != nil {
++		return false, err
++	}
++	defer instance.Close()
++	if err = instance.instance.PreStart(); err != nil {
++		return false, err
++	}
++	if err = ctx.Err(); err != nil {
++		return false, err
++	}
++	state := instance.priorityFailover.Status()
++	return state.PrimaryHealth != "unknown" && !state.AllDown, nil
++}
++
++type priorityInstanceBackend struct {
++	instance *Instance
++	selector *group.Selector
++}
++
++func (b *priorityInstanceBackend) Selected() string { return b.selector.Now() }
++func (b *priorityInstanceBackend) Select(tag string) error {
++	if !b.selector.SelectOutboundAutomatic(tag) {
++		return errors.New("priority failover selection failed")
++	}
++	return nil
++}
++func (b *priorityInstanceBackend) Probe(ctx context.Context, tag string) (bool, error) {
++	outbound, ok := b.instance.outboundManager.Outbound(tag)
++	if !ok {
++		return false, errors.New("priority failover outbound missing")
++	}
++	return probePriorityHTTP(ctx, outbound, priorityProbeURLs)
++}
++
++// Both endpoints use the caller's single deadline and the existing outbound dialer.
++func probePriorityHTTP(ctx context.Context, dialer N.Dialer, urls []string) (bool, error) {
++	transport := &http.Transport{
++		DialContext: func(ctx context.Context, network, address string) (net.Conn, error) {
++			return dialer.DialContext(ctx, network, M.ParseSocksaddr(address))
++		},
++		TLSClientConfig:   &tls.Config{Time: ntp.TimeFuncFromContext(ctx), RootCAs: adapter.RootPoolFromContext(ctx)},
++		DisableKeepAlives: true,
++	}
++	defer transport.CloseIdleConnections()
++	client := &http.Client{Transport: transport, CheckRedirect: func(*http.Request, []*http.Request) error { return http.ErrUseLastResponse }}
++	for index, url := range urls {
++		if ctx.Err() != nil {
++			return false, ctx.Err()
++		}
++		attemptCtx := ctx
++		attemptCancel := func() {}
++		if deadline, ok := ctx.Deadline(); ok {
++			remaining := time.Until(deadline)
++			attemptCtx, attemptCancel = context.WithTimeout(ctx, remaining/time.Duration(len(urls)-index))
++		}
++		request, err := http.NewRequestWithContext(attemptCtx, http.MethodHead, url, nil)
++		if err != nil {
++			attemptCancel()
++			return false, err
++		}
++		response, err := client.Do(request)
++		if err != nil {
++			attemptCancel()
++			continue
++		}
++		response.Body.Close()
++		attemptCancel()
++		if response.StatusCode == http.StatusNoContent {
++			return true, nil
++		}
++	}
++	return false, ctx.Err()
++}
++func (s *StartedService) PriorityFailoverStatus() PriorityFailoverState {
++	s.serviceAccess.RLock()
++	defer s.serviceAccess.RUnlock()
++	if s.instance == nil || s.instance.priorityFailover == nil {
++		return PriorityFailoverState{Mode: "disabled"}
++	}
++	return s.instance.priorityFailover.Status()
++}
++func (s *StartedService) ResumePriorityFailover() error {
++	s.serviceAccess.RLock()
++	defer s.serviceAccess.RUnlock()
++	if s.serviceStatus.Status != ServiceStatus_STARTED || s.instance == nil || s.instance.priorityFailover == nil {
++		return errors.New("priority failover is not running")
++	}
++	s.instance.priorityFailover.Resume()
++	return nil
++}
+diff --git a/daemon/priority_failover_test.go b/daemon/priority_failover_test.go
+new file mode 100644
+index 00000000..dc473645
+--- /dev/null
++++ b/daemon/priority_failover_test.go
+@@ -0,0 +1,249 @@
++package daemon
++
++import (
++	"context"
++	"sync"
++	"testing"
++)
++
++type priorityTestBackend struct {
++	mu       sync.Mutex
++	selected string
++	results  map[string][]bool
++	calls    []string
++	probe    func(context.Context, string) (bool, error)
++}
++
++func (b *priorityTestBackend) Selected() string { b.mu.Lock(); defer b.mu.Unlock(); return b.selected }
++func (b *priorityTestBackend) Select(tag string) error {
++	b.mu.Lock()
++	defer b.mu.Unlock()
++	b.selected = tag
++	return nil
++}
++func (b *priorityTestBackend) Probe(ctx context.Context, tag string) (bool, error) {
++	if b.probe != nil {
++		return b.probe(ctx, tag)
++	}
++	b.mu.Lock()
++	defer b.mu.Unlock()
++	b.calls = append(b.calls, tag)
++	r := b.results[tag]
++	if len(r) == 0 {
++		return false, nil
++	}
++	b.results[tag] = r[1:]
++	return r[0], nil
++}
++func testPriorityPolicy() PriorityFailoverPolicy {
++	return PriorityFailoverPolicy{Selector: "proxy", Primary: "p", Backups: []string{"b1", "b2", "b3"}, IntervalMilliseconds: 10000, TimeoutMilliseconds: 5000, FailureThreshold: 2, RecoveryThreshold: 3}
++}
++func testPriorityController(t *testing.T, b *priorityTestBackend) *priorityFailoverController {
++	t.Helper()
++	c, err := newPriorityFailoverController(context.Background(), testPriorityPolicy(), b)
++	if err != nil {
++		t.Fatal(err)
++	}
++	t.Cleanup(c.Close)
++	return c
++}
++func TestPriorityHealthyPrimary(t *testing.T) {
++	b := &priorityTestBackend{selected: "b2", results: map[string][]bool{"p": {true, true}}}
++	c := testPriorityController(t, b)
++	c.cycle(true)
++	c.cycle(false)
++	if b.Selected() != "p" || len(b.calls) != 2 {
++		t.Fatalf("selection=%s calls=%v", b.Selected(), b.calls)
++	}
++}
++func TestPriorityFailureThreshold(t *testing.T) {
++	b := &priorityTestBackend{selected: "p", results: map[string][]bool{"p": {false, true, false}}}
++	c := testPriorityController(t, b)
++	for range 3 {
++		c.cycle(false)
++	}
++	if b.Selected() != "p" || len(b.calls) != 3 {
++		t.Fatal(b.calls)
++	}
++}
++func TestPriorityOrderedBackups(t *testing.T) {
++	b := &priorityTestBackend{selected: "p", results: map[string][]bool{"p": {false, false}, "b1": {false}, "b2": {true}}}
++	c := testPriorityController(t, b)
++	c.cycle(false)
++	c.cycle(false)
++	if b.Selected() != "b2" || len(b.calls) != 4 {
++		t.Fatalf("%s %v", b.Selected(), b.calls)
++	}
++}
++func TestPriorityRecoveryThreshold(t *testing.T) {
++	b := &priorityTestBackend{selected: "b1", results: map[string][]bool{"p": {true, true, false, true, true, true}, "b1": {true, true, true, true, true}}}
++	c := testPriorityController(t, b)
++	for range 5 {
++		c.cycle(false)
++		if b.Selected() != "b1" {
++			t.Fatal("early recovery")
++		}
++	}
++	c.cycle(false)
++	if b.Selected() != "p" {
++		t.Fatal("no recovery")
++	}
++}
++func TestPriorityAllDown(t *testing.T) {
++	b := &priorityTestBackend{selected: "p", results: map[string][]bool{}}
++	c := testPriorityController(t, b)
++	c.cycle(true)
++	if !c.Status().AllDown || b.Selected() != "p" || len(b.calls) != 4 {
++		t.Fatal("all-down policy")
++	}
++}
++func TestPriorityManualDuringProbe(t *testing.T) {
++	entered := make(chan struct{})
++	release := make(chan struct{})
++	done := make(chan struct{})
++	b := &priorityTestBackend{selected: "p", probe: func(ctx context.Context, tag string) (bool, error) { close(entered); <-release; return true, nil }}
++	c := testPriorityController(t, b)
++	go func() { c.cycle(true); close(done) }()
++	<-entered
++	if err := c.Manual("b2"); err != nil {
++		t.Fatal(err)
++	}
++	close(release)
++	<-done
++	if b.Selected() != "b2" || c.Status().Mode != "manual" {
++		t.Fatal("stale probe won")
++	}
++}
++func TestPriorityStopDuringProbe(t *testing.T) {
++	entered := make(chan struct{})
++	done := make(chan struct{})
++	b := &priorityTestBackend{selected: "p", probe: func(ctx context.Context, tag string) (bool, error) {
++		close(entered)
++		<-ctx.Done()
++		return false, ctx.Err()
++	}}
++	c := testPriorityController(t, b)
++	go func() { c.cycle(true); close(done) }()
++	<-entered
++	c.Close()
++	<-done
++	if b.Selected() != "p" {
++		t.Fatal("selected after close")
++	}
++}
++func TestPriorityPauseAndResume(t *testing.T) {
++	b := &priorityTestBackend{selected: "b1", results: map[string][]bool{"p": {true}}}
++	c := testPriorityController(t, b)
++	c.SetPaused(true)
++	c.cycle(true)
++	if len(b.calls) != 0 {
++		t.Fatal("probe while paused")
++	}
++	c.SetPaused(false)
++	c.cycle(true)
++	if b.Selected() != "p" {
++		t.Fatal("resume")
++	}
++}
++func TestPriorityPolicyValidation(t *testing.T) {
++	p := testPriorityPolicy()
++	if err := p.Validate(); err != nil {
++		t.Fatal(err)
++	}
++	p.Backups[0] = "p"
++	if p.Validate() == nil {
++		t.Fatal("duplicate accepted")
++	}
++	p = testPriorityPolicy()
++	p.TimeoutMilliseconds = 11000
++	if p.Validate() == nil {
++		t.Fatal("unbounded timeout")
++	}
++}
++
++func TestPriorityRepeatedStart(t *testing.T) {
++	entered := make(chan struct{}, 4)
++	b := &priorityTestBackend{selected: "p", probe: func(ctx context.Context, tag string) (bool, error) {
++		entered <- struct{}{}
++		<-ctx.Done()
++		return false, ctx.Err()
++	}}
++	for range 4 {
++		c := testPriorityController(t, b)
++		c.Start()
++		c.Start()
++		c.Resume()
++		<-entered
++		c.Close()
++	}
++	if len(entered) != 0 {
++		t.Fatal("overlapping controllers")
++	}
++}
++func TestPriorityProbeEndpointsDown(t *testing.T) {
++	b := &priorityTestBackend{selected: "p", results: map[string][]bool{}}
++	c := testPriorityController(t, b)
++	c.cycle(false)
++	if len(b.calls) != 1 || c.Status().AllDown {
++		t.Fatal("threshold bypassed")
++	}
++	c.cycle(false)
++	if len(b.calls) != 5 || !c.Status().AllDown {
++		t.Fatal("unbounded search")
++	}
++	c.cycle(false)
++	if len(b.calls) != 9 || b.Selected() != "p" {
++		t.Fatal("all-down oscillation")
++	}
++}
++func TestPrioritySerializedProbes(t *testing.T) {
++	entered := make(chan struct{}, 2)
++	release := make(chan struct{})
++	done := make(chan struct{}, 2)
++	b := &priorityTestBackend{selected: "p", probe: func(ctx context.Context, tag string) (bool, error) {
++		entered <- struct{}{}
++		<-release
++		return true, nil
++	}}
++	c := testPriorityController(t, b)
++	go func() { c.cycle(false); done <- struct{}{} }()
++	<-entered
++	go func() { c.cycle(false); done <- struct{}{} }()
++	close(release)
++	<-done
++	<-done
++	if len(entered) != 1 {
++		t.Fatal("wrong probe count")
++	}
++}
++
++func TestPriorityManualInvalidatesHealth(t *testing.T) {
++	b := &priorityTestBackend{selected: "p", results: map[string][]bool{}}
++	c := testPriorityController(t, b)
++	c.cycle(true)
++	if err := c.Manual("b1"); err != nil {
++		t.Fatal(err)
++	}
++	if c.Status().AllDown || c.Status().PrimaryHealth != "unknown" {
++		t.Fatal("manual status retains stale observations")
++	}
++}
++func TestPriorityLongOutageCountersBounded(t *testing.T) {
++	b := &priorityTestBackend{selected: "p", results: map[string][]bool{}}
++	c := testPriorityController(t, b)
++	for range 20 {
++		c.cycle(false)
++	}
++	if c.failures > c.policy.FailureThreshold {
++		t.Fatal("failure counter grows without bound")
++	}
++}
++
++func TestPriorityInitialUnpausedDoesNotQueueCycle(t *testing.T) {
++	b := &priorityTestBackend{selected: "p", results: map[string][]bool{}}
++	c := testPriorityController(t, b)
++	c.SetPaused(false)
++	if len(c.wake) != 0 {
++		t.Fatal("initial active state queued an extra startup cycle")
++	}
++}
+diff --git a/experimental/libbox/priority_failover.go b/experimental/libbox/priority_failover.go
+new file mode 100644
+index 00000000..9fb8cf8f
+--- /dev/null
++++ b/experimental/libbox/priority_failover.go
+@@ -0,0 +1,48 @@
++package libbox
++
++import (
++	"context"
++	"encoding/json"
++	"os"
++	"time"
++
++	"github.com/sagernet/sing-box/adapter"
++	"github.com/sagernet/sing-box/daemon"
++	"github.com/sagernet/sing/service"
++)
++
++func ProbePriorityFailover(configContent, policyJSON string, timeoutMilliseconds int32) (bool, error) {
++	if timeoutMilliseconds <= 0 {
++		return false, os.ErrInvalid
++	}
++	ctx, cancel := context.WithTimeout(baseContext(nil), time.Duration(timeoutMilliseconds)*time.Millisecond)
++	defer cancel()
++	ctx = service.ContextWith[adapter.PlatformInterface](ctx, &probePlatformInterface{})
++	started := daemon.NewStartedService(daemon.ServiceOptions{Context: ctx, LogMaxLines: 32})
++	defer started.Close()
++	return started.ProbePriorityFailover(ctx, configContent, policyJSON)
++}
++
++func PriorityFailoverMetadata(configContent string) (string, error) {
++	options, err := parseConfig(baseContext(nil), configContent)
++	if err != nil {
++		return "", err
++	}
++	data, err := json.Marshal(daemon.PriorityFailoverMetadata(options))
++	return string(data), err
++}
++func ValidatePriorityFailover(configContent, policyJSON string) error {
++	options, err := parseConfig(baseContext(nil), configContent)
++	if err != nil {
++		return err
++	}
++	_, err = daemon.ParsePriorityFailover(options, policyJSON)
++	return err
++}
++func (s *CommandServer) PriorityFailoverStatus() (string, error) {
++	data, err := json.Marshal(s.StartedService.PriorityFailoverStatus())
++	return string(data), err
++}
++func (s *CommandServer) ResumePriorityFailover() error {
++	return s.StartedService.ResumePriorityFailover()
++}
+diff --git a/experimental/libbox/priority_failover_test.go b/experimental/libbox/priority_failover_test.go
+new file mode 100644
+index 00000000..1bdbbf48
+--- /dev/null
++++ b/experimental/libbox/priority_failover_test.go
+@@ -0,0 +1,76 @@
++package libbox
++
++import (
++	"encoding/json"
++	"os"
++	"path/filepath"
++	"strings"
++	"testing"
++)
++
++const priorityConfig = `{
++ // Supported extended JSON comments remain valid.
++ "outbounds":[
++ {"type":"socks","tag":"p","server":"127.0.0.1","server_port":9},
++ {"type":"socks","tag":"b1","server":"127.0.0.1","server_port":9},
++ {"type":"socks","tag":"b2","server":"127.0.0.1","server_port":9},
++ {"type":"socks","tag":"b3","server":"127.0.0.1","server_port":9},
++ {"type":"direct","tag":"direct"},
++ {"type":"selector","tag":"proxy","outbounds":["p","b1","b2","b3"],"default":"p"}
++ ]}`
++const priorityPolicy = `{"selector":"proxy","primary":"p","backups":["b1","b2","b3"],"intervalMilliseconds":10000,"timeoutMilliseconds":5000,"failureThreshold":2,"recoveryThreshold":3}`
++
++func TestPriorityMetadataAndValidation(t *testing.T) {
++	data, err := PriorityFailoverMetadata(priorityConfig)
++	if err != nil {
++		t.Fatal(err)
++	}
++	var m struct {
++		Selectors []struct {
++			Tag        string
++			Candidates []string
++		}
++	}
++	if err = json.Unmarshal([]byte(data), &m); err != nil {
++		t.Fatal(err)
++	}
++	if len(m.Selectors) != 1 || len(m.Selectors[0].Candidates) != 4 || strings.Contains(data, "server_port") {
++		t.Fatal(data)
++	}
++	if err = ValidatePriorityFailover(priorityConfig, priorityPolicy); err != nil {
++		t.Fatal(err)
++	}
++	for _, config := range []string{strings.Replace(priorityConfig, `"tag":"b3"`, `"tag":"gone"`, 1), strings.Replace(priorityConfig, `"type":"socks","tag":"b3","server":"127.0.0.1","server_port":9`, `"type":"direct","tag":"b3"`, 1), strings.Replace(priorityConfig, `["p","b1","b2","b3"]`, `["p","b1","b2","b3","direct"]`, 1)} {
++		if ValidatePriorityFailover(config, priorityPolicy) == nil {
++			t.Fatal("invalid membership accepted")
++		}
++	}
++}
++
++func TestPriorityPrivateConfig(t *testing.T) {
++	directory := os.Getenv("SING_PRIORITY_PRIVATE_DIR")
++	if directory == "" {
++		t.Skip("private fixtures not requested")
++	}
++	config, err := os.ReadFile(filepath.Join(directory, "four-servers.json"))
++	if err != nil {
++		t.Fatal("private config not readable")
++	}
++	policy, err := os.ReadFile(filepath.Join(directory, "policy.json"))
++	if err != nil {
++		t.Fatal("private policy not readable")
++	}
++	if ValidatePriorityFailover(string(config), string(policy)) != nil {
++		t.Fatal("private policy validation failed (details suppressed)")
++	}
++	if CheckConfig(string(config)) != nil {
++		t.Fatal("private configuration validation failed (details suppressed)")
++	}
++	baseline, err := os.ReadFile(filepath.Join(directory, "one-server-baseline.json"))
++	if err != nil {
++		t.Fatal("baseline not readable")
++	}
++	if CheckConfig(string(baseline)) != nil {
++		t.Fatal("private baseline validation failed (details suppressed)")
++	}
++}
