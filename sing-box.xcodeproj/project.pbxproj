@@ -374,12 +374,7 @@
 			dstPath = "";
 			dstSubfolderSpec = 13;
 			files = (
-				3AE396032C21A5CC00647718 /* WidgetExtension.appex in Embed Foundation Extensions */,
 				3AEAEE992A4F16430059612D /* Extension.appex in Embed Foundation Extensions */,
-				BCA00000000000000000000A /* VKTurnExtension.appex in Embed Foundation Extensions */,
-				3AAAFB2E2EF5218F004C69AD /* FileProviderExtension.appex in Embed Foundation Extensions */,
-				3AF7B00D2FF10001000A0001 /* ShareExtension.appex in Embed Foundation Extensions */,
-				3AF7B10D2FF10002000A0001 /* ActionExtension.appex in Embed Foundation Extensions */,
 			);
 			name = "Embed Foundation Extensions";
 			runOnlyForDeploymentPostprocessing = 0;
@@ -764,7 +759,7 @@
 		3A6313A82F0CEFDD0060A550 /* SFMUITests */ = {isa = PBXFileSystemSynchronizedRootGroup; explicitFileTypes = {}; explicitFolders = (); path = SFMUITests; sourceTree = "<group>"; };
 		3A7B32402FDE1D54008C0F7F /* JailbreakDaemon */ = {isa = PBXFileSystemSynchronizedRootGroup; explicitFileTypes = {}; explicitFolders = (); path = JailbreakDaemon; sourceTree = "<group>"; };
 		3AAAFB232EF5218F004C69AD /* FileProviderExtension */ = {isa = PBXFileSystemSynchronizedRootGroup; exceptions = (3AAAFB322EF5218F004C69AD /* PBXFileSystemSynchronizedBuildFileExceptionSet */, ); explicitFileTypes = {}; explicitFolders = (); path = FileProviderExtension; sourceTree = "<group>"; };
-		3ADDCEB42E8B723B009ACE1D /* SFI */ = {isa = PBXFileSystemSynchronizedRootGroup; exceptions = (3ADDCEBC2E8B723B009ACE1D /* PBXFileSystemSynchronizedBuildFileExceptionSet */, ); explicitFileTypes = {}; explicitFolders = (); path = SFI; sourceTree = "<group>"; };
+		3ADDCEB42E8B723B009ACE1D /* SFI */ = {isa = PBXFileSystemSynchronizedRootGroup; exceptions = (3ADDCEBC2E8B723B009ACE1D /* PBXFileSystemSynchronizedBuildFileExceptionSet */, ); explicitFileTypes = {}; explicitFolders = (); path = PrototypeApp; sourceTree = "<group>"; };
 		3ADDCEC02E8B7240009ACE1D /* SFM */ = {isa = PBXFileSystemSynchronizedRootGroup; exceptions = (3ADDCEC22E8B7240009ACE1D /* PBXFileSystemSynchronizedBuildFileExceptionSet */, ); explicitFileTypes = {}; explicitFolders = (); path = SFM; sourceTree = "<group>"; };
 		3ADDCEC92E8B7243009ACE1D /* SFM.System */ = {isa = PBXFileSystemSynchronizedRootGroup; exceptions = (3ADDCECC2E8B7243009ACE1D /* PBXFileSystemSynchronizedBuildFileExceptionSet */, ); explicitFileTypes = {}; explicitFolders = (); path = SFM.System; sourceTree = "<group>"; };
 		3ADDCED52E8B7264009ACE1D /* SFT */ = {isa = PBXFileSystemSynchronizedRootGroup; exceptions = (3ADDCEDB2E8B7264009ACE1D /* PBXFileSystemSynchronizedBuildFileExceptionSet */, ); explicitFileTypes = {}; explicitFolders = (); path = SFT; sourceTree = "<group>"; };
@@ -889,11 +884,7 @@
 			isa = PBXFrameworksBuildPhase;
 			buildActionMask = 2147483647;
 			files = (
-				3AAAFE172EF52772004C69AD /* FileProvider.framework in Frameworks */,
 				3A9759202A4EB69C00E4404B /* Library.framework in Frameworks */,
-				3A4EAD372A4FEC20005435B3 /* ApplicationLibrary.framework in Frameworks */,
-				3A2E87F22ED5A91100644195 /* Runestone in Frameworks */,
-				3A2E87FB2ED5ABDA00644195 /* TreeSitterJSON5Runestone in Frameworks */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};
@@ -1386,30 +1377,18 @@
 				3AEC20F12A459AB400A63465 /* Resources */,
 				3A44BB782A4DC17000E4C9F8 /* Embed Foundation Extensions */,
 				3A9759222A4EB69C00E4404B /* Embed Frameworks */,
-				3A8655172A4FA26600B7181F /* Embed ExtensionKit Extensions */,
 			);
 			buildRules = (
 			);
 			dependencies = (
 				3AEC21382A459E0A00A63465 /* PBXTargetDependency */,
-				3A44BB7F2A4DC1D800E4C9F8 /* PBXTargetDependency */,
 				3AEAEE9B2A4F16430059612D /* PBXTargetDependency */,
-				3A8655162A4FA26600B7181F /* PBXTargetDependency */,
-				BCA000000000000000000011 /* PBXTargetDependency */,
-				3A4EAD3A2A4FEC20005435B3 /* PBXTargetDependency */,
-				3AE396022C21A5CC00647718 /* PBXTargetDependency */,
-				3AAAFB2D2EF5218F004C69AD /* PBXTargetDependency */,
-				3AF7B0102FF10001000A0001 /* PBXTargetDependency */,
-				3AF7B1102FF10002000A0001 /* PBXTargetDependency */,
 			);
 			fileSystemSynchronizedGroups = (
 				3ADDCEB42E8B723B009ACE1D /* SFI */,
 			);
 			name = SFI;
-			packageProductDependencies = (
-				3A2E87F12ED5A91100644195 /* Runestone */,
-				3A2E87FA2ED5ABDA00644195 /* TreeSitterJSON5Runestone */,
-			);
+			packageProductDependencies = ();
 			productName = SFI;
 			productReference = 3AEC20F32A459AB400A63465 /* sing-box.app */;
 			productType = "com.apple.product-type.application";
@@ -2739,7 +2718,7 @@
 				GCC_C_LANGUAGE_STANDARD = gnu11;
 				GENERATE_INFOPLIST_FILE = YES;
 				INFOPLIST_FILE = SFT/Info.plist;
-				INFOPLIST_KEY_CFBundleDisplayName = "sing-box";
+				INFOPLIST_KEY_CFBundleDisplayName = "VK TURN Prototype";
 				INFOPLIST_KEY_ITSAppUsesNonExemptEncryption = NO;
 				INFOPLIST_KEY_LSApplicationCategoryType = "public.app-category.utilities";
 				INFOPLIST_KEY_NSLocalNetworkUsageDescription = "As a universal proxy platform, sing-box configures routing according to your configuration.";
@@ -2775,7 +2754,7 @@
 				GCC_C_LANGUAGE_STANDARD = gnu11;
 				GENERATE_INFOPLIST_FILE = YES;
 				INFOPLIST_FILE = SFT/Info.plist;
-				INFOPLIST_KEY_CFBundleDisplayName = "sing-box";
+				INFOPLIST_KEY_CFBundleDisplayName = "VK TURN Prototype";
 				INFOPLIST_KEY_ITSAppUsesNonExemptEncryption = NO;
 				INFOPLIST_KEY_LSApplicationCategoryType = "public.app-category.utilities";
 				INFOPLIST_KEY_NSLocalNetworkUsageDescription = "As a universal proxy platform, sing-box configures routing according to your configuration.";
@@ -3023,7 +3002,7 @@
 				ALWAYS_SEARCH_USER_PATHS = NO;
 				APP_GROUP_IDENTIFIER = "group.$(BASE_PACKAGE_IDENTIFIER)";
 				ASSETCATALOG_COMPILER_GENERATE_SWIFT_ASSET_SYMBOL_EXTENSIONS = YES;
-				BASE_PACKAGE_IDENTIFIER = ru.acurofobia.singbox;
+				BASE_PACKAGE_IDENTIFIER = ru.acurofobia.singbox.vkprototype;
 				CLANG_ANALYZER_LOCALIZABILITY_NONLOCALIZED = YES;
 				CLANG_ANALYZER_NONNULL = YES;
 				CLANG_ANALYZER_NUMBER_OBJECT_CONVERSION = YES_AGGRESSIVE;
@@ -3093,7 +3072,7 @@
 				ALWAYS_SEARCH_USER_PATHS = NO;
 				APP_GROUP_IDENTIFIER = "group.$(BASE_PACKAGE_IDENTIFIER)";
 				ASSETCATALOG_COMPILER_GENERATE_SWIFT_ASSET_SYMBOL_EXTENSIONS = YES;
-				BASE_PACKAGE_IDENTIFIER = ru.acurofobia.singbox;
+				BASE_PACKAGE_IDENTIFIER = ru.acurofobia.singbox.vkprototype;
 				CLANG_ANALYZER_LOCALIZABILITY_NONLOCALIZED = YES;
 				CLANG_ANALYZER_NONNULL = YES;
 				CLANG_ANALYZER_NUMBER_OBJECT_CONVERSION = YES_AGGRESSIVE;
@@ -3155,7 +3134,7 @@
 				ASSETCATALOG_COMPILER_APPICON_NAME = AppIcon;
 				ASSETCATALOG_COMPILER_GLOBAL_ACCENT_COLOR_NAME = AccentColor;
 				ASSETCATALOG_COMPILER_INCLUDE_ALL_APPICON_ASSETS = YES;
-				CODE_SIGN_ENTITLEMENTS = SFI/SFI.entitlements;
+				CODE_SIGN_ENTITLEMENTS = PrototypeApp/Prototype.entitlements;
 				CODE_SIGN_IDENTITY = "Apple Development";
 				CODE_SIGN_STYLE = Automatic;
 				CURRENT_PROJECT_VERSION = 1;
@@ -3163,8 +3142,8 @@
 				DEVELOPMENT_TEAM = YG7A3W5844;
 				ENABLE_PREVIEWS = YES;
 				GENERATE_INFOPLIST_FILE = YES;
-				INFOPLIST_FILE = SFI/Info.plist;
-				INFOPLIST_KEY_CFBundleDisplayName = "sing-box";
+				INFOPLIST_FILE = PrototypeApp/Info.plist;
+				INFOPLIST_KEY_CFBundleDisplayName = "VK TURN Prototype";
 				INFOPLIST_KEY_ITSAppUsesNonExemptEncryption = NO;
 				INFOPLIST_KEY_LSApplicationCategoryType = "public.app-category.utilities";
 				INFOPLIST_KEY_LSSupportsOpeningDocumentsInPlace = YES;
@@ -3176,7 +3155,7 @@
 				INFOPLIST_KEY_UISupportedInterfaceOrientations_iPad = "UIInterfaceOrientationPortrait UIInterfaceOrientationPortraitUpsideDown UIInterfaceOrientationLandscapeLeft UIInterfaceOrientationLandscapeRight";
 				INFOPLIST_KEY_UISupportedInterfaceOrientations_iPhone = "UIInterfaceOrientationPortrait UIInterfaceOrientationLandscapeLeft UIInterfaceOrientationLandscapeRight";
 				INFOPLIST_KEY_UISupportsDocumentBrowser = NO;
-				IPHONEOS_DEPLOYMENT_TARGET = 15.0;
+				IPHONEOS_DEPLOYMENT_TARGET = 27.0;
 				LD_RUNPATH_SEARCH_PATHS = (
 					"$(inherited)",
 					"@executable_path/Frameworks",
@@ -3184,7 +3163,7 @@
 				MARKETING_VERSION = 1.14.6;
 				OTHER_CODE_SIGN_FLAGS = "--deep";
 				PRODUCT_BUNDLE_IDENTIFIER = "$(BASE_PACKAGE_IDENTIFIER)";
-				"PRODUCT_BUNDLE_IDENTIFIER[sdk=iphoneos*]" = ru.acurofobia.singbox;
+				"PRODUCT_BUNDLE_IDENTIFIER[sdk=iphoneos*]" = ru.acurofobia.singbox.vkprototype;
 				PRODUCT_NAME = "sing-box";
 				PROVISIONING_PROFILE_SPECIFIER = "";
 				SDKROOT = iphoneos;
@@ -3200,7 +3179,7 @@
 				ASSETCATALOG_COMPILER_APPICON_NAME = AppIcon;
 				ASSETCATALOG_COMPILER_GLOBAL_ACCENT_COLOR_NAME = AccentColor;
 				ASSETCATALOG_COMPILER_INCLUDE_ALL_APPICON_ASSETS = YES;
-				CODE_SIGN_ENTITLEMENTS = SFI/SFI.entitlements;
+				CODE_SIGN_ENTITLEMENTS = PrototypeApp/Prototype.entitlements;
 				CODE_SIGN_IDENTITY = "Apple Development";
 				CODE_SIGN_STYLE = Automatic;
 				CURRENT_PROJECT_VERSION = 1;
@@ -3208,8 +3187,8 @@
 				DEVELOPMENT_TEAM = YG7A3W5844;
 				ENABLE_PREVIEWS = YES;
 				GENERATE_INFOPLIST_FILE = YES;
-				INFOPLIST_FILE = SFI/Info.plist;
-				INFOPLIST_KEY_CFBundleDisplayName = "sing-box";
+				INFOPLIST_FILE = PrototypeApp/Info.plist;
+				INFOPLIST_KEY_CFBundleDisplayName = "VK TURN Prototype";
 				INFOPLIST_KEY_ITSAppUsesNonExemptEncryption = NO;
 				INFOPLIST_KEY_LSApplicationCategoryType = "public.app-category.utilities";
 				INFOPLIST_KEY_LSSupportsOpeningDocumentsInPlace = YES;
@@ -3221,7 +3200,7 @@
 				INFOPLIST_KEY_UISupportedInterfaceOrientations_iPad = "UIInterfaceOrientationPortrait UIInterfaceOrientationPortraitUpsideDown UIInterfaceOrientationLandscapeLeft UIInterfaceOrientationLandscapeRight";
 				INFOPLIST_KEY_UISupportedInterfaceOrientations_iPhone = "UIInterfaceOrientationPortrait UIInterfaceOrientationLandscapeLeft UIInterfaceOrientationLandscapeRight";
 				INFOPLIST_KEY_UISupportsDocumentBrowser = NO;
-				IPHONEOS_DEPLOYMENT_TARGET = 15.0;
+				IPHONEOS_DEPLOYMENT_TARGET = 27.0;
 				LD_RUNPATH_SEARCH_PATHS = (
 					"$(inherited)",
 					"@executable_path/Frameworks",
@@ -3229,7 +3208,7 @@
 				MARKETING_VERSION = 1.14.6;
 				OTHER_CODE_SIGN_FLAGS = "--deep";
 				PRODUCT_BUNDLE_IDENTIFIER = "$(BASE_PACKAGE_IDENTIFIER)";
-				"PRODUCT_BUNDLE_IDENTIFIER[sdk=iphoneos*]" = ru.acurofobia.singbox;
+				"PRODUCT_BUNDLE_IDENTIFIER[sdk=iphoneos*]" = ru.acurofobia.singbox.vkprototype;
 				PRODUCT_NAME = "sing-box";
 				PROVISIONING_PROFILE_SPECIFIER = "";
 				SDKROOT = iphoneos;
@@ -3256,7 +3235,7 @@
 				ENABLE_PREVIEWS = YES;
 				GENERATE_INFOPLIST_FILE = YES;
 				INFOPLIST_FILE = SFM/Info.plist;
-				INFOPLIST_KEY_CFBundleDisplayName = "sing-box";
+				INFOPLIST_KEY_CFBundleDisplayName = "VK TURN Prototype";
 				INFOPLIST_KEY_LSApplicationCategoryType = "public.app-category.utilities";
 				INFOPLIST_KEY_LSSupportsOpeningDocumentsInPlace = YES;
 				INFOPLIST_KEY_LSUIElement = YES;
@@ -3295,7 +3274,7 @@
 				ENABLE_PREVIEWS = YES;
 				GENERATE_INFOPLIST_FILE = YES;
 				INFOPLIST_FILE = SFM/Info.plist;
-				INFOPLIST_KEY_CFBundleDisplayName = "sing-box";
+				INFOPLIST_KEY_CFBundleDisplayName = "VK TURN Prototype";
 				INFOPLIST_KEY_LSApplicationCategoryType = "public.app-category.utilities";
 				INFOPLIST_KEY_LSSupportsOpeningDocumentsInPlace = YES;
 				INFOPLIST_KEY_LSUIElement = YES;
@@ -3529,7 +3508,7 @@
 				GCC_C_LANGUAGE_STANDARD = gnu11;
 				GENERATE_INFOPLIST_FILE = YES;
 				INFOPLIST_FILE = SFM.System/Info.plist;
-				INFOPLIST_KEY_CFBundleDisplayName = "sing-box";
+				INFOPLIST_KEY_CFBundleDisplayName = "VK TURN Prototype";
 				INFOPLIST_KEY_LSApplicationCategoryType = "public.app-category.utilities";
 				INFOPLIST_KEY_LSSupportsOpeningDocumentsInPlace = YES;
 				INFOPLIST_KEY_NSHumanReadableCopyright = "";
@@ -3571,7 +3550,7 @@
 				GCC_C_LANGUAGE_STANDARD = gnu11;
 				GENERATE_INFOPLIST_FILE = YES;
 				INFOPLIST_FILE = SFM.System/Info.plist;
-				INFOPLIST_KEY_CFBundleDisplayName = "sing-box";
+				INFOPLIST_KEY_CFBundleDisplayName = "VK TURN Prototype";
 				INFOPLIST_KEY_LSApplicationCategoryType = "public.app-category.utilities";
 				INFOPLIST_KEY_LSSupportsOpeningDocumentsInPlace = YES;
 				INFOPLIST_KEY_NSHumanReadableCopyright = "";
@@ -3682,7 +3661,7 @@
 				ENABLE_HARDENED_RUNTIME = YES;
 				GENERATE_INFOPLIST_FILE = YES;
 				INFOPLIST_FILE = ShareExtension/Info.plist;
-				INFOPLIST_KEY_CFBundleDisplayName = "sing-box";
+				INFOPLIST_KEY_CFBundleDisplayName = "VK TURN Prototype";
 				INFOPLIST_KEY_NSHumanReadableCopyright = "";
 				IPHONEOS_DEPLOYMENT_TARGET = 16.0;
 				LD_RUNPATH_SEARCH_PATHS = (
@@ -3721,7 +3700,7 @@
 				ENABLE_HARDENED_RUNTIME = YES;
 				GENERATE_INFOPLIST_FILE = YES;
 				INFOPLIST_FILE = ShareExtension/Info.plist;
-				INFOPLIST_KEY_CFBundleDisplayName = "sing-box";
+				INFOPLIST_KEY_CFBundleDisplayName = "VK TURN Prototype";
 				INFOPLIST_KEY_NSHumanReadableCopyright = "";
 				IPHONEOS_DEPLOYMENT_TARGET = 16.0;
 				LD_RUNPATH_SEARCH_PATHS = (
@@ -3837,7 +3816,7 @@
 				ENABLE_HARDENED_RUNTIME = YES;
 				GENERATE_INFOPLIST_FILE = YES;
 				INFOPLIST_FILE = ShareExtension.System/Info.plist;
-				INFOPLIST_KEY_CFBundleDisplayName = "sing-box";
+				INFOPLIST_KEY_CFBundleDisplayName = "VK TURN Prototype";
 				INFOPLIST_KEY_NSHumanReadableCopyright = "";
 				LD_RUNPATH_SEARCH_PATHS = (
 					"$(inherited)",
@@ -3873,7 +3852,7 @@
 				ENABLE_HARDENED_RUNTIME = YES;
 				GENERATE_INFOPLIST_FILE = YES;
 				INFOPLIST_FILE = ShareExtension.System/Info.plist;
-				INFOPLIST_KEY_CFBundleDisplayName = "sing-box";
+				INFOPLIST_KEY_CFBundleDisplayName = "VK TURN Prototype";
 				INFOPLIST_KEY_NSHumanReadableCopyright = "";
 				LD_RUNPATH_SEARCH_PATHS = (
 					"$(inherited)",

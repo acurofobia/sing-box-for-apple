@@ -16,3 +16,12 @@ AGENTS.md
 /fastlane/test_output/
 /fastlane/.bundle/
 /fastlane/.cache/
+
+# Private test node copied from the local subscription configuration.
+/PrototypeApp/vless-outbound.json
+/PrototypeApp/.vless-*
+/scripts/__pycache__/
+/scripts/tests/__pycache__/
+
+# Downloaded reference library; keep local rather than upload to GitHub.
+/output/design/apple-ios-library/

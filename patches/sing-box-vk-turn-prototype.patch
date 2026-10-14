@@ -1,0 +1,1495 @@
+diff --git a/experimental/libbox/internal/oomprofile/linkname.go b/experimental/libbox/internal/oomprofile/linkname.go
+index f7ab2717..e27ec2c7 100644
+--- a/experimental/libbox/internal/oomprofile/linkname.go
++++ b/experimental/libbox/internal/oomprofile/linkname.go
+@@ -9,9 +9,6 @@ import (
+ 	_ "unsafe"
+ )
+ 
+-//go:linkname runtimeMemProfileInternal runtime.pprof_memProfileInternal
+-func runtimeMemProfileInternal(p []memProfileRecord, inuseZero bool) (n int, ok bool)
+-
+ //go:linkname runtimeBlockProfileInternal runtime.pprof_blockProfileInternal
+ func runtimeBlockProfileInternal(p []blockProfileRecord) (n int, ok bool)
+ 
+diff --git a/experimental/libbox/internal/oomprofile/oomprofile.go b/experimental/libbox/internal/oomprofile/oomprofile.go
+index 5d355337..8f942783 100644
+--- a/experimental/libbox/internal/oomprofile/oomprofile.go
++++ b/experimental/libbox/internal/oomprofile/oomprofile.go
+@@ -18,19 +18,9 @@ type stackRecord struct {
+ 	Stack []uintptr
+ }
+ 
+-type memProfileRecord struct {
+-	AllocBytes, FreeBytes     int64
+-	AllocObjects, FreeObjects int64
+-	Stack                     []uintptr
+-}
+-
+-func (r *memProfileRecord) InUseBytes() int64 {
+-	return r.AllocBytes - r.FreeBytes
+-}
+-
+-func (r *memProfileRecord) InUseObjects() int64 {
+-	return r.AllocObjects - r.FreeObjects
+-}
++// Use the public record: Go 1.27 changed the private runtime record layout.
++// runtime.MemProfile retains its supported ABI and limits stacks to 32 frames.
++type memProfileRecord = runtime.MemProfileRecord
+ 
+ type blockProfileRecord struct {
+ 	Count  int64
+@@ -93,11 +83,11 @@ func writeAlloc(w io.Writer) error {
+ 
+ func writeHeapInternal(w io.Writer, defaultSampleType string) error {
+ 	var profile []memProfileRecord
+-	n, _ := runtimeMemProfileInternal(nil, true)
++	n, _ := runtime.MemProfile(nil, true)
+ 	var ok bool
+ 	for {
+ 		profile = make([]memProfileRecord, n+50)
+-		n, ok = runtimeMemProfileInternal(profile, true)
++		n, ok = runtime.MemProfile(profile, true)
+ 		if ok {
+ 			profile = profile[:n]
+ 			break
+@@ -319,7 +309,7 @@ func writeHeapProto(w io.Writer, profile []memProfileRecord, rate int64, default
+ 	for _, record := range profile {
+ 		hideRuntime := true
+ 		for range 2 {
+-			stk := record.Stack
++			stk := record.Stack()
+ 			if hideRuntime {
+ 				for i, addr := range stk {
+ 					if f := runtime.FuncForPC(addr); f != nil && (strings.HasPrefix(f.Name(), "runtime.") || strings.HasPrefix(f.Name(), "internal/runtime/")) {
+diff --git a/go.mod b/go.mod
+index b2ab87ca..52bf70dd 100644
+--- a/go.mod
++++ b/go.mod
+@@ -1,6 +1,6 @@
+ module github.com/sagernet/sing-box
+ 
+-go 1.25.5
++go 1.26.0
+ 
+ require (
+ 	filippo.io/age v1.3.1
+@@ -82,6 +82,27 @@ require (
+ 	howett.net/plist v1.0.1
+ )
+ 
++require (
++	github.com/bdandy/go-errors v1.2.2 // indirect
++	github.com/bdandy/go-socks4 v1.2.3 // indirect
++	github.com/bogdanfinn/fhttp v0.6.8 // indirect
++	github.com/bogdanfinn/quic-go-utls v1.0.9-utls // indirect
++	github.com/bogdanfinn/tls-client v1.14.0 // indirect
++	github.com/bogdanfinn/utls v1.7.7-barnius // indirect
++	github.com/bogdanfinn/websocket v1.5.5-barnius // indirect
++	github.com/cbeuw/connutil v1.0.1 // indirect
++	github.com/pion/randutil v0.1.0 // indirect
++	github.com/pion/rtcp v1.2.16 // indirect
++	github.com/pion/rtp v1.10.1 // indirect
++	github.com/pion/srtp/v3 v3.0.10 // indirect
++	github.com/pion/stun/v3 v3.1.1 // indirect
++	github.com/pion/turn/v5 v5.0.2 // indirect
++	github.com/refraction-networking/utls v1.8.2 // indirect
++	github.com/tam7t/hpkp v0.0.0-20160821193359-2b70b4024ed5 // indirect
++	github.com/wlynxg/anet v0.0.5 // indirect
++	golang.zx2c4.com/wireguard v0.0.0-20250521234502-f333402bd9cb // indirect
++)
++
+ require (
+ 	filippo.io/edwards25519 v1.2.0 // indirect
+ 	filippo.io/hpke v0.4.0 // indirect
+@@ -90,9 +111,10 @@ require (
+ 	github.com/akutz/memconn v0.1.0 // indirect
+ 	github.com/alexbrainman/sspi v0.0.0-20231016080023-1a75b4708caa // indirect
+ 	github.com/anchore/go-lzo v0.1.0 // indirect
+-	github.com/andybalholm/brotli v1.1.0 // indirect
++	github.com/andybalholm/brotli v1.2.0 // indirect
+ 	github.com/anmitsu/go-shlex v0.0.0-20200514113438-38f4b401e2be // indirect
+ 	github.com/axiomhq/hyperloglog v0.0.0-20240319100328-84253e514e02 // indirect
++	github.com/cacggghp/vk-turn-proxy v0.0.0
+ 	github.com/cenkalti/backoff/v4 v4.3.0 // indirect
+ 	github.com/clipperhouse/uax29/v2 v2.2.0 // indirect
+ 	github.com/coreos/go-iptables v0.7.1-0.20240112124308-65c67c9f46e6 // indirect
+@@ -198,3 +220,5 @@ require (
+ 	lukechampine.com/blake3 v1.3.0 // indirect
+ 	zombiezen.com/go/capnproto2 v2.18.2+incompatible // indirect
+ )
++
++replace github.com/cacggghp/vk-turn-proxy => ../../ThirdParty/VKTurnProxy
+diff --git a/go.sum b/go.sum
+index 3172be80..a4e74ecd 100644
+--- a/go.sum
++++ b/go.sum
+@@ -24,6 +24,8 @@ github.com/anchore/go-lzo v0.1.0 h1:NgAacnzqPeGH49Ky19QKLBZEuFRqtTG9cdaucc3Vncs=
+ github.com/anchore/go-lzo v0.1.0/go.mod h1:3kLx0bve2oN1iDwgM1U5zGku1Tfbdb0No5qp1eL1fIk=
+ github.com/andybalholm/brotli v1.1.0 h1:eLKJA0d02Lf0mVpIDgYnqXcUn0GqVmEFny3VuID1U3M=
+ github.com/andybalholm/brotli v1.1.0/go.mod h1:sms7XGricyQI9K10gOSf56VKKWS4oLer58Q+mhRPtnY=
++github.com/andybalholm/brotli v1.2.0 h1:ukwgCxwYrmACq68yiUqwIWnGY0cTPox/M94sVwToPjQ=
++github.com/andybalholm/brotli v1.2.0/go.mod h1:rzTDkvFWvIrjDXZHkuS16NPggd91W3kUSvPlQ1pLaKY=
+ github.com/anmitsu/go-shlex v0.0.0-20200514113438-38f4b401e2be h1:9AeTilPcZAjCFIImctFaOjnTIavg87rW78vTPkQqLI8=
+ github.com/anmitsu/go-shlex v0.0.0-20200514113438-38f4b401e2be/go.mod h1:ySMOLuWl6zY27l47sB3qLNK6tF2fkHG55UZxx8oIVo4=
+ github.com/anthropics/anthropic-sdk-go v1.26.0 h1:oUTzFaUpAevfuELAP1sjL6CQJ9HHAfT7CoSYSac11PY=
+@@ -32,10 +34,26 @@ github.com/anytls/sing-anytls v0.0.11 h1:w8e9Uj1oP3m4zxkyZDewPk0EcQbvVxb7Nn+rapE
+ github.com/anytls/sing-anytls v0.0.11/go.mod h1:7rjN6IukwysmdusYsrV51Fgu1uW6vsrdd6ctjnEAln8=
+ github.com/axiomhq/hyperloglog v0.0.0-20240319100328-84253e514e02 h1:bXAPYSbdYbS5VTy92NIUbeDI1qyggi+JYh5op9IFlcQ=
+ github.com/axiomhq/hyperloglog v0.0.0-20240319100328-84253e514e02/go.mod h1:k08r+Yj1PRAmuayFiRK6MYuR5Ve4IuZtTfxErMIh0+c=
++github.com/bdandy/go-errors v1.2.2 h1:WdFv/oukjTJCLa79UfkGmwX7ZxONAihKu4V0mLIs11Q=
++github.com/bdandy/go-errors v1.2.2/go.mod h1:NkYHl4Fey9oRRdbB1CoC6e84tuqQHiqrOcZpqFEkBxM=
++github.com/bdandy/go-socks4 v1.2.3 h1:Q6Y2heY1GRjCtHbmlKfnwrKVU/k81LS8mRGLRlmDlic=
++github.com/bdandy/go-socks4 v1.2.3/go.mod h1:98kiVFgpdogR8aIGLWLvjDVZ8XcKPsSI/ypGrO+bqHI=
++github.com/bogdanfinn/fhttp v0.6.8 h1:LiQyHOY3i0QoxxNB7nq27/nGNNbtPj0fuBPozhR7Ws4=
++github.com/bogdanfinn/fhttp v0.6.8/go.mod h1:A+EKDzMx2hb4IUbMx4TlkoHnaJEiLl8r/1Ss1Y+5e5M=
++github.com/bogdanfinn/quic-go-utls v1.0.9-utls h1:tV6eDEiRbRCcepALSzxR94JUVD3N3ACIiRLgyc2Ep8s=
++github.com/bogdanfinn/quic-go-utls v1.0.9-utls/go.mod h1:aHph9B9H9yPOt5xnhWKSOum27DJAqpiHzwX+gjvaXcg=
++github.com/bogdanfinn/tls-client v1.14.0 h1:vyk7Cn4BIvLAGVuMfb0tP22OqogfO1lYamquQNEZU1A=
++github.com/bogdanfinn/tls-client v1.14.0/go.mod h1:LsU6mXVn8MOFDwTkyRfI7V1BZM1p0wf2ZfZsICW/1fM=
++github.com/bogdanfinn/utls v1.7.7-barnius h1:OuJ497cc7F3yKNVHRsYPQdGggmk5x6+V5ZlrCR7fOLU=
++github.com/bogdanfinn/utls v1.7.7-barnius/go.mod h1:aAK1VZQlpKZClF1WEQeq6kyclbkPq4hz6xTbB5xSlmg=
++github.com/bogdanfinn/websocket v1.5.5-barnius h1:bY+qnxpai1qe7Jmjx+Sds/cmOSpuuLoR8x61rWltjOI=
++github.com/bogdanfinn/websocket v1.5.5-barnius/go.mod h1:gvvEw6pTKHb7yOiFvIfAFTStQWyrm25BMVCTj5wRSsI=
+ github.com/caddyserver/certmagic v0.25.3-0.20260421143802-60d9d8b415d6 h1:LYSB6VgWzKtNrcxElw3c97BP40Oc7bizKxA9K1Vi/5k=
+ github.com/caddyserver/certmagic v0.25.3-0.20260421143802-60d9d8b415d6/go.mod h1:llW/CvsNmza8S6hmsuggsZeiX+uS27dkqY27wDIuBWg=
+ github.com/caddyserver/zerossl v0.1.5 h1:dkvOjBAEEtY6LIGAHei7sw2UgqSD6TrWweXpV7lvEvE=
+ github.com/caddyserver/zerossl v0.1.5/go.mod h1:CxA0acn7oEGO6//4rtrRjYgEoa4MFw/XofZnrYwGqG4=
++github.com/cbeuw/connutil v1.0.1 h1:LWuNYjwm7JEDYG/ISAO1TfU4G+q2dA5NhR97eq2roCA=
++github.com/cbeuw/connutil v1.0.1/go.mod h1:lKofNtrW7Atmosgp1eNnTt2j2NjA2IkifapgLVI1QtA=
+ github.com/cenkalti/backoff/v4 v4.3.0 h1:MyRJ/UdXutAwSAT+s3wNd7MfTIcy71VQueUuFK343L8=
+ github.com/cenkalti/backoff/v4 v4.3.0/go.mod h1:Y3VNntkOUPxTVeUxJ/G5vcM//AlwfmyYozVcomhLiZE=
+ github.com/census-instrumentation/opencensus-proto v0.2.1/go.mod h1:f6KPmirojxKA12rnyqOA5BBL4O983OfeGPqjHWSTneU=
+@@ -223,8 +241,20 @@ github.com/pion/dtls/v3 v3.1.5 h1:9xJtVsHwMYeSjPp5Hh1FTis4DchnQWtnOa5o+6ygqfc=
+ github.com/pion/dtls/v3 v3.1.5/go.mod h1:gz1K4jg6c+fq86oQMH4pilpCEOEPwmEr2jY+VcF/mkU=
+ github.com/pion/logging v0.2.4 h1:tTew+7cmQ+Mc1pTBLKH2puKsOvhm32dROumOZ655zB8=
+ github.com/pion/logging v0.2.4/go.mod h1:DffhXTKYdNZU+KtJ5pyQDjvOAh/GsNSyv1lbkFbe3so=
++github.com/pion/randutil v0.1.0 h1:CFG1UdESneORglEsnimhUjf33Rwjubwj6xfiOXBa3mA=
++github.com/pion/randutil v0.1.0/go.mod h1:XcJrSMMbbMRhASFVOlj/5hQial/Y8oH/HVo7TBZq+j8=
++github.com/pion/rtcp v1.2.16 h1:fk1B1dNW4hsI78XUCljZJlC4kZOPk67mNRuQ0fcEkSo=
++github.com/pion/rtcp v1.2.16/go.mod h1:/as7VKfYbs5NIb4h6muQ35kQF/J0ZVNz2Z3xKoCBYOo=
++github.com/pion/rtp v1.10.1 h1:xP1prZcCTUuhO2c83XtxyOHJteISg6o8iPsE2acaMtA=
++github.com/pion/rtp v1.10.1/go.mod h1:rF5nS1GqbR7H/TCpKwylzeq6yDM+MM6k+On5EgeThEM=
++github.com/pion/srtp/v3 v3.0.10 h1:tFirkpBb3XccP5VEXLi50GqXhv5SKPxqrdlhDCJlZrQ=
++github.com/pion/srtp/v3 v3.0.10/go.mod h1:3mOTIB0cq9qlbn59V4ozvv9ClW/BSEbRp4cY0VtaR7M=
++github.com/pion/stun/v3 v3.1.1 h1:CkQxveJ4xGQjulGSROXbXq94TAWu8gIX2dT+ePhUkqw=
++github.com/pion/stun/v3 v3.1.1/go.mod h1:qC1DfmcCTQjl9PBaMa5wSn3x9IPmKxSdcCsxBcDBndM=
+ github.com/pion/transport/v4 v4.0.2 h1:ifYlPqNwsy6aKQ9y8yzxXlHae5431ZrH2avkD/Rn6Tk=
+ github.com/pion/transport/v4 v4.0.2/go.mod h1:06hFI+jCFcok2X2MekVufNZ/uzNZXivGBPfviSVcjgM=
++github.com/pion/turn/v5 v5.0.2 h1:GHlDk+fiegz+yibb3ch+tK+iPFokoVWiM+aVJakySqA=
++github.com/pion/turn/v5 v5.0.2/go.mod h1:cumcsSEF2ytAtDhDwkYgYhv1uJ3AOP7a4pFt0NL/snY=
+ github.com/pires/go-proxyproto v0.8.1 h1:9KEixbdJfhrbtjpz/ZwCdWDD2Xem0NZ38qMYaASJgp0=
+ github.com/pires/go-proxyproto v0.8.1/go.mod h1:ZKAAyp3cgy5Y5Mo4n9AlScrkCZwUy0g3Jf+slqQVcuU=
+ github.com/pkg/sftp v1.13.10 h1:+5FbKNTe5Z9aspU88DPIKJ9z2KZoaGCu6Sr6kKR/5mU=
+@@ -233,6 +263,8 @@ github.com/pmezard/go-difflib v1.0.0/go.mod h1:iKH77koFhYxTK1pcRnkKkqfTogsbg7gZN
+ github.com/prometheus/client_model v0.0.0-20190812154241-14fe0d1b01d4/go.mod h1:xMI15A0UPsDsEKsMN9yxemIoYk6Tm2C1GtYGdfGttqA=
+ github.com/quic-go/qpack v0.6.0 h1:g7W+BMYynC1LbYLSqRt8PBg5Tgwxn214ZZR34VIOjz8=
+ github.com/quic-go/qpack v0.6.0/go.mod h1:lUpLKChi8njB4ty2bFLX2x4gzDqXwUpaO1DP9qMDZII=
++github.com/refraction-networking/utls v1.8.2 h1:j4Q1gJj0xngdeH+Ox/qND11aEfhpgoEvV+S9iJ2IdQo=
++github.com/refraction-networking/utls v1.8.2/go.mod h1:jkSOEkLqn+S/jtpEHPOsVv/4V4EVnelwbMQl4vCWXAM=
+ github.com/russross/blackfriday/v2 v2.1.0/go.mod h1:+Rmxgy9KzJVeS9/2gXHxylqXiyQDYRxCVz55jmeOWTM=
+ github.com/safchain/ethtool v0.3.0 h1:gimQJpsI6sc1yIqP/y8GYgiXn/NjgvpM0RNoWLVVmP0=
+ github.com/safchain/ethtool v0.3.0/go.mod h1:SA9BwrgyAqNo7M+uaL6IYbxpm5wk3L7Mm6ocLW+CJUs=
+@@ -375,6 +407,8 @@ github.com/tailscale/peercred v0.0.0-20250107143737-35a0c7bd7edc h1:24heQPtnFR+y
+ github.com/tailscale/peercred v0.0.0-20250107143737-35a0c7bd7edc/go.mod h1:f93CXfllFsO9ZQVq+Zocb1Gp4G5Fz0b0rXHLOzt/Djc=
+ github.com/tailscale/web-client-prebuilt v0.0.0-20250124233751-d4cd19a26976 h1:UBPHPtv8+nEAy2PD8RyAhOYvau1ek0HDJqLS/Pysi14=
+ github.com/tailscale/web-client-prebuilt v0.0.0-20250124233751-d4cd19a26976/go.mod h1:agQPE6y6ldqCOui2gkIh7ZMztTkIQKH049tv8siLuNQ=
++github.com/tam7t/hpkp v0.0.0-20160821193359-2b70b4024ed5 h1:YqAladjX7xpA6BM04leXMWAEjS0mTZ5kUU9KRBriQJc=
++github.com/tam7t/hpkp v0.0.0-20160821193359-2b70b4024ed5/go.mod h1:2JjD2zLQYH5HO74y5+aE3remJQvl6q4Sn6aWA2wD1Ng=
+ github.com/tc-hib/winres v0.2.1 h1:YDE0FiP0VmtRaDn7+aaChp1KiF4owBiJa5l964l5ujA=
+ github.com/tc-hib/winres v0.2.1/go.mod h1:C/JaNhH3KBvhNKVbvdlDWkbMDO9H4fKKDaN7/07SSuk=
+ github.com/tidwall/gjson v1.14.2/go.mod h1:/wbyibRr2FHMks5tjHJ5F8dMZh3AcwJEMf5vlfC0lxk=
+@@ -396,6 +430,8 @@ github.com/u-root/uio v0.0.0-20240224005618-d2acac8f3701/go.mod h1:P3a5rG4X7tI17
+ github.com/vishvananda/netns v0.0.0-20200728191858-db3c7e526aae/go.mod h1:DD4vA1DwXk04H54A1oHXtwZmA0grkVMdPxx/VGLCah0=
+ github.com/vishvananda/netns v0.0.5 h1:DfiHV+j8bA32MFM7bfEunvT8IAqQ/NzSJHtcmW5zdEY=
+ github.com/vishvananda/netns v0.0.5/go.mod h1:SpkAiCQRtJ6TvvxPnOSyH3BMl6unz3xZlaprSwhNNJM=
++github.com/wlynxg/anet v0.0.5 h1:J3VJGi1gvo0JwZ/P1/Yc/8p63SoW98B5dHkYDmpgvvU=
++github.com/wlynxg/anet v0.0.5/go.mod h1:eay5PRQr7fIVAMbTbchTnO9gG65Hg/uYGdc7mguHxoA=
+ github.com/x448/float16 v0.8.4 h1:qLwI1I70+NjRFUR3zs1JPUCgaCXSh3SW62uAKT1mSBM=
+ github.com/x448/float16 v0.8.4/go.mod h1:14CWIYCyZA/cWjXOioeEpHeN/83MdbZDRQHoFcYsOfg=
+ github.com/youmark/pkcs8 v0.0.0-20240726163527-a2c0da244d78 h1:ilQV1hzziu+LLM3zUTJ0trRztfwgjqKnBWNtSRkbmwM=
+@@ -470,6 +506,7 @@ golang.org/x/net v0.0.0-20190620200207-3b0461eec859/go.mod h1:z5CRVTTTmAJ677TzLL
+ golang.org/x/net v0.0.0-20201010224723-4f7140c49acb/go.mod h1:sp8m0HH+o8qH0wwXwYZr8TS3Oi6o0r6Gce1SSxlDquU=
+ golang.org/x/net v0.0.0-20210226172049-e18ecbb05110/go.mod h1:m0MpNAwzfU5UDzcl9v0D8zg8gWTRqZa9RBIspLL5mdg=
+ golang.org/x/net v0.0.0-20210525063256-abc453219eb5/go.mod h1:9nx3DQGgdP8bBQD5qxJ1jj9UTztislL4KSBs9R2vV5Y=
++golang.org/x/net v0.0.0-20211104170005-ce137452f963/go.mod h1:9nx3DQGgdP8bBQD5qxJ1jj9UTztislL4KSBs9R2vV5Y=
+ golang.org/x/net v0.0.0-20220722155237-a158d28d115b/go.mod h1:XRhObCWvk6IyKnWLug+ECip1KBveYUHfp+8e9klMJ9c=
+ golang.org/x/net v0.6.0/go.mod h1:2Tu9+aMcznHK/AK1HMvgo6xiTLG5rD5rZLDS+rp2Bjs=
+ golang.org/x/net v0.10.0/go.mod h1:0qNGK6F8kojg2nk9dLZ2mShWaEBan6FAoqfSigmmuDg=
+@@ -559,6 +596,8 @@ golang.org/x/xerrors v0.0.0-20200804184101-5ec99f83aff1 h1:go1bK/D/BFZV2I8cIQd1N
+ golang.org/x/xerrors v0.0.0-20200804184101-5ec99f83aff1/go.mod h1:I/5z698sn9Ka8TeJc9MKroUUfqBBauWjQqLJ2OPfmY0=
+ golang.zx2c4.com/wintun v0.0.0-20230126152724-0fa3db229ce2 h1:B82qJJgjvYKsXS9jeunTOisW56dUokqW/FOteYJJ/yg=
+ golang.zx2c4.com/wintun v0.0.0-20230126152724-0fa3db229ce2/go.mod h1:deeaetjYA+DHMHg+sMSMI58GrEteJUUzzw7en6TJQcI=
++golang.zx2c4.com/wireguard v0.0.0-20250521234502-f333402bd9cb h1:whnFRlWMcXI9d+ZbWg+4sHnLp52d5yiIPUxMBSt4X9A=
++golang.zx2c4.com/wireguard v0.0.0-20250521234502-f333402bd9cb/go.mod h1:rpwXGsirqLqN2L0JDJQlwOboGHmptD5ZD6T2VmcqhTw=
+ golang.zx2c4.com/wireguard/wgctrl v0.0.0-20241231184526-a9ab2273dd10 h1:3GDAcqdIg1ozBNLgPy4SLT84nfcBjr6rhGtXYtrkWLU=
+ golang.zx2c4.com/wireguard/wgctrl v0.0.0-20241231184526-a9ab2273dd10/go.mod h1:T97yPqesLiNrOYxkwmhMI0ZIlJDm+p0PMR8eRVeR5tQ=
+ golang.zx2c4.com/wireguard/windows v0.5.3 h1:On6j2Rpn3OEMXqBq00QEDC7bWSZrPIHKIus8eIuExIE=
+diff --git a/include/registry.go b/include/registry.go
+index 9bb9220c..6f19d785 100644
+--- a/include/registry.go
++++ b/include/registry.go
+@@ -36,6 +36,7 @@ import (
+ 	"github.com/sagernet/sing-box/protocol/tor"
+ 	"github.com/sagernet/sing-box/protocol/trojan"
+ 	"github.com/sagernet/sing-box/protocol/tun"
++	"github.com/sagernet/sing-box/protocol/vkturn"
+ 	"github.com/sagernet/sing-box/protocol/vless"
+ 	"github.com/sagernet/sing-box/protocol/vmess"
+ 	"github.com/sagernet/sing-box/service/api"
+@@ -81,6 +82,7 @@ func OutboundRegistry() *outbound.Registry {
+ 	registry := outbound.NewRegistry()
+ 
+ 	direct.RegisterOutbound(registry)
++	vkturn.RegisterOutbound(registry)
+ 	bridge.RegisterOutbound(registry)
+ 
+ 	block.RegisterOutbound(registry)
+diff --git a/experimental/libbox/vk_turn_prototype.go b/experimental/libbox/vk_turn_prototype.go
+new file mode 100644
+index 00000000..761cb152
+--- /dev/null
++++ b/experimental/libbox/vk_turn_prototype.go
+@@ -0,0 +1,153 @@
++package libbox
++
++import (
++	"encoding/base64"
++	"encoding/hex"
++	"encoding/json"
++	"fmt"
++	"os"
++	"path/filepath"
++	"runtime"
++	"time"
++
++	"github.com/cacggghp/vk-turn-proxy/pkg/proxy"
++	"github.com/sagernet/sing-box/experimental/libbox/internal/oomprofile"
++	"github.com/sagernet/sing-box/protocol/vkturn"
++)
++
++type VKTurnPrototypeSession struct {
++	ID            int64
++	Configuration string
++}
++
++// StartVKTurnPrototype bootstraps only the VK transport. WireGuard is created
++// by sing-box from the returned configuration, within the same Go runtime.
++func StartVKTurnPrototype(input string) (*VKTurnPrototypeSession, error) {
++	var settings struct {
++		Route      json.RawMessage        `json:"route"`
++		Generation int64                  `json:"generation"`
++		Baseline   bool                   `json:"baseline"`
++		Mode       string                 `json:"mode"`
++		VLESS      json.RawMessage        `json:"vless"`
++		WireGuard  vkturn.WireGuardConfig `json:"wireguard"`
++		Proxy      struct {
++			VKLink     string `json:"vk_link"`
++			PeerAddr   string `json:"peer_addr"`
++			UseUDP     bool   `json:"use_udp"`
++			UseWrapA   bool   `json:"use_wrap_a"`
++			Password   string `json:"wrap_a_password"`
++			DeviceID   string `json:"device_id"`
++			NumConns   int    `json:"num_conns"`
++			TurnServer string `json:"turn_server"`
++			TurnPort   string `json:"turn_port"`
++		} `json:"proxy"`
++		CachePath string `json:"cache_path"`
++	}
++	if err := json.Unmarshal([]byte(input), &settings); err != nil {
++		return nil, fmt.Errorf("invalid prototype settings")
++	}
++	if settings.Baseline {
++		text, err := vkturn.BuildConfiguration(settings.Route, nil, 0)
++		return &VKTurnPrototypeSession{Configuration: text}, err
++	}
++	if settings.Mode == "vless" {
++		text, err := vkturn.BuildVLESSConfiguration(settings.Route, settings.VLESS)
++		return &VKTurnPrototypeSession{Configuration: text}, err
++	}
++	if settings.Mode != "" && settings.Mode != "vk-turn" {
++		return nil, fmt.Errorf("unknown prototype connection mode")
++	}
++	if settings.Proxy.NumConns < 1 || settings.Proxy.NumConns > 50 {
++		return nil, fmt.Errorf("TURN connection count must be 1...50")
++	}
++	pc := settings.Proxy
++	prototypeLogs.reset([]string{pc.VKLink, pc.Password, settings.WireGuard.PrivateKey, settings.WireGuard.PresharedKey})
++	p := proxy.NewProxy(proxy.Config{VKLink: pc.VKLink, PeerAddr: pc.PeerAddr, UseUDP: pc.UseUDP, UseSrtp: !pc.UseWrapA, UseDTLS: !pc.UseWrapA,
++		UseWrapA: pc.UseWrapA, WrapAPassword: pc.Password, DeviceID: pc.DeviceID, NumConns: pc.NumConns,
++		TurnServer: pc.TurnServer, TurnPort: pc.TurnPort, CredCachePath: filepath.Join(settings.CachePath, "prototype-turn-credentials.json")})
++	if settings.Generation == 0 {
++		settings.Generation = vkturn.BeginSession()
++	}
++	id, err := vkturn.AddSession(p, settings.Generation)
++	if err != nil {
++		return nil, err
++	}
++	success := false
++	defer func() {
++		if !success {
++			vkturn.StopSession(id)
++		}
++	}()
++	go p.Start()
++	if err := p.WaitBootstrap(90 * time.Second); err != nil {
++		return nil, fmt.Errorf("VK TURN bootstrap failed: %w", err)
++	}
++	wg := settings.WireGuard
++	if pc.UseWrapA {
++		provision, err := p.WaitWrapAProvision(30 * time.Second)
++		if err != nil {
++			return nil, fmt.Errorf("WRAP-A provisioning failed: %w", err)
++		}
++		privateKey, err := hex.DecodeString(provision.PrivateKeyHex)
++		if err != nil || len(privateKey) != 32 {
++			return nil, fmt.Errorf("invalid provisioned private key")
++		}
++		publicKey, err := hex.DecodeString(provision.PeerPublicKeyHex)
++		if err != nil || len(publicKey) != 32 {
++			return nil, fmt.Errorf("invalid provisioned public key")
++		}
++		wg = vkturn.WireGuardConfig{PrivateKey: base64.StdEncoding.EncodeToString(privateKey), PublicKey: base64.StdEncoding.EncodeToString(publicKey), Address: provision.Address, MTU: provision.MTU}
++	}
++	if wg.MTU < 1280 || wg.MTU > 1500 {
++		wg.MTU = 1280
++	}
++	text, err := vkturn.BuildConfiguration(settings.Route, &wg, id)
++	if err != nil {
++		return nil, err
++	}
++	success = true
++	return &VKTurnPrototypeSession{ID: id, Configuration: text}, nil
++}
++
++func StopVKTurnPrototype(id int64) { vkturn.StopSession(id) }
++
++func CancelVKTurnPrototype() { vkturn.CancelSessions() }
++
++// BeginVKTurnPrototype must run before asynchronous bootstrap dispatch.
++func BeginVKTurnPrototype() int64 {
++	beginPrototypeLogs()
++	return vkturn.BeginSession()
++}
++
++type VKTurnPrototypeStats struct {
++	ActiveConnections int32
++	TxBytes           int64
++	RxBytes           int64
++}
++
++func GetVKTurnPrototypeStats(id int64) *VKTurnPrototypeStats {
++	s := vkturn.SessionStats(id)
++	return &VKTurnPrototypeStats{ActiveConnections: s.ActiveConns, TxBytes: s.TxBytes, RxBytes: s.RxBytes}
++}
++
++// VerifyVKTurnPrototypeOOMProfiles exercises the former crash path on the device
++// before the steady measurement. It does not synthesize a system pressure event.
++func VerifyVKTurnPrototypeOOMProfiles(directory string) error {
++	if err := os.MkdirAll(directory, 0700); err != nil {
++		return err
++	}
++	for _, name := range oomReportProfiles {
++		if err := oomprofile.WriteFile(filepath.Join(directory, name+".pb"), name); err != nil {
++			return err
++		}
++	}
++	status, err := json.Marshal(struct {
++		OK              bool   `json:"ok"`
++		GoVersion       string `json:"go_version"`
++		ProfilesWritten int    `json:"profiles_written"`
++	}{true, runtime.Version(), len(oomReportProfiles)})
++	if err != nil {
++		return err
++	}
++	return os.WriteFile(filepath.Join(directory, "verified.json"), status, 0600)
++}
+diff --git a/experimental/libbox/vk_turn_prototype_test.go b/experimental/libbox/vk_turn_prototype_test.go
+new file mode 100644
+index 00000000..0274a6c9
+--- /dev/null
++++ b/experimental/libbox/vk_turn_prototype_test.go
+@@ -0,0 +1,33 @@
++package libbox
++
++import (
++	"encoding/json"
++	"strings"
++	"testing"
++)
++
++func TestVLESSPrototypeStartsWithoutTURNSettings(t *testing.T) {
++	session, err := StartVKTurnPrototype(`{"mode":"vless","route":{"final":"vk-wg"},"vless":{"type":"vless","server":"127.0.0.1","server_port":443,"uuid":"bf000d23-0752-40b4-affe-68f7707a9661"}}`)
++	if err != nil {
++		t.Fatal(err)
++	}
++	if session.ID != 0 {
++		t.Fatal("VLESS created a TURN session")
++	}
++	if !strings.Contains(session.Configuration, `"type":"vless"`) {
++		t.Fatal("VLESS not selected")
++	}
++	if strings.Contains(session.Configuration, "wireguard") || strings.Contains(session.Configuration, "vk-turn-transport") {
++		t.Fatal("VLESS contains TURN or WireGuard")
++	}
++	var config map[string]json.RawMessage
++	if err := json.Unmarshal([]byte(session.Configuration), &config); err != nil {
++		t.Fatal(err)
++	}
++}
++
++func TestVLESSPrototypeRejectsMissingOutbound(t *testing.T) {
++	if _, err := StartVKTurnPrototype(`{"mode":"vless","route":{"final":"vk-wg"}}`); err == nil {
++		t.Fatal("accepted missing VLESS configuration")
++	}
++}
+diff --git a/experimental/libbox/internal/oomprofile/oomprofile_test.go b/experimental/libbox/internal/oomprofile/oomprofile_test.go
+new file mode 100644
+index 00000000..0229f6d7
+--- /dev/null
++++ b/experimental/libbox/internal/oomprofile/oomprofile_test.go
+@@ -0,0 +1,53 @@
++//go:build darwin || linux || windows
++
++package oomprofile
++
++import (
++	"google.golang.org/protobuf/encoding/protowire"
++	"os"
++	"path/filepath"
++	"runtime"
++	"testing"
++)
++
++var sampledAllocation []byte
++
++func TestAllOOMProfilesReadCurrentRuntimeRecords(t *testing.T) {
++	previousRate := runtime.MemProfileRate
++	runtime.MemProfileRate = 1
++	defer func() { runtime.MemProfileRate = previousRate }()
++	sampledAllocation = make([]byte, 4096)
++	defer func() { sampledAllocation = nil }()
++	runtime.GC()
++	for _, name := range []string{"allocs", "heap", "block", "mutex", "goroutine", "threadcreate"} {
++		t.Run(name, func(t *testing.T) {
++			path := filepath.Join(t.TempDir(), name+".pb.gz")
++			if err := WriteFile(path, name); err != nil {
++				t.Fatal(err)
++			}
++			data, err := os.ReadFile(path)
++			if err != nil || len(data) == 0 {
++				t.Fatalf("empty or missing profile: %v", err)
++			}
++			samples := 0
++			for len(data) > 0 {
++				number, typ, count := protowire.ConsumeTag(data)
++				if count < 0 {
++					t.Fatal("invalid protobuf tag")
++				}
++				data = data[count:]
++				count = protowire.ConsumeFieldValue(number, typ, data)
++				if count < 0 {
++					t.Fatal("invalid protobuf field")
++				}
++				if int(number) == tagProfile_Sample {
++					samples++
++				}
++				data = data[count:]
++			}
++			if (name == "heap" || name == "allocs") && samples == 0 {
++				t.Fatal("allocation profile lost all samples")
++			}
++		})
++	}
++}
+diff --git a/cmd/vk-turn-prototype-check/main.go b/cmd/vk-turn-prototype-check/main.go
+new file mode 100644
+index 00000000..7712cefd
+--- /dev/null
++++ b/cmd/vk-turn-prototype-check/main.go
+@@ -0,0 +1,81 @@
++package main
++
++import (
++	"context"
++	"encoding/json"
++	"fmt"
++	"net/http"
++	"net/url"
++	"os"
++	"path/filepath"
++	"time"
++
++	box "github.com/sagernet/sing-box"
++	"github.com/sagernet/sing-box/experimental/libbox"
++	"github.com/sagernet/sing-box/include"
++	"github.com/sagernet/sing-box/option"
++	"github.com/sagernet/sing/service/filemanager"
++)
++
++func run() error {
++	if len(os.Args) != 2 {
++		return fmt.Errorf("usage: vk-turn-prototype-check private-input.json")
++	}
++	input, err := os.ReadFile(os.Args[1])
++	if err != nil {
++		return err
++	}
++	session, err := libbox.StartVKTurnPrototype(string(input))
++	if err != nil {
++		return err
++	}
++	defer libbox.StopVKTurnPrototype(session.ID)
++	var config map[string]json.RawMessage
++	if err := json.Unmarshal([]byte(session.Configuration), &config); err != nil {
++		return err
++	}
++	config["inbounds"] = json.RawMessage(`[{"type":"mixed","tag":"probe","listen":"127.0.0.1","listen_port":20880}]`)
++	data, err := json.Marshal(config)
++	if err != nil {
++		return err
++	}
++	ctx := include.Context(context.Background())
++	ctx = filemanager.WithDefault(ctx, filepath.Dir(os.Args[1]), filepath.Dir(os.Args[1]), os.Getuid(), os.Getgid())
++	var options option.Options
++	if err := options.UnmarshalJSONContext(ctx, data); err != nil {
++		return err
++	}
++	// No TUN or system routes on the development Mac: only loopback SOCKS.
++	options.Log.Output = filepath.Join(filepath.Dir(os.Args[1]), "sing-box-probe.log")
++	options.Route.DefaultDomainResolver = &option.DomainResolveOptions{Server: "dns"}
++	instance, err := box.New(box.Options{Context: ctx, Options: options})
++	if err != nil {
++		return err
++	}
++	defer instance.Close()
++	if err := instance.Start(); err != nil {
++		return err
++	}
++	proxyURL, _ := url.Parse("socks5://127.0.0.1:20880")
++	transport := &http.Transport{Proxy: http.ProxyURL(proxyURL)}
++	defer transport.CloseIdleConnections()
++	client := &http.Client{Transport: transport, Timeout: 30 * time.Second}
++	for _, target := range []struct{ name, address string }{{"routed-youtube", "https://www.youtube.com/generate_204"}, {"direct-apple", "https://captive.apple.com/hotspot-detect.html"}} {
++		response, err := client.Get(target.address)
++		if err != nil {
++			return fmt.Errorf("%s: %w", target.name, err)
++		}
++		response.Body.Close()
++		fmt.Printf("PROBE %s HTTP %d\n", target.name, response.StatusCode)
++		if response.StatusCode >= 400 {
++			return fmt.Errorf("%s failed", target.name)
++		}
++	}
++	return nil
++}
++func main() {
++	if err := run(); err != nil {
++		fmt.Fprintln(os.Stderr, "PROBE FAILED:", err)
++		os.Exit(1)
++	}
++}
+diff --git a/protocol/vkturn/config.go b/protocol/vkturn/config.go
+new file mode 100644
+index 00000000..f0f0c719
+--- /dev/null
++++ b/protocol/vkturn/config.go
+@@ -0,0 +1,113 @@
++package vkturn
++
++import (
++	"encoding/json"
++	"fmt"
++)
++
++// WireGuardConfig carries only the keys and address provisioned for native sing-box WireGuard.
++type WireGuardConfig struct {
++	PrivateKey   string `json:"private_key"`
++	PublicKey    string `json:"public_key"`
++	PresharedKey string `json:"preshared_key,omitempty"`
++	Address      string `json:"address"`
++	MTU          int    `json:"mtu"`
++}
++
++func BuildConfiguration(route json.RawMessage, wg *WireGuardConfig, session int64) (string, error) {
++	if !json.Valid(route) {
++		return "", fmt.Errorf("invalid routing JSON")
++	}
++	type outbound struct {
++		Type    string `json:"type"`
++		Tag     string `json:"tag"`
++		Session int64  `json:"session,omitempty"`
++	}
++	type peer struct {
++		Address      string   `json:"address"`
++		Port         int      `json:"port"`
++		PublicKey    string   `json:"public_key"`
++		PresharedKey string   `json:"pre_shared_key,omitempty"`
++		AllowedIPs   []string `json:"allowed_ips"`
++		Keepalive    int      `json:"persistent_keepalive_interval"`
++	}
++	type endpoint struct {
++		Type       string   `json:"type"`
++		Tag        string   `json:"tag"`
++		System     bool     `json:"system"`
++		Address    []string `json:"address"`
++		PrivateKey string   `json:"private_key"`
++		MTU        int      `json:"mtu"`
++		Workers    int      `json:"workers"`
++		Peers      []peer   `json:"peers"`
++		Detour     string   `json:"detour"`
++	}
++	c := struct {
++		Log          json.RawMessage `json:"log"`
++		DNS          json.RawMessage `json:"dns"`
++		Inbounds     json.RawMessage `json:"inbounds"`
++		Outbounds    []outbound      `json:"outbounds"`
++		Endpoints    []endpoint      `json:"endpoints,omitempty"`
++		Route        json.RawMessage `json:"route"`
++		Experimental json.RawMessage `json:"experimental"`
++	}{
++		Log:          json.RawMessage(`{"level":"info","timestamp":true}`),
++		DNS:          json.RawMessage(`{"servers":[{"type":"udp","tag":"dns","server":"1.1.1.1","detour":"vk-wg"}],"final":"dns","strategy":"ipv4_only"}`),
++		Inbounds:     json.RawMessage(`[{"type":"tun","tag":"tun","address":["172.19.0.1/30"],"mtu":1280,"auto_route":true,"stack":"gvisor"}]`),
++		Outbounds:    []outbound{{Type: "direct", Tag: "direct"}},
++		Route:        route,
++		Experimental: json.RawMessage(`{"cache_file":{"enabled":true,"path":"prototype-cache.db"}}`),
++	}
++	if wg == nil {
++		c.DNS = json.RawMessage(`{"servers":[{"type":"udp","tag":"dns","server":"1.1.1.1"}],"final":"dns","strategy":"ipv4_only"}`)
++		c.Outbounds = append(c.Outbounds, outbound{Type: "direct", Tag: "vk-wg"})
++	} else {
++		if session <= 0 || wg.PrivateKey == "" || wg.PublicKey == "" || wg.Address == "" {
++			return "", fmt.Errorf("missing WireGuard session parameters")
++		}
++		c.Outbounds = append(c.Outbounds, outbound{Type: "vk-turn-transport", Tag: "vk-transport", Session: session})
++		c.Endpoints = []endpoint{{Type: "wireguard", Tag: "vk-wg", Address: []string{wg.Address}, PrivateKey: wg.PrivateKey, MTU: wg.MTU, Workers: 1,
++			Peers: []peer{{Address: "127.0.0.1", Port: 51820, PublicKey: wg.PublicKey, PresharedKey: wg.PresharedKey, AllowedIPs: []string{"0.0.0.0/0"}, Keepalive: 25}}, Detour: "vk-transport"}}
++	}
++	b, err := json.Marshal(c)
++	return string(b), err
++}
++
++// BuildVLESSConfiguration keeps the prototype route target but replaces the
++// baseline direct alias with the supplied VLESS node. No TURN session is needed.
++func BuildVLESSConfiguration(route, node json.RawMessage) (string, error) {
++	var fields struct {
++		Type   string `json:"type"`
++		Server string `json:"server"`
++		Port   int    `json:"server_port"`
++		UUID   string `json:"uuid"`
++		Detour string `json:"detour"`
++	}
++	if err := json.Unmarshal(node, &fields); err != nil || fields.Type != "vless" ||
++		fields.Server == "" || fields.Port < 1 || fields.Port > 65535 || fields.UUID == "" || fields.Detour != "" {
++		return "", fmt.Errorf("invalid standalone VLESS outbound")
++	}
++	baseline, err := BuildConfiguration(route, nil, 0)
++	if err != nil {
++		return "", err
++	}
++	var config map[string]json.RawMessage
++	if err := json.Unmarshal([]byte(baseline), &config); err != nil {
++		return "", err
++	}
++	var outbound map[string]json.RawMessage
++	if err := json.Unmarshal(node, &outbound); err != nil {
++		return "", fmt.Errorf("invalid VLESS outbound")
++	}
++	outbound["tag"] = json.RawMessage(`"vk-wg"`)
++	// Resolve the proxy server without depending on its own tunnel DNS.
++	outbound["domain_resolver"] = json.RawMessage(`{"server":"bootstrap","strategy":"ipv4_only"}`)
++	outbounds, err := json.Marshal([]any{map[string]string{"type": "direct", "tag": "direct"}, outbound})
++	if err != nil {
++		return "", err
++	}
++	config["outbounds"] = outbounds
++	config["dns"] = json.RawMessage(`{"servers":[{"type":"udp","tag":"dns","server":"1.1.1.1","detour":"vk-wg"},{"type":"udp","tag":"bootstrap","server":"1.1.1.1"}],"final":"dns","strategy":"ipv4_only"}`)
++	data, err := json.Marshal(config)
++	return string(data), err
++}
+diff --git a/protocol/vkturn/config_startup_test.go b/protocol/vkturn/config_startup_test.go
+new file mode 100644
+index 00000000..dc40a614
+--- /dev/null
++++ b/protocol/vkturn/config_startup_test.go
+@@ -0,0 +1,60 @@
++package vkturn_test
++
++import (
++	"context"
++	"encoding/json"
++	"testing"
++
++	box "github.com/sagernet/sing-box"
++	"github.com/sagernet/sing-box/include"
++	"github.com/sagernet/sing-box/option"
++	"github.com/sagernet/sing-box/protocol/vkturn"
++	"github.com/sagernet/sing/service/filemanager"
++)
++
++func TestBaselineDNSStarts(t *testing.T) {
++	text, err := vkturn.BuildConfiguration(json.RawMessage(`{"final":"vk-wg"}`), nil, 0)
++	if err != nil {
++		t.Fatal(err)
++	}
++	ctx := include.Context(context.Background())
++	directory := t.TempDir()
++	ctx = filemanager.WithDefault(ctx, directory, directory, -1, -1)
++	var options option.Options
++	if err := options.UnmarshalJSONContext(ctx, []byte(text)); err != nil {
++		t.Fatal(err)
++	}
++	// Exercise the real DNS/outbound lifecycle, without changing host routes.
++	options.Inbounds = nil
++	instance, err := box.New(box.Options{Context: ctx, Options: options})
++	if err != nil {
++		t.Fatal(err)
++	}
++	defer instance.Close()
++	if err := instance.Start(); err != nil {
++		t.Fatal(err)
++	}
++}
++
++func TestVLESSDNSStartsWithoutTURN(t *testing.T) {
++	text, err := vkturn.BuildVLESSConfiguration(json.RawMessage(`{"final":"vk-wg"}`), json.RawMessage(`{"type":"vless","server":"example.org","server_port":443,"uuid":"bf000d23-0752-40b4-affe-68f7707a9661"}`))
++	if err != nil {
++		t.Fatal(err)
++	}
++	ctx := include.Context(context.Background())
++	directory := t.TempDir()
++	ctx = filemanager.WithDefault(ctx, directory, directory, -1, -1)
++	var options option.Options
++	if err := options.UnmarshalJSONContext(ctx, []byte(text)); err != nil {
++		t.Fatal(err)
++	}
++	options.Inbounds = nil
++	instance, err := box.New(box.Options{Context: ctx, Options: options})
++	if err != nil {
++		t.Fatal(err)
++	}
++	defer instance.Close()
++	if err := instance.Start(); err != nil {
++		t.Fatal(err)
++	}
++}
+diff --git a/protocol/vkturn/config_test.go b/protocol/vkturn/config_test.go
+new file mode 100644
+index 00000000..7c5c7e76
+--- /dev/null
++++ b/protocol/vkturn/config_test.go
+@@ -0,0 +1,58 @@
++package vkturn
++
++import (
++	"encoding/json"
++	"strings"
++	"testing"
++)
++
++func TestConfigurationPreservesRoutingAndUsesNativeWireGuard(t *testing.T) {
++	route := json.RawMessage(`{"rules":[{"domain":["example.org"],"outbound":"vk-wg"},{"ip_is_private":true,"outbound":"direct"},{"port":25,"action":"reject"}],"final":"vk-wg"}`)
++	wg := WireGuardConfig{PrivateKey: strings.Repeat("A", 43) + "=", PublicKey: strings.Repeat("A", 43) + "=", Address: "10.0.0.2/32", MTU: 1280}
++	text, err := BuildConfiguration(route, &wg, 7)
++	if err != nil {
++		t.Fatal(err)
++	}
++	var c struct {
++		Route     json.RawMessage `json:"route"`
++		Endpoints []struct {
++			Type, Tag, Detour string
++			System            bool
++		}
++		Outbounds []struct {
++			Type, Tag string
++			Session   int64
++		}
++	}
++	if err := json.Unmarshal([]byte(text), &c); err != nil {
++		t.Fatal(err)
++	}
++	if string(c.Route) != string(route) {
++		t.Fatalf("routing changed: %s", c.Route)
++	}
++	if len(c.Endpoints) != 1 || c.Endpoints[0].Type != "wireguard" || c.Endpoints[0].Detour != "vk-transport" || c.Endpoints[0].System {
++		t.Fatalf("not native userspace WireGuard: %+v", c.Endpoints)
++	}
++	if len(c.Outbounds) != 2 || c.Outbounds[1].Type != "vk-turn-transport" || c.Outbounds[1].Session != 7 {
++		t.Fatalf("missing transport: %+v", c.Outbounds)
++	}
++}
++
++func TestBaselineHasNoWireGuardOrTURN(t *testing.T) {
++	text, err := BuildConfiguration(json.RawMessage(`{"final":"vk-wg"}`), nil, 0)
++	if err != nil {
++		t.Fatal(err)
++	}
++	if strings.Contains(text, "wireguard") || strings.Contains(text, "vk-turn-transport") {
++		t.Fatal("baseline starts extra engines")
++	}
++	if !strings.Contains(text, `"tag":"vk-wg"`) {
++		t.Fatal("baseline loses route target")
++	}
++}
++
++func TestInvalidRoutingRejected(t *testing.T) {
++	if _, err := BuildConfiguration(json.RawMessage(`{"final":`), nil, 0); err == nil {
++		t.Fatal("accepted invalid routing")
++	}
++}
+diff --git a/protocol/vkturn/outbound.go b/protocol/vkturn/outbound.go
+new file mode 100644
+index 00000000..37658dc9
+--- /dev/null
++++ b/protocol/vkturn/outbound.go
+@@ -0,0 +1,104 @@
++package vkturn
++
++import (
++	"context"
++	"fmt"
++	"net"
++	"sync"
++	"sync/atomic"
++	"time"
++
++	"github.com/cacggghp/vk-turn-proxy/pkg/proxy"
++	"github.com/sagernet/sing-box/adapter"
++	"github.com/sagernet/sing-box/adapter/outbound"
++	"github.com/sagernet/sing-box/log"
++	M "github.com/sagernet/sing/common/metadata"
++	N "github.com/sagernet/sing/common/network"
++)
++
++var sessionsMu sync.Mutex
++var sessions = make(map[int64]*proxy.Proxy)
++var nextSession atomic.Int64
++var generation int64
++
++func BeginSession() int64 {
++	sessionsMu.Lock()
++	defer sessionsMu.Unlock()
++	generation++
++	return generation
++}
++
++func AddSession(p *proxy.Proxy, expectedGeneration int64) (int64, error) {
++	sessionsMu.Lock()
++	if expectedGeneration != generation {
++		sessionsMu.Unlock()
++		return 0, fmt.Errorf("VK TURN startup cancelled")
++	}
++	id := nextSession.Add(1)
++	sessions[id] = p
++	sessionsMu.Unlock()
++	return id, nil
++}
++func StopSession(id int64) {
++	sessionsMu.Lock()
++	p := sessions[id]
++	delete(sessions, id)
++	sessionsMu.Unlock()
++	if p != nil {
++		p.StopWithTimeout(3 * time.Second)
++	}
++}
++
++type Options struct {
++	Session int64 `json:"session"`
++}
++type Outbound struct {
++	outbound.Adapter
++	proxy *proxy.Proxy
++}
++
++func RegisterOutbound(registry *outbound.Registry) {
++	outbound.Register[Options](registry, "vk-turn-transport", NewOutbound)
++}
++func NewOutbound(_ context.Context, _ adapter.Router, _ log.ContextLogger, tag string, options Options) (adapter.Outbound, error) {
++	sessionsMu.Lock()
++	p := sessions[options.Session]
++	sessionsMu.Unlock()
++	if p == nil {
++		return nil, fmt.Errorf("VK TURN session is not prepared")
++	}
++	return &Outbound{Adapter: outbound.NewAdapter("vk-turn-transport", tag, []string{N.NetworkUDP}, nil), proxy: p}, nil
++}
++func (o *Outbound) DialContext(_ context.Context, network string, _ M.Socksaddr) (net.Conn, error) {
++	if network != N.NetworkUDP {
++		return nil, fmt.Errorf("VK TURN transport accepts WireGuard UDP packets only")
++	}
++	return newPacketConn(o.proxy), nil
++}
++func (o *Outbound) ListenPacket(_ context.Context, _ M.Socksaddr) (net.PacketConn, error) {
++	return newPacketConn(o.proxy), nil
++}
++
++// CancelSessions also cancels bootstrap before its handle has reached Swift.
++func CancelSessions() {
++	sessionsMu.Lock()
++	generation++
++	ids := make([]int64, 0, len(sessions))
++	for id := range sessions {
++		ids = append(ids, id)
++	}
++	sessionsMu.Unlock()
++	for _, id := range ids {
++		StopSession(id)
++	}
++}
++
++func SessionStats(id int64) proxy.Stats {
++	sessionsMu.Lock()
++	p := sessions[id]
++	sessionsMu.Unlock()
++	if p == nil {
++		return proxy.Stats{}
++	}
++	return p.GetStats()
++}
+diff --git a/protocol/vkturn/packet.go b/protocol/vkturn/packet.go
+new file mode 100644
+index 00000000..e577fe57
+--- /dev/null
++++ b/protocol/vkturn/packet.go
+@@ -0,0 +1,139 @@
++package vkturn
++
++import (
++	"net"
++	"os"
++	"sync"
++	"time"
++)
++
++type packetTransport interface {
++	SendPacketUntil(<-chan struct{}, []byte) error
++	ReceivePacketUntil(<-chan struct{}, []byte) (int, error)
++}
++
++type receivedPacket struct {
++	data []byte
++	err  error
++}
++
++type packetConn struct {
++	transport       packetTransport
++	done            chan struct{}
++	closeOnce       sync.Once
++	incoming        chan receivedPacket
++	mu              sync.Mutex
++	readDeadline    time.Time
++	writeDeadline   time.Time
++	deadlineChanged chan struct{}
++}
++
++func newPacketConn(p packetTransport) *packetConn {
++	c := &packetConn{transport: p, done: make(chan struct{}), incoming: make(chan receivedPacket, 1), deadlineChanged: make(chan struct{})}
++	go c.receive()
++	return c
++}
++
++func (c *packetConn) receive() {
++	b := make([]byte, 65535)
++	for {
++		n, err := c.transport.ReceivePacketUntil(c.done, b)
++		item := receivedPacket{err: err}
++		if n > 0 {
++			item.data = append([]byte(nil), b[:n]...)
++		}
++		select {
++		case c.incoming <- item:
++		case <-c.done:
++			return
++		}
++		if err != nil {
++			return
++		}
++	}
++}
++
++func (c *packetConn) Read(b []byte) (int, error) { n, _, err := c.ReadFrom(b); return n, err }
++func (c *packetConn) ReadFrom(b []byte) (int, net.Addr, error) {
++	for {
++		c.mu.Lock()
++		deadline, changed := c.readDeadline, c.deadlineChanged
++		c.mu.Unlock()
++		var timer *time.Timer
++		var timeout <-chan time.Time
++		if !deadline.IsZero() {
++			if !time.Now().Before(deadline) {
++				return 0, nil, os.ErrDeadlineExceeded
++			}
++			timer = time.NewTimer(time.Until(deadline))
++			timeout = timer.C
++		}
++		select {
++		case <-c.done:
++			if timer != nil {
++				timer.Stop()
++			}
++			return 0, nil, net.ErrClosed
++		case <-changed:
++			if timer != nil {
++				timer.Stop()
++			}
++			continue
++		case <-timeout:
++			return 0, nil, os.ErrDeadlineExceeded
++		case item := <-c.incoming:
++			if timer != nil {
++				timer.Stop()
++			}
++			return copy(b, item.data), c.RemoteAddr(), item.err
++		}
++	}
++}
++func (c *packetConn) Write(b []byte) (int, error) {
++	select {
++	case <-c.done:
++		return 0, net.ErrClosed
++	default:
++	}
++	c.mu.Lock()
++	deadline := c.writeDeadline
++	c.mu.Unlock()
++	if !deadline.IsZero() && !time.Now().Before(deadline) {
++		return 0, os.ErrDeadlineExceeded
++	}
++	// Native WireGuard does not set transport write deadlines. Closing this
++	// connection also unblocks a send waiting for room in the TURN queue.
++	if err := c.transport.SendPacketUntil(c.done, b); err != nil {
++		return 0, err
++	}
++	return len(b), nil
++}
++func (c *packetConn) WriteTo(b []byte, _ net.Addr) (int, error) { return c.Write(b) }
++func (c *packetConn) Close() error                              { c.closeOnce.Do(func() { close(c.done) }); return nil }
++func (c *packetConn) LocalAddr() net.Addr                       { return &net.UDPAddr{IP: net.IPv4zero} }
++func (c *packetConn) RemoteAddr() net.Addr {
++	return &net.UDPAddr{IP: net.IPv4(127, 0, 0, 1), Port: 51820}
++}
++func (c *packetConn) SetDeadline(t time.Time) error {
++	c.mu.Lock()
++	defer c.mu.Unlock()
++	c.readDeadline = t
++	c.writeDeadline = t
++	close(c.deadlineChanged)
++	c.deadlineChanged = make(chan struct{})
++	return nil
++}
++func (c *packetConn) SetReadDeadline(t time.Time) error {
++	c.mu.Lock()
++	defer c.mu.Unlock()
++	c.readDeadline = t
++	close(c.deadlineChanged)
++	c.deadlineChanged = make(chan struct{})
++	return nil
++}
++func (c *packetConn) SetWriteDeadline(t time.Time) error {
++	c.mu.Lock()
++	defer c.mu.Unlock()
++	c.writeDeadline = t
++	return nil
++}
+diff --git a/protocol/vkturn/packet_test.go b/protocol/vkturn/packet_test.go
+new file mode 100644
+index 00000000..a2a230ed
+--- /dev/null
++++ b/protocol/vkturn/packet_test.go
+@@ -0,0 +1,67 @@
++package vkturn
++
++import (
++	"errors"
++	"net"
++	"os"
++	"testing"
++	"time"
++)
++
++type testPackets struct{ packets chan []byte }
++
++func (p *testPackets) SendPacketUntil(done <-chan struct{}, b []byte) error {
++	select {
++	case p.packets <- append([]byte(nil), b...):
++		return nil
++	case <-done:
++		return net.ErrClosed
++	}
++}
++func (p *testPackets) ReceivePacketUntil(done <-chan struct{}, b []byte) (int, error) {
++	select {
++	case v := <-p.packets:
++		return copy(b, v), nil
++	case <-done:
++		return 0, net.ErrClosed
++	}
++}
++
++func TestPacketRoundTripAndClose(t *testing.T) {
++	p := &testPackets{make(chan []byte, 1)}
++	c := newPacketConn(p)
++	if _, err := c.Write([]byte("wireguard-packet")); err != nil {
++		t.Fatal(err)
++	}
++	b := make([]byte, 128)
++	n, addr, err := c.ReadFrom(b)
++	if err != nil || string(b[:n]) != "wireguard-packet" || addr.String() != "127.0.0.1:51820" {
++		t.Fatalf("n=%d addr=%v err=%v", n, addr, err)
++	}
++	done := make(chan error, 1)
++	go func() { _, err := c.Read(b); done <- err }()
++	c.Close()
++	select {
++	case err := <-done:
++		if !errors.Is(err, net.ErrClosed) {
++			t.Fatal(err)
++		}
++	case <-time.After(time.Second):
++		t.Fatal("Close did not unblock read")
++	}
++}
++
++func TestReadDeadlineAndRecovery(t *testing.T) {
++	p := &testPackets{make(chan []byte, 1)}
++	c := newPacketConn(p)
++	defer c.Close()
++	c.SetReadDeadline(time.Now().Add(10 * time.Millisecond))
++	if _, err := c.Read(make([]byte, 64)); !errors.Is(err, os.ErrDeadlineExceeded) {
++		t.Fatalf("expected deadline: %v", err)
++	}
++	c.SetReadDeadline(time.Time{})
++	c.Write([]byte("after-timeout"))
++	if _, err := c.Read(make([]byte, 64)); err != nil {
++		t.Fatal(err)
++	}
++}
+diff --git a/protocol/vkturn/session_test.go b/protocol/vkturn/session_test.go
+new file mode 100644
+index 00000000..017910fc
+--- /dev/null
++++ b/protocol/vkturn/session_test.go
+@@ -0,0 +1,15 @@
++package vkturn
++
++import (
++	"github.com/cacggghp/vk-turn-proxy/pkg/proxy"
++	"testing"
++)
++
++func TestCancelledGenerationCannotRegisterLateBootstrap(t *testing.T) {
++	generation := BeginSession()
++	CancelSessions()
++	p := proxy.NewProxy(proxy.Config{NumConns: 1})
++	if _, err := AddSession(p, generation); err == nil {
++		t.Fatal("bootstrap registered after cancellation")
++	}
++}
+diff --git a/protocol/vkturn/vless_test.go b/protocol/vkturn/vless_test.go
+new file mode 100644
+index 00000000..2fc9b5f4
+--- /dev/null
++++ b/protocol/vkturn/vless_test.go
+@@ -0,0 +1,54 @@
++package vkturn
++
++import (
++	"encoding/json"
++	"reflect"
++	"testing"
++)
++
++func TestVLESSConfigurationPreservesOutboundAndRouting(t *testing.T) {
++	route := json.RawMessage(`{"rules":[{"domain":["example.org"],"outbound":"vk-wg"},{"ip_is_private":true,"outbound":"direct"},{"port":25,"action":"reject"}],"final":"vk-wg"}`)
++	node := json.RawMessage(`{"type":"vless","tag":"R3-N1","server":"127.0.0.1","server_port":443,"uuid":"bf000d23-0752-40b4-affe-68f7707a9661","flow":"xtls-rprx-vision","tls":{"enabled":true,"server_name":"example.org","reality":{"enabled":true,"public_key":"test-key","short_id":""}}}`)
++	text, err := BuildVLESSConfiguration(route, node)
++	if err != nil {
++		t.Fatal(err)
++	}
++	var config struct {
++		Route     json.RawMessage   `json:"route"`
++		Endpoints []json.RawMessage `json:"endpoints"`
++		Outbounds []map[string]any  `json:"outbounds"`
++		DNS       struct{ Servers []struct{ Detour string } }
++	}
++	if err := json.Unmarshal([]byte(text), &config); err != nil {
++		t.Fatal(err)
++	}
++	if string(config.Route) != string(route) {
++		t.Fatal("VLESS changed the original routing")
++	}
++	if len(config.Endpoints) != 0 || len(config.Outbounds) != 2 {
++		t.Fatal("VLESS started extra engines")
++	}
++	var expected map[string]any
++	if err := json.Unmarshal(node, &expected); err != nil {
++		t.Fatal(err)
++	}
++	expected["tag"] = "vk-wg"
++	expected["domain_resolver"] = map[string]any{"server": "bootstrap", "strategy": "ipv4_only"}
++	if !reflect.DeepEqual(config.Outbounds[1], expected) {
++		t.Fatal("VLESS parameters were changed")
++	}
++	if config.Outbounds[0]["type"] != "direct" {
++		t.Fatal("direct outbound missing")
++	}
++	if len(config.DNS.Servers) != 2 || config.DNS.Servers[0].Detour != "vk-wg" {
++		t.Fatal("DNS bypasses VLESS")
++	}
++}
++
++func TestVLESSConfigurationRejectsInvalidOutbound(t *testing.T) {
++	for _, node := range []string{`null`, `{}`, `{"type":"direct"}`, `{"type":"vless","detour":"vk-transport"}`, `[]`} {
++		if _, err := BuildVLESSConfiguration(json.RawMessage(`{"final":"vk-wg"}`), json.RawMessage(node)); err == nil {
++			t.Fatal("accepted invalid VLESS outbound")
++		}
++	}
++}
+diff --git a/protocol/vkturn/vless_transport_test.go b/protocol/vkturn/vless_transport_test.go
+new file mode 100644
+index 00000000..a06cb424
+--- /dev/null
++++ b/protocol/vkturn/vless_transport_test.go
+@@ -0,0 +1,101 @@
++package vkturn_test
++
++import (
++	"context"
++	"encoding/json"
++	"fmt"
++	"io"
++	"net"
++	"testing"
++	"time"
++
++	box "github.com/sagernet/sing-box"
++	"github.com/sagernet/sing-box/include"
++	"github.com/sagernet/sing-box/option"
++	"github.com/sagernet/sing-box/protocol/vkturn"
++	M "github.com/sagernet/sing/common/metadata"
++	"github.com/sagernet/sing/service/filemanager"
++)
++
++func TestVLESSPrototypeForwardsRealTCPWithoutTURN(t *testing.T) {
++	echo, err := net.Listen("tcp", "127.0.0.1:0")
++	if err != nil {
++		t.Fatal(err)
++	}
++	defer echo.Close()
++	go func() {
++		conn, err := echo.Accept()
++		if err != nil {
++			return
++		}
++		defer conn.Close()
++		_, _ = io.Copy(conn, conn)
++	}()
++	reservation, err := net.Listen("tcp", "127.0.0.1:0")
++	if err != nil {
++		t.Fatal(err)
++	}
++	port := reservation.Addr().(*net.TCPAddr).Port
++	reservation.Close()
++	start := func(text string) *box.Box {
++		t.Helper()
++		ctx := include.Context(context.Background())
++		directory := t.TempDir()
++		ctx = filemanager.WithDefault(ctx, directory, directory, -1, -1)
++		var options option.Options
++		if err := options.UnmarshalJSONContext(ctx, []byte(text)); err != nil {
++			t.Fatal(err)
++		}
++		options.Log = &option.LogOptions{Disabled: true}
++		instance, err := box.New(box.Options{Context: ctx, Options: options})
++		if err != nil {
++			t.Fatal(err)
++		}
++		t.Cleanup(func() { _ = instance.Close() })
++		if err := instance.Start(); err != nil {
++			t.Fatal(err)
++		}
++		return instance
++	}
++	const id = "bf000d23-0752-40b4-affe-68f7707a9661"
++	start(fmt.Sprintf(`{"inbounds":[{"type":"vless","tag":"server","listen":"127.0.0.1","listen_port":%d,"users":[{"uuid":%q}]}],"outbounds":[{"type":"direct","tag":"direct"}],"route":{"final":"direct"}}`, port, id))
++	text, err := vkturn.BuildVLESSConfiguration(json.RawMessage(`{"final":"vk-wg"}`), json.RawMessage(fmt.Sprintf(`{"type":"vless","server":"127.0.0.1","server_port":%d,"uuid":%q}`, port, id)))
++	if err != nil {
++		t.Fatal(err)
++	}
++	var config map[string]json.RawMessage
++	if err := json.Unmarshal([]byte(text), &config); err != nil {
++		t.Fatal(err)
++	}
++	delete(config, "inbounds") // No host TUN or system route changes.
++	data, err := json.Marshal(config)
++	if err != nil {
++		t.Fatal(err)
++	}
++	client := start(string(data))
++	outbound, found := client.Outbound().Outbound("vk-wg")
++	if !found || outbound.Type() != "vless" {
++		t.Fatal("VLESS route target missing")
++	}
++	ctx, cancel := context.WithTimeout(context.Background(), 5*time.Second)
++	defer cancel()
++	conn, err := outbound.DialContext(ctx, "tcp", M.ParseSocksaddr(echo.Addr().String()))
++	if err != nil {
++		t.Fatal(err)
++	}
++	defer conn.Close()
++	if err := conn.SetDeadline(time.Now().Add(5 * time.Second)); err != nil {
++		t.Fatal(err)
++	}
++	const payload = "prototype VLESS transport"
++	if _, err := io.WriteString(conn, payload); err != nil {
++		t.Fatal(err)
++	}
++	reply := make([]byte, len(payload))
++	if _, err := io.ReadFull(conn, reply); err != nil {
++		t.Fatal(err)
++	}
++	if string(reply) != payload {
++		t.Fatal("VLESS corrupted the TCP payload")
++	}
++}
+diff --git a/experimental/libbox/vk_turn_prototype_log.go b/experimental/libbox/vk_turn_prototype_log.go
+new file mode 100644
+index 00000000..00f3039f
+--- /dev/null
++++ b/experimental/libbox/vk_turn_prototype_log.go
+@@ -0,0 +1,76 @@
++package libbox
++
++import (
++	stdlog "log"
++	"regexp"
++	"strings"
++	"sync"
++
++	"github.com/sagernet/sing-box/log"
++)
++
++// The transport bootstraps before the command server exists. Keep a bounded
++// backlog, then deliver its standard-library logs to the normal sing-box stream.
++var prototypeLogs = newPrototypeLogWriter()
++var prototypeSecretField = regexp.MustCompile(`(?i)((?:access_token|success_token|password|private_key|pre_shared_key|captcha_sid)\s*[=:]\s*)[^\s&,]+`)
++
++type prototypeLogWriter struct {
++	sync.Mutex
++	server  *CommandServer
++	pending []string
++	secrets []string
++}
++
++func newPrototypeLogWriter() *prototypeLogWriter { return &prototypeLogWriter{} }
++
++func (w *prototypeLogWriter) reset(secrets []string) {
++	w.Lock()
++	defer w.Unlock()
++	w.server = nil
++	w.pending = nil
++	w.secrets = secrets
++}
++
++func (w *prototypeLogWriter) Write(data []byte) (int, error) {
++	w.Lock()
++	defer w.Unlock()
++	message := strings.TrimSpace(string(data))
++	for _, secret := range w.secrets {
++		if secret != "" {
++			message = strings.ReplaceAll(message, secret, "[redacted]")
++		}
++	}
++	message = prototypeSecretField.ReplaceAllString(message, "${1}[redacted]")
++	if len(message) > 2048 {
++		message = string([]rune(message)[:min(len([]rune(message)), 1024)]) + "…"
++	}
++	message = "[VK TURN] " + message
++	if w.server != nil {
++		w.server.WriteMessage(int32(log.LevelInfo), message)
++	} else {
++		if len(w.pending) == 100 {
++			w.pending = w.pending[1:]
++		}
++		w.pending = append(w.pending, message)
++	}
++	return len(data), nil
++}
++
++func (w *prototypeLogWriter) attach(server *CommandServer) {
++	w.Lock()
++	defer w.Unlock()
++	w.server = server
++	if server != nil {
++		for _, message := range w.pending {
++			server.WriteMessage(int32(log.LevelInfo), message)
++		}
++		w.pending = nil
++	}
++}
++
++func SetVKTurnPrototypeLogServer(server *CommandServer) { prototypeLogs.attach(server) }
++
++func beginPrototypeLogs() {
++	prototypeLogs.reset(nil)
++	stdlog.SetOutput(prototypeLogs)
++}
+diff --git a/experimental/libbox/vk_turn_prototype_log_test.go b/experimental/libbox/vk_turn_prototype_log_test.go
+new file mode 100644
+index 00000000..eb207866
+--- /dev/null
++++ b/experimental/libbox/vk_turn_prototype_log_test.go
+@@ -0,0 +1,51 @@
++package libbox
++
++import (
++	"fmt"
++	"strings"
++	"testing"
++
++	"github.com/sagernet/sing-box/daemon"
++)
++
++func prototypeTestLogServer() *CommandServer {
++	return &CommandServer{StartedService: daemon.NewStartedService(daemon.ServiceOptions{LogMaxLines: 1000})}
++}
++
++func TestPrototypeTransportLogReplaysBootstrapAndStreams(t *testing.T) {
++	writer := newPrototypeLogWriter()
++	writer.reset([]string{"test-private-password"})
++	fmt.Fprintln(writer, "proxy: bootstrap succeeded")
++	server := prototypeTestLogServer()
++	writer.attach(server)
++	fmt.Fprintln(writer, "proxy: error: test-private-password")
++	logs := server.SavedLog()
++	if len(logs) != 2 || !strings.Contains(logs[0].Message, "bootstrap succeeded") || !strings.Contains(logs[1].Message, "[redacted]") {
++		t.Fatal("transport bootstrap/stream records missing or credentials exposed")
++	}
++	if strings.Contains(logs[1].Message, "test-private-password") {
++		t.Fatal("password exposed")
++	}
++}
++
++func TestPrototypeTransportLogResetsBetweenModesAndBoundsBacklog(t *testing.T) {
++	writer := newPrototypeLogWriter()
++	for i := 0; i < 500; i++ {
++		fmt.Fprintln(writer, "old TURN session")
++	}
++	server := prototypeTestLogServer()
++	writer.attach(server)
++	if count := len(server.SavedLog()); count != 100 {
++		t.Fatalf("backlog count=%d, want 100", count)
++	}
++	writer.reset(nil)
++	next := prototypeTestLogServer()
++	writer.attach(next)
++	if len(next.SavedLog()) != 0 {
++		t.Fatal("old TURN logs leaked into new mode")
++	}
++	fmt.Fprintln(writer, "new session")
++	if len(server.SavedLog()) != 100 || len(next.SavedLog()) != 1 {
++		t.Fatal("logs delivered to previous mode")
++	}
++}
