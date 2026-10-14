@@ -1,0 +1,198 @@
+{
+  "rules": [
+    {
+      "action": "sniff"
+    },
+    {
+      "protocol": "dns",
+      "action": "hijack-dns"
+    },
+    {
+      "ip_cidr": [
+        "8.8.8.8/32",
+        "77.88.8.8/32"
+      ],
+      "port": 443,
+      "outbound": "direct"
+    },
+    {
+      "rule_set": "geosite-youtube",
+      "network": "udp",
+      "port": 443,
+      "action": "reject"
+    },
+    {
+      "rule_set": [
+        "geosite-google-play",
+        "geosite-github",
+        "geosite-twitch-ads",
+        "geosite-youtube",
+        "geosite-telegram"
+      ],
+      "outbound": "vk-wg"
+    },
+    {
+      "rule_set": [
+        "geosite-win-spy",
+        "geosite-torrent",
+        "geosite-category-ads"
+      ],
+      "action": "reject"
+    },
+    {
+      "rule_set": [
+        "geosite-private",
+        "geosite-category-ru",
+        "geosite-whitelist",
+        "geosite-microsoft",
+        "geosite-apple",
+        "geosite-epicgames",
+        "geosite-riot",
+        "geosite-escapefromtarkov",
+        "geosite-steam",
+        "geosite-twitch",
+        "geosite-pinterest",
+        "geosite-faceit"
+      ],
+      "outbound": "direct"
+    },
+    {
+      "ip_is_private": true,
+      "outbound": "direct"
+    },
+    {
+      "rule_set": "geoip-direct",
+      "outbound": "direct"
+    }
+  ],
+  "rule_set": [
+    {
+      "type": "local",
+      "tag": "geosite-win-spy",
+      "format": "binary",
+      "path": "rulesets/geosite-win-spy.srs"
+    },
+    {
+      "type": "local",
+      "tag": "geosite-torrent",
+      "format": "binary",
+      "path": "rulesets/geosite-torrent.srs"
+    },
+    {
+      "type": "local",
+      "tag": "geosite-category-ads",
+      "format": "binary",
+      "path": "rulesets/geosite-category-ads.srs"
+    },
+    {
+      "type": "local",
+      "tag": "geosite-google-play",
+      "format": "binary",
+      "path": "rulesets/geosite-google-play.srs"
+    },
+    {
+      "type": "local",
+      "tag": "geosite-github",
+      "format": "binary",
+      "path": "rulesets/geosite-github.srs"
+    },
+    {
+      "type": "local",
+      "tag": "geosite-twitch-ads",
+      "format": "binary",
+      "path": "rulesets/geosite-twitch-ads.srs"
+    },
+    {
+      "type": "local",
+      "tag": "geosite-youtube",
+      "format": "binary",
+      "path": "rulesets/geosite-youtube.srs"
+    },
+    {
+      "type": "local",
+      "tag": "geosite-telegram",
+      "format": "binary",
+      "path": "rulesets/geosite-telegram.srs"
+    },
+    {
+      "type": "local",
+      "tag": "geosite-private",
+      "format": "binary",
+      "path": "rulesets/geosite-private.srs"
+    },
+    {
+      "type": "local",
+      "tag": "geosite-category-ru",
+      "format": "binary",
+      "path": "rulesets/geosite-category-ru.srs"
+    },
+    {
+      "type": "local",
+      "tag": "geosite-whitelist",
+      "format": "binary",
+      "path": "rulesets/geosite-whitelist.srs"
+    },
+    {
+      "type": "local",
+      "tag": "geosite-microsoft",
+      "format": "binary",
+      "path": "rulesets/geosite-microsoft.srs"
+    },
+    {
+      "type": "local",
+      "tag": "geosite-apple",
+      "format": "binary",
+      "path": "rulesets/geosite-apple.srs"
+    },
+    {
+      "type": "local",
+      "tag": "geosite-epicgames",
+      "format": "binary",
+      "path": "rulesets/geosite-epicgames.srs"
+    },
+    {
+      "type": "local",
+      "tag": "geosite-riot",
+      "format": "binary",
+      "path": "rulesets/geosite-riot.srs"
+    },
+    {
+      "type": "local",
+      "tag": "geosite-escapefromtarkov",
+      "format": "binary",
+      "path": "rulesets/geosite-escapefromtarkov.srs"
+    },
+    {
+      "type": "local",
+      "tag": "geosite-steam",
+      "format": "binary",
+      "path": "rulesets/geosite-steam.srs"
+    },
+    {
+      "type": "local",
+      "tag": "geosite-twitch",
+      "format": "binary",
+      "path": "rulesets/geosite-twitch.srs"
+    },
+    {
+      "type": "local",
+      "tag": "geosite-pinterest",
+      "format": "binary",
+      "path": "rulesets/geosite-pinterest.srs"
+    },
+    {
+      "type": "local",
+      "tag": "geosite-faceit",
+      "format": "binary",
+      "path": "rulesets/geosite-faceit.srs"
+    },
+    {
+      "type": "local",
+      "tag": "geoip-direct",
+      "format": "binary",
+      "path": "rulesets/geoip-direct.srs"
+    }
+  ],
+  "final": "vk-wg",
+  "auto_detect_interface": true
+}

@@ -13,6 +13,7 @@ import (
 	mathrand "math/rand"
 	"net"
 	neturl "net/url"
+	"os"
 	"runtime"
 	"sort"
 	"strings"
@@ -1619,6 +1620,17 @@ func notePeak(mark *atomic.Int64, depth int) {
 
 // SendPacket sends a WireGuard packet through the tunnel.
 func (p *Proxy) SendPacket(data []byte) error {
+	return p.SendPacketUntil(nil, data)
+}
+
+// SendPacketUntil allows a closing WireGuard bind to cancel a blocked enqueue
+// without stopping the shared TURN session. A nil done preserves SendPacket.
+func (p *Proxy) SendPacketUntil(done <-chan struct{}, data []byte) error {
+	select {
+	case <-done:
+		return net.ErrClosed
+	default:
+	}
 	// 🚨 THE COPY STAYS, and pooling is exactly why it must. Both producers
 	// REUSE their argument: synth.go re-sends one mutated buffer per burst and
 	// turnbind/bind.go passes wireguard-go's staged buffers, reclaimed the
@@ -1652,7 +1664,17 @@ func (p *Proxy) SendPacket(data []byte) error {
 		return nil
 	default:
 	}
+
+	// BindUpdate takes WireGuard's network lock before it closes the old bind.
+	// Bound waits even while done is open so it can obtain that lock.
+	var timeout <-chan time.Time
+	if done != nil {
+		timer := time.NewTimer(time.Second)
+		defer timer.Stop()
+		timeout = timer.C
+	}
 	start := time.Now()
+	var err error
 	select {
 	case p.sendCh <- item:
 		p.sendChBlockNs.Add(int64(time.Since(start)))
@@ -1661,14 +1683,19 @@ func (p *Proxy) SendPacket(data []byte) error {
 		p.txBytes.Add(int64(len(data)))
 		p.txPackets.Add(1)
 		return nil
+	case <-timeout:
+		err = os.ErrDeadlineExceeded
+	case <-done:
+		err = net.ErrClosed
 	case <-p.ctx.Done():
-		// Ownership: until the send succeeds the buffer is still ours, and this
-		// is the ONLY exit that never reaches the channel. Every other exit is
-		// a successful enqueue, after which sendCh owns it and writePacket
-		// returns it — see the ownership note on sendPktPool.
-		sendPktPoolPut(buf)
-		return p.ctx.Err()
+		err = p.ctx.Err()
 	}
+	// Ownership: until the send succeeds the buffer is still ours, and this
+	// is the ONLY exit that never reaches the channel. Every other exit is
+	// a successful enqueue, after which sendCh owns it and writePacket
+	// returns it — see the ownership note on sendPktPool.
+	sendPktPoolPut(buf)
+	return err
 }
 
 // enqueueRecv hands a received packet to ReceivePacket, measuring how long the

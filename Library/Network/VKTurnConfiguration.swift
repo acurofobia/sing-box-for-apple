@@ -238,6 +238,12 @@ public enum VKTurnConfigurationStore {
         defaults?.removeObject(forKey: "vk_turn_relay_address")
     }
 
+    public static func clear() throws {
+        let status = SecItemDelete(try query() as CFDictionary)
+        guard status == errSecSuccess || status == errSecItemNotFound else { throw VKTurnError.keychain(status) }
+        defaults?.removeObject(forKey: "vk_turn_relay_address")
+    }
+
     public static func load() throws -> VKTurnConfiguration {
         var request = try query()
         request[kSecReturnData as String] = true
