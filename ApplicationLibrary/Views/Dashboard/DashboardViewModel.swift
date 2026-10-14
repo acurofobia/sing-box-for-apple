@@ -57,7 +57,15 @@ public final class DashboardViewModel: BaseViewModel {
             selectedProfileID = 0
         } else {
             do {
-                profileList = try await ProfileManager.list().map { ProfilePreview($0) }
+                #if os(iOS)
+                    let snapshot = try? ManagedSubscriptionSnapshot.load()
+                    profileList = try await ProfileManager.list().filter { $0.path == ManagedSubscriptionService.profilePath }.map { ProfilePreview($0) }
+                    environments?.emptyProfiles = snapshot == nil
+                    selectedProfileID = profileList.first?.id ?? 0
+                    return
+                #else
+                    profileList = try await ProfileManager.list().map { ProfilePreview($0) }
+                #endif
                 guard !profileList.isEmpty else {
                     #if os(iOS)
                         let onlyVK = await SharedPreferences.onlyVKTurn.get()

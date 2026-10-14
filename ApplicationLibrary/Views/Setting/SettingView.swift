@@ -176,9 +176,9 @@ public struct SettingView: View {
                 #endif
                 #if os(iOS)
                     FormNavigationLink {
-                        VPNChoiceView()
+                        SubscriptionSettingsView()
                     } label: {
-                        Label("Выбор VPN", systemImage: "network.badge.shield.half.filled")
+                        Label("Подписка", systemImage: "network.badge.shield.half.filled")
                     }
                 #endif
                 Tabs.onDemandRules.navigationLink

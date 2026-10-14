@@ -9,9 +9,6 @@ public struct OverviewView: View {
     @EnvironmentObject private var profile: ExtensionProfile
     @StateObject private var coordinator = OverviewViewModel()
     @ObservedObject private var configuration: DashboardCardConfiguration
-    #if os(iOS)
-        @State private var onlyVKTurn = false
-    #endif
 
     @Binding private var profileList: [ProfilePreview]
     @Binding private var selectedProfileID: Int64
@@ -44,20 +41,6 @@ public struct OverviewView: View {
                                 Text("VPN: \(profile.activeProvider.title)")
                                     .font(.headline)
                             }
-                            DashboardCardView(title: "") {
-                                VStack(alignment: .leading, spacing: 8) {
-                                    Toggle("Только VK TURN", isOn: $onlyVKTurn)
-                                        .onChange(of: onlyVKTurn) { value in
-                                            Task {
-                                                await SharedPreferences.onlyVKTurn.set(value)
-                                                environments.profileUpdate.send()
-                                            }
-                                        }
-                                    Text("Применяется при следующем подключении")
-                                        .font(.footnote)
-                                        .foregroundStyle(.secondary)
-                                }
-                            }
                             if let error = profile.startupError {
                                 Text(error).foregroundStyle(.red)
                             }
@@ -78,9 +61,7 @@ public struct OverviewView: View {
         }
         .alert($coordinator.alert)
         .disabled(!Variant.screenshotMode && (!profile.status.isSwitchable || coordinator.reasserting))
-        #if os(iOS)
-            .task { onlyVKTurn = await SharedPreferences.onlyVKTurn.get() }
-        #endif
+
     }
 
     @ViewBuilder
@@ -111,7 +92,11 @@ public struct OverviewView: View {
         case .httpProxy:
             return (Variant.screenshotMode || profile.status.isConnectedStrict) && systemProxyAvailable
         case .profile:
-            return true
+            #if os(iOS)
+                return false
+            #else
+                return true
+            #endif
         }
     }
 

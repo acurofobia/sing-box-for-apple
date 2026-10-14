@@ -1,0 +1,40 @@
+Generated with the built-in ImageGen tool.
+
+CLOSED SCREEN PROMPT
+Precise scoped UI mockup edit of this approved CLOSED mobile screen. Final interaction is now a TOP EXPANDING DRAWER (a curtain that slides downward to fit its content), not a modal or dropdown. Output ONE CLOSED state,390x844 logical px same portrait ratio, app content only with no phone frame, OS status bar, notch or external labels.
+
+TWO CHANGES ONLY:
+1. Remove the excessive blank space ABOVE the top "Режим подключения" control. It currently starts about75 logical px down. Move it to y16 logical px, with x16 width358 height44-48 logical px. Normal compact top padding, no invisible header reservation. The screen starts with this mode row. Keep label "Режим подключения" left and "Авто" right. Replace its right-chevron with a small burgundy DOWN chevron, which indicates the top curtain can unfold down. Native readable17px regular text; keep light gray rounded row appearance.
+2. Move the wine subscription card and two secondary rows UP by the same amount freed by removing the top whitespace, preserving normal16px gap between top control and wine card. Do not change card size, font sizes or layout.
+
+CRITICAL PRESERVE RECENT CHANGES: white outlined icon+"Обновить" button is TOP RIGHT of subscription card next to left "Подписка"; raspberry "Активна" badge is BOTTOM RIGHT next to timestamp. Keep these locations exactly, never swap back. Preserve wine ribbons, title "Основной", "Осталось 24 дня", "Обновлено сегодня, 12:40".
+Bottom primary raspberry "Подключить" button and native three-tab bottom bar "Подключение" selected, "Роутинг", "Профиль" remain ANCHORED at same bottom-screen positions as reference, they do not move up with content. Secondary "Подробнее" and "Изменить ссылку подписки" rows move up with card, same icons and type. Freed space becomes white space before connect button.
+
+CLOSED state only: no drawer content visible, no modal, no menu, no dimmed backdrop, no title "Главная", no logo or gear. Style fully preserved. Current date anchor2026-10-09. Accurate Russian text. Keep same margins, palette and type. Establish a stable base layout for the matching open state where a white top drawer will overlay the card rather than push it downward.
+
+OPEN SCREEN PROMPT
+Use case ui-mockup. Create matching OPEN TOP CURTAIN state by editing Image1, which is the exact locked CLOSED app screen. Image2 provides only the already-approved detailed choice texts and selection styling. Final desired interaction is a TOP DRAWER that unfurls/slides DOWNWARD from the "Режим подключения" control, expanding only as much as necessary to fit its contents OVER the existing interface. NOT a centered modal, NOT a bottom sheet, NOT a narrow dropdown menu, NOT an inline list pushing content down.
+
+Keep Image1's complete underlying interface at the EXACT SAME positions, sizes and colors. Its excess top whitespace was just removed: top selector starts near y28actual px, subscription card y143-533, secondary rows around615 and745, connect button1452 and nav1633 on the853x1844canvas. Do NOT move or reflow background. The subscription card has refresh TOP RIGHT and active badge BOTTOM RIGHT; both will naturally become covered by the top drawer. Preserve them behind it.
+
+Expanded drawer is ONE continuous native-style light surface at the SAME x16logical,width358logical,top y12-16logical as closed selector. Its compact top HEADER ROW remains exactly where original selector was: "Режим подключения" left, current "Авто" right, small burgundy UP chevron at right to collapse. Extend the same surface DOWNWARD, seamlessly below its header, to accommodate3 option rows and their full descriptions. No detached popup gap, duplicate title, centered overlay card or X close button. No extra header reserved above. Approx total drawer height420-450logical px, end exactly after content with16px bottom padding. Bottom rounded corners24px, restrained shadow below. Don't stretch drawer to full screen or add unused empty panel space. Use very subtle dimming about18-22% over the underlying page behind drawer; it clearly overlays and occludes the original subscription and upper action rows. The lower white area, connect button and tab bar remain visible dimmed at their original positions.
+
+Inside drawer,3 full-width touchable choice rows, lightweight separators, title17px semibold and detailed gray14px body with19px line height, sufficient wrapping 3-5lines, no clipped content. Reserve right narrow column for selection circles. EXACT text:
+"Быстрый ВПН"
+"Подключение через обычные VPN-серверы подписки. Подходит для повседневного использования, когда сеть не ограничена белыми списками."
+"Обход БС"
+"Альтернативное подключение для сетей с белыми списками. Выберите этот режим, если обычный ВПН недоступен."
+"Авто"
+"При запуске проверяет доступность обычного ВПН. Если он недоступен, выбирает обход БС. Повторяет проверку при новом подключении."
+
+First two empty subtle radio circles. Last selected "Авто" with wine circle/white checkmark, very subtle blush row tint. No confirm/save/cancel buttons. Top up-chevron or selecting a row collapses drawer conceptually. All details must fit comfortably; exact height is content-driven. Header and content are a single expanding upper panel, visibly emerging from the original selector rather than a modal floating in the middle.
+
+Same portrait target390x844logical px, app content only, no device bezel, OS chrome, "Главная", logo, gear or extra labels. Keep raspberry #A61640 accents and all typography faithful to references. Current date anchor2026-10-09. ONE open-state image only.
+
+OPEN SCREEN OVERLAY CORRECTION PROMPT
+Strict localized UI correction of this top-curtain-open mobile screenshot. Preserve the entire expanded upper curtain EXACTLY: same x41 y27 to y893, title/header "Режим подключения"/"Авто" with up chevron, all3choices, detailed descriptions, circles, selected blush Auto row. Preserve bottom connect button and native3-tab bar at exact supplied positions and same dimming.
+
+Correct only one background rendering error: the drawer is an OVERLAY, so the original underlying secondary rows remain BEHIND it at y615 and745 and are naturally OCCLUDED. They must NOT have been pushed downward into view. REMOVE the erroneously visible "Подробнее" row at about y980 including its document icon and chevron, REMOVE "Изменить ссылку подписки" row at y1110 including link icon and chevron, and REMOVE their separator lines around y925 and1048. Restore a plain uniform gently dimmed warm-white base surface in this entire area below the drawer and above the connect button. No visible duplicate action rows anywhere outside the drawer in this open state. The wine card and action rows exist behind the drawer at their original coordinates; they are just fully covered by the curtain, so none need showing.
+
+Do not move or resize any element, do not reflow, do not shift the curtain, do not remove any curtain content or shorten the descriptions. Do not add features, titles or decorations. Same portrait image size and aspect, app-only. Current date2026-10-09. Single scoped correction: remove these pushed-down background rows and their separators to make the curtain a true overlay. EVERYTHING else unchanged.
+

@@ -37,7 +37,7 @@ private struct LogProviderContent: View {
     let initialSearchText: String
 
     var body: some View {
-        if profile.activeProvider == .vkTurn, profile.status.isConnected {
+        if profile.activeProvider == .vkTurn {
             VKTurnLogView()
         } else {
             LogViewContent(commandClient: commandClient, initialSearchText: initialSearchText)

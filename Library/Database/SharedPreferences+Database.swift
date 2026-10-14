@@ -15,6 +15,14 @@ extension SharedPreferences {
             self.defaultValue = defaultValue
         }
 
+        public nonisolated func getThrowing() async throws -> T {
+            try await SharedPreferences.read(name) ?? defaultValue
+        }
+
+        public nonisolated func setThrowing(_ newValue: T?) async throws {
+            try await SharedPreferences.write(name, newValue)
+        }
+
         public nonisolated func get() async -> T {
             do {
                 return try await SharedPreferences.read(name) ?? defaultValue
@@ -62,6 +70,12 @@ extension SharedPreferences {
             try await Database.sharedWriter.write { db in
                 try Item(name: name, data: data).save(db)
             }
+        }
+    }
+
+    nonisolated static func deletePriorityFailover(_ profileIDs: [Int64], in db: GRDB.Database) throws {
+        for id in profileIDs {
+            try Item.deleteOne(db, id: priorityFailover(id).name)
         }
     }
 

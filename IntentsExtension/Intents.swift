@@ -19,6 +19,10 @@ struct StartServiceIntent: AppIntent {
         guard let extensionProfile = try await (ExtensionProfile.load()) else {
             throw NSError(domain: "IntentsExtension", code: 0, userInfo: [NSLocalizedDescriptionKey: String(localized: "NetworkExtension not installed")])
         }
+        #if os(iOS)
+            if !(await extensionProfile.status.isConnected) { try await extensionProfile.startManual() }
+            return .result(value: true)
+        #else
         let profileList = try await ProfileManager.list()
         let specifiedProfile = profileList.first { $0.name == profile }
         var profileChanged = false
@@ -42,6 +46,7 @@ struct StartServiceIntent: AppIntent {
             try await extensionProfile.start()
         }
         return .result(value: true)
+        #endif
     }
 }
 
@@ -59,6 +64,10 @@ struct RestartServiceIntent: AppIntent {
         guard let extensionProfile = try await (ExtensionProfile.load()) else {
             return .result(value: false)
         }
+        #if os(iOS)
+            try await extensionProfile.restart()
+            return .result(value: true)
+        #else
         if await extensionProfile.status == .connected {
             try await extensionProfile.reloadService()
         } else if await extensionProfile.status.isConnected {
@@ -67,6 +76,7 @@ struct RestartServiceIntent: AppIntent {
             try await extensionProfile.start()
         }
         return .result(value: true)
+        #endif
     }
 }
 
@@ -165,6 +175,10 @@ struct UpdateProfileIntent: AppIntent {
 
     init() {}
     func perform() async throws -> some IntentResult & ReturnsValue<Bool> {
+        #if os(iOS)
+            _ = try await ManagedSubscriptionService.shared.refresh()
+            return .result(value: true)
+        #else
         guard let profile = try await ProfileManager.get(by: profile) else {
             throw NSError(domain: "IntentsExtension", code: 0, userInfo: [NSLocalizedDescriptionKey: String(localized: "Specified profile not found: \(profile)")])
         }
@@ -173,22 +187,31 @@ struct UpdateProfileIntent: AppIntent {
         }
         try await profile.updateRemoteProfile()
         return .result(value: true)
+        #endif
     }
 }
 
 class ProfileProvider: DynamicOptionsProvider {
     func results() async throws -> [String] {
+        #if os(iOS)
+            return ["default"]
+        #else
         var profileNames = try await ProfileManager.list().map(\.name)
         if !profileNames.contains("default") {
             profileNames.insert("default", at: 0)
         }
         return profileNames
+        #endif
     }
 }
 
 class RemoteProfileProvider: DynamicOptionsProvider {
     func results() async throws -> [String] {
-        try await ProfileManager.listRemote().map(\.name)
+        #if os(iOS)
+            return ["default"]
+        #else
+            return try await ProfileManager.listRemote().map(\.name)
+        #endif
     }
 }
 

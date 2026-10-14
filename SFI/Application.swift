@@ -13,6 +13,9 @@ struct Application: App {
     @StateObject private var taildropInbox = TaildropInboxViewModel()
 
     init() {
+        #if DEBUG
+            if ProcessInfo.processInfo.arguments.contains("-SUBSCRIPTION_UI_TEST") { return }
+        #endif
         Task { @MainActor in
             await ImportedFontStore.shared.bootstrap()
         }

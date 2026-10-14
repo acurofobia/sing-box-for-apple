@@ -1,0 +1,23 @@
+Generated with the built-in ImageGen tool.
+
+CLOSED SCREEN PROMPT
+Precise scoped UI edit. Input is the approved CLOSED mobile screen. ONLY change the TOP "Режим подключения" opening button to extend EDGE TO EDGE across the full actual screen width. Current control has left/right margins; remove them completely. Its background must start at x0 and end at x853 on the853px-wide reference canvas (x0 to x390 in logical viewport). NO visible white side gutters. Extend the control to the very top y0 as well to eliminate excess top padding. It becomes a normal full-width native iOS header row, approximately52 logical px tall, LIGHT GRAY surface, square top corners, no floating pill outer shape, subtle bottom separator. Its label stays comfortably inset20px internally, "Режим подключения" left, selected "Авто" right and small wine DOWN chevron with20px internal right padding. Interior text padding is NOT an outer width margin.
+
+Keep all other contents and geometry exactly unchanged. The wine subscription card stays inset16px as before; the FULL-WIDTH requirement ONLY applies to mode-opening header and future drawer, not the subscription card or bottom buttons. Preserve card's refresh "Обновить" TOP RIGHT and badge "Активна" BOTTOM RIGHT, all typography, wine ribbon texture, two secondary rows, anchored bottom connect button and native three tabs. Do not move base content, enlarge cards, change palette or recreate controls. Closed state: no option list, open curtain, modal or dimming. Same390x844logical portrait app-only screen, no OS chrome, titles or brand. Current date2026-10-09. Most important visible correction: mode-opening control's surface touches both side edges and top edge of image, no margin or rounded floating panel. ONE image.
+
+OPEN SCREEN PROMPT
+Precise scoped UI edit of Image1, which is the approved OPEN TOP CURTAIN screen. Image2 is the updated CLOSED state whose EDGE-TO-EDGE top header must match in this open screen.
+User asks BOTH opening button AND curtain be FULL SCREEN WIDTH, not just available content width. Enlarge the existing white open curtain surface from its current inset x41..812 to exact x0..853 on853px-wide reference canvas (logical x0..390). The header AND body background touch LEFT and RIGHT canvas edges. NO gray side gutters or margins beside curtain. Also extend its header to exact TOP edge y0, matching Image2 and eliminating excess top spacing. Square top corners, continuous full-width light gray header. Lower corners can be slightly rounded24logicalpx but main curtain side edges are flush with screen edges.
+
+Use same header as Image2, small native regular type "Режим подключения" left with20px INTERNAL text padding, "Авто" right, wine UP chevron inset20px. This is one top drawer overlay, not a separate narrow dialog. Maintain same choice titles/descriptions, native circles, selected blush Auto row, separators, typography and overall content-driven height; bottom around y865-900actualpx, avoid stretching full-screen. The wider surface gives more line room; keep14logicalpx bodytext and reasonable wrapping. Interior padding20px for text does NOT create outer margin. Exact detailed copy unchanged:
+"Быстрый ВПН"
+"Подключение через обычные VPN-серверы подписки. Подходит для повседневного использования, когда сеть не ограничена белыми списками."
+"Обход БС"
+"Альтернативное подключение для сетей с белыми списками. Выберите этот режим, если обычный ВПН недоступен."
+"Авто"
+"При запуске проверяет доступность обычного ВПН. Если он недоступен, выбирает обход БС. Повторяет проверку при новом подключении."
+
+Keep remaining dimmed background EXACTLY as Image1: uniformly dimmed blank warm-white surface between drawer bottom and anchored connect button, dimmed "Подключить" bottom action, three tabs "Подключение", "Роутинг", "Профиль". NO visible secondary action rows below curtain: they remain occluded behind drawer at original positions; never push them down. Preserve background subscription card behind curtain, refresh top-right and active bottom-right, naturally fully occluded. No centered modal, attached menu, page title, logos, device frame or OS chrome.
+
+One output portrait image same390x844logicalratio. Current date2026-10-09. Most important: TOP HEADER AND ENTIRE WHITE CURTAIN touch both actual screen side edges with ZERO exterior gutter and begin at top edge. Nothing else changes.
+

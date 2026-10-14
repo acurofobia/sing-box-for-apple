@@ -17,10 +17,13 @@ final class PacketTunnelProvider: NEPacketTunnelProvider {
         }
         let configuration: VKTurnConfiguration
         do {
-            configuration = try VKTurnConfigurationStore.load()
+            let snapshot = try ManagedSubscriptionSnapshot.forStart(options: options)
+            guard let link = snapshot.vkTurnLink else { throw VKTurnError.missingConfiguration }
+            configuration = try VKTurnConfiguration.importLink(link)
+            try VKTurnConfigurationStore.save(configuration)
         } catch {
             VKTurnConfigurationStore.setLastError(error.localizedDescription)
-            completionHandler(error)
+            completionHandler(Self.error(error.localizedDescription))
             return
         }
         guard let proxyConfig = configuration.proxyConfig,

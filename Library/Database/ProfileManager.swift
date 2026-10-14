@@ -23,19 +23,22 @@ public enum ProfileManager {
 
     public nonisolated static func delete(_ profile: Profile) async throws {
         _ = try await Database.sharedWriter.write { db in
-            try profile.delete(db)
+            if let id = profile.id { try SharedPreferences.deletePriorityFailover([id], in: db) }
+            return try profile.delete(db)
         }
     }
 
     public nonisolated static func delete(by id: Int64) async throws {
         _ = try await Database.sharedWriter.write { db in
-            try Profile.deleteOne(db, id: id)
+            try SharedPreferences.deletePriorityFailover([id], in: db)
+            return try Profile.deleteOne(db, id: id)
         }
     }
 
     public nonisolated static func delete(_ profileList: [Profile]) async throws -> Int {
         try await Database.sharedWriter.write { db in
-            try Profile.deleteAll(db, keys: profileList.map {
+            try SharedPreferences.deletePriorityFailover(profileList.compactMap(\.id), in: db)
+            return try Profile.deleteAll(db, keys: profileList.map {
                 ["id": $0.id!]
             })
         }
@@ -43,7 +46,8 @@ public enum ProfileManager {
 
     public nonisolated static func delete(by id: [Int64]) async throws -> Int {
         try await Database.sharedWriter.write { db in
-            try Profile.deleteAll(db, ids: id)
+            try SharedPreferences.deletePriorityFailover(id, in: db)
+            return try Profile.deleteAll(db, ids: id)
         }
     }
 

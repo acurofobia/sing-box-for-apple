@@ -16,6 +16,7 @@ public extension Profile {
                 throw error
             }
         }
+        try await validatePriorityFailover(remoteContent)
         await MainActor.run {
             lastUpdated = Date()
         }

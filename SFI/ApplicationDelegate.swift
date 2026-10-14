@@ -1,4 +1,5 @@
 import ApplicationLibrary
+import BackgroundTasks
 import FileProvider
 import Foundation
 import Libbox
@@ -12,6 +13,10 @@ class ApplicationDelegate: NSObject, UIApplicationDelegate, UNUserNotificationCe
     private var reportTransferServer: ReportTransferServer?
 
     func application(_: UIApplication, didFinishLaunchingWithOptions _: [UIApplication.LaunchOptionsKey: Any]? = nil) -> Bool {
+        #if DEBUG
+            // The isolated UI fixture does not need App Group or tunnel services.
+            if ProcessInfo.processInfo.arguments.contains("-SUBSCRIPTION_UI_TEST") { return true }
+        #endif
         LibboxPrepareCrashSignalHandlers()
         NativeCrashReporter.installForCurrentProcess()
         LibboxReinstallCrashSignalHandlers()
@@ -70,12 +75,8 @@ class ApplicationDelegate: NSObject, UIApplicationDelegate, UNUserNotificationCe
     }
 
     private func setup() {
-        do {
-            try UIProfileUpdateTask.configure()
-            NSLog("setup background task success")
-        } catch {
-            NSLog("setup background task error: \(error.localizedDescription)")
-        }
+        // Managed subscriptions refresh as a single bundle in the foreground.
+        BGTaskScheduler.shared.cancelAllTaskRequests()
         Task {
             if UIDevice.current.userInterfaceIdiom == .phone {
                 await requestNetworkPermission()

@@ -7,6 +7,7 @@
 	objects = {
 
 /* Begin PBXBuildFile section */
+        FA1100010000000000000001 /* Library in Frameworks */ = {isa = PBXBuildFile; fileRef = 3AEC211D2A459B4700A63465 /* Library.framework */; };
 		3A017F922A4AB2E4009149FA /* GRDB in Frameworks */ = {isa = PBXBuildFile; productRef = 3A017F912A4AB2E4009149FA /* GRDB */; };
 		3A096F8F2A4ED3DE00D4A2ED /* Extension.appex in Embed Foundation Extensions */ = {isa = PBXBuildFile; fileRef = 3A096F862A4ED3DE00D4A2ED /* Extension.appex */; settings = {ATTRIBUTES = (RemoveHeadersOnCopy, ); }; };
 		3A2E87F22ED5A91100644195 /* Runestone in Frameworks */ = {isa = PBXBuildFile; productRef = 3A2E87F12ED5A91100644195 /* Runestone */; };
@@ -84,6 +85,8 @@
 		BCA000000000000000000008 /* VKTurnConfiguration.swift in Sources */ = {isa = PBXBuildFile; fileRef = BCA000000000000000000005 /* VKTurnConfiguration.swift */; };
 		BCA000000000000000000009 /* WireGuardTURN.xcframework in Frameworks */ = {isa = PBXBuildFile; fileRef = BCA000000000000000000006 /* WireGuardTURN.xcframework */; };
 		BCA00000000000000000000A /* VKTurnExtension.appex in Embed Foundation Extensions */ = {isa = PBXBuildFile; fileRef = BCA000000000000000000002 /* VKTurnExtension.appex */; settings = {ATTRIBUTES = (RemoveHeadersOnCopy, ); }; };
+		BCD000000000000000000001 /* ManagedSubscriptionSnapshot.swift in VKTurnExtension */ = {isa = PBXBuildFile; fileRef = BCD000000000000000000003 /* ManagedSubscriptionSnapshot.swift */; };
+		BCD000000000000000000002 /* Library.framework in WidgetExtension */ = {isa = PBXBuildFile; fileRef = 3AEC211D2A459B4700A63465 /* Library.framework */; };
 /* End PBXBuildFile section */
 
 /* Begin PBXContainerItemProxy section */
@@ -353,6 +356,7 @@
 			remoteGlobalIDString = BCA000000000000000000001;
 			remoteInfo = VKTurnExtension;
 		};
+		BCD000000000000000000004 /* PBXContainerItemProxy */ = {isa = PBXContainerItemProxy; containerPortal = 3AEC20BD2A45991900A63465 /* Project object */; proxyType = 1; remoteGlobalIDString = 3AEC211C2A459B4700A63465; remoteInfo = Library; };
 /* End PBXContainerItemProxy section */
 
 /* Begin PBXCopyFilesBuildPhase section */
@@ -582,6 +586,7 @@
 		BCA000000000000000000004 /* PacketTunnelProvider.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = PacketTunnelProvider.swift; sourceTree = "<group>"; };
 		BCA000000000000000000005 /* VKTurnConfiguration.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ../Library/Network/VKTurnConfiguration.swift; sourceTree = "<group>"; };
 		BCA000000000000000000006 /* WireGuardTURN.xcframework */ = {isa = PBXFileReference; lastKnownFileType = wrapper.xcframework; path = ThirdParty/VKTurnProxy/WireGuardBridge/build/WireGuardTURN.xcframework; sourceTree = "<group>"; };
+		BCD000000000000000000003 /* ManagedSubscriptionSnapshot.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ../Library/Network/ManagedSubscriptionSnapshot.swift; sourceTree = "<group>"; };
 /* End PBXFileReference section */
 
 /* Begin PBXFileSystemSynchronizedBuildFileExceptionSet section */
@@ -808,6 +813,7 @@
 			isa = PBXFrameworksBuildPhase;
 			buildActionMask = 2147483647;
 			files = (
+                FA1100010000000000000001 /* Library in Frameworks */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};
@@ -872,6 +878,7 @@
 			isa = PBXFrameworksBuildPhase;
 			buildActionMask = 2147483647;
 			files = (
+				BCD000000000000000000002 /* Library.framework in WidgetExtension */,
 				3AE395F62C21A5CA00647718 /* SwiftUI.framework in Frameworks */,
 				3AE395F42C21A5CA00647718 /* WidgetKit.framework in Frameworks */,
 			);
@@ -1084,6 +1091,7 @@
 			children = (
 				BCA000000000000000000004 /* PacketTunnelProvider.swift */,
 				BCA000000000000000000005 /* VKTurnConfiguration.swift */,
+				BCD000000000000000000003 /* ManagedSubscriptionSnapshot.swift */,
 			);
 			path = VKTurnExtension;
 			sourceTree = "<group>";
@@ -1178,6 +1186,8 @@
 			);
 			name = SFIUITests;
 			packageProductDependencies = (
+                3A017F912A4AB2E4009149FA /* GRDB */,
+                3A5AA1B92F7DB10900BA2A0D /* CrashReporter */,
 			);
 			productName = SFIUITests;
 			productReference = 3A6313722F0CEF3D0060A550 /* SFIUITests.xctest */;
@@ -1345,6 +1355,7 @@
 			buildRules = (
 			);
 			dependencies = (
+				BCD000000000000000000005 /* PBXTargetDependency */,
 			);
 			fileSystemSynchronizedGroups = (
 				3ADDCFD52E8B72BC009ACE1D /* WidgetExtension */,
@@ -2037,6 +2048,7 @@
 			files = (
 				BCA000000000000000000007 /* PacketTunnelProvider.swift in Sources */,
 				BCA000000000000000000008 /* VKTurnConfiguration.swift in Sources */,
+				BCD000000000000000000001 /* ManagedSubscriptionSnapshot.swift in VKTurnExtension */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};
@@ -2233,6 +2245,7 @@
 			target = BCA000000000000000000001 /* VKTurnExtension */;
 			targetProxy = BCA000000000000000000010 /* PBXContainerItemProxy */;
 		};
+		BCD000000000000000000005 /* PBXTargetDependency */ = {isa = PBXTargetDependency; target = 3AEC211C2A459B4700A63465 /* Library */; targetProxy = BCD000000000000000000004 /* PBXContainerItemProxy */; };
 /* End PBXTargetDependency section */
 
 /* Begin XCBuildConfiguration section */
@@ -3169,7 +3182,7 @@
 				INFOPLIST_KEY_LSApplicationCategoryType = "public.app-category.utilities";
 				INFOPLIST_KEY_LSSupportsOpeningDocumentsInPlace = YES;
 				INFOPLIST_KEY_NSCameraUsageDescription = "Camera access is required to scan QR codes for importing profiles.";
-				INFOPLIST_KEY_NSLocalNetworkUsageDescription = "As a universal proxy platform, sing-box configures routing according to your configuration.";
+				INFOPLIST_KEY_NSLocalNetworkUsageDescription = "Download your VPN subscription from the server on your Mac in the home network.";
 				INFOPLIST_KEY_UIApplicationSceneManifest_Generation = YES;
 				INFOPLIST_KEY_UIApplicationSupportsIndirectInputEvents = YES;
 				INFOPLIST_KEY_UILaunchScreen_Generation = YES;
@@ -3214,7 +3227,7 @@
 				INFOPLIST_KEY_LSApplicationCategoryType = "public.app-category.utilities";
 				INFOPLIST_KEY_LSSupportsOpeningDocumentsInPlace = YES;
 				INFOPLIST_KEY_NSCameraUsageDescription = "Camera access is required to scan QR codes for importing profiles.";
-				INFOPLIST_KEY_NSLocalNetworkUsageDescription = "As a universal proxy platform, sing-box configures routing according to your configuration.";
+				INFOPLIST_KEY_NSLocalNetworkUsageDescription = "Download your VPN subscription from the server on your Mac in the home network.";
 				INFOPLIST_KEY_UIApplicationSceneManifest_Generation = YES;
 				INFOPLIST_KEY_UIApplicationSupportsIndirectInputEvents = YES;
 				INFOPLIST_KEY_UILaunchScreen_Generation = YES;

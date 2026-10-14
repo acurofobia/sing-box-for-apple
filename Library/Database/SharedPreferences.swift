@@ -20,6 +20,10 @@ import Foundation
 #endif
 
 public enum SharedPreferences {
+    public static func priorityFailover(_ profileID: Int64) -> Preference<PriorityFailoverConfiguration?> {
+        Preference("priority_failover_\(profileID)", defaultValue: nil)
+    }
+
     public static let selectedProfileID = Preference<Int64>("selected_profile_id", defaultValue: -1)
 
     #if os(iOS)

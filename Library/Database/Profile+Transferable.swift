@@ -130,6 +130,15 @@ public extension LibboxProfileContent {
 
     @discardableResult
     func importProfile() async throws -> Profile {
+        #if os(iOS)
+            #if DEBUG
+                if !ProcessInfo.processInfo.arguments.contains("-PRIORITY_FAILOVER_UI_TEST") {
+                    throw ManagedSubscriptionError.importDisabled
+                }
+            #else
+                throw ManagedSubscriptionError.importDisabled
+            #endif
+        #endif
         let name = name
         let type = type
         let config = config
