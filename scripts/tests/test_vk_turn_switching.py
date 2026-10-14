@@ -11,10 +11,12 @@ import Foundation
 private enum ConnectionStatus { case connected, disconnected, invalid, connecting, disconnecting, reasserting }
 private var events: [String] = []
 private final class TestConnection {
+    var completesStop = true
     var status: ConnectionStatus = .connected
     func stopVPNTunnel() {
         events.append("stop")
         status = .disconnecting
+        guard completesStop else { return }
         Task { @MainActor in
             try? await Task.sleep(for: .milliseconds(20))
             status = .disconnected
@@ -37,6 +39,42 @@ func expect(_ condition: Bool, _ message: String) {
 CHECKS = r"""
 private let model = TestModel()
 switch CommandLine.arguments[1] {
+case "routing_connected":
+    await model.setRoutingMode(.russiaInside)
+    expect(model.routingMode == .russiaInside, "routing did not change")
+    expect(events == ["prepared:disabled", "stop", "disconnected", "written", "saved:disabled", "start:vk-turn"], "routing did not restart after stopping")
+case "routing_offline":
+    model.setStatus(.disconnected)
+    await model.setRoutingMode(.russiaInside)
+    expect(model.routingMode == .russiaInside, "offline routing did not change")
+    expect(events == ["prepared:disabled", "written", "saved:disabled"], "offline routing started VPN")
+case "routing_transition":
+    for state in [ConnectionStatus.connecting, .disconnecting, .reasserting] {
+        model.setStatus(state)
+        await model.setRoutingMode(.russiaInside)
+        expect(events.isEmpty, "routing changed during transition")
+        expect(model.routingMode == .enabled, "routing changed during transition")
+        expect(model.error != nil, "transition did not report error")
+    }
+case "routing_same":
+    await model.setRoutingMode(.enabled)
+    expect(events.isEmpty, "same routing restarted VPN")
+case "routing_not_loaded":
+    model.managersLoaded = false
+    await model.setRoutingMode(.russiaInside)
+    expect(events.isEmpty, "uninitialized routing changed VPN")
+case "routing_invalid":
+    model.failPreparation = true
+    await model.setRoutingMode(.russiaInside)
+    expect(events.isEmpty, "invalid routing stopped VPN")
+    expect(model.routingMode == .enabled, "invalid routing changed selection")
+    expect(model.error != nil, "invalid routing did not report error")
+case "routing_timeout":
+    model.manager?.connection.completesStop = false
+    await model.setRoutingMode(.russiaInside)
+    expect(events == ["prepared:disabled", "stop"], "timeout saved choice or started VPN")
+    expect(model.routingMode == .enabled, "timeout changed selection")
+    expect(model.error != nil, "timeout did not report error")
 case "connected":
     await model.switchConnection(to: .vless)
     expect(model.connectionMode == .vless, "mode did not change")
@@ -88,6 +126,9 @@ class SwitchingTests(unittest.TestCase):
         mode = 'enum PrototypeConnectionMode' + app.split('enum PrototypeConnectionMode', 1)[1].split('@main', 1)[0]
         switch = '    func switchConnection(to mode: PrototypeConnectionMode) async {' + app.split(
             '    func switchConnection(to mode: PrototypeConnectionMode) async {', 1)[1].split('    func start()', 1)[0]
+        routing_source = (ROOT / 'Library/Network/PrototypeRouting.swift').read_text()
+        routing_mode = routing_source.split('public enum PrototypeRouting {', 1)[0]
+        routing = '    func setRoutingMode' + app.split('    func setRoutingMode', 1)[1].split('    private func prepareRouting', 1)[0]
         model = r"""
 @MainActor
 private final class TestModel {
@@ -95,6 +136,14 @@ private final class TestModel {
     var connectionMode: PrototypeConnectionMode = .vkTurn
     var busy = false
     var managersLoaded = true
+    var routingMode: PrototypeRoutingMode = .enabled
+    var failPreparation = false
+    func prepareRouting(_ mode: PrototypeRoutingMode) throws -> Data {
+        if failPreparation { throw CocoaError(.fileReadCorruptFile) }
+        events.append("prepared:" + mode.rawValue)
+        return Data()
+    }
+    func writeRouting(_ route: Data) throws { events.append("written") }
     var baseline = false
     var hasLink = true
     var hasVLESS = true
@@ -106,14 +155,35 @@ private final class TestModel {
         expect(manager?.connection.status == .disconnected, "old tunnel still active")
         events.append("start:" + connectionMode.rawValue)
     }
-""" + switch + '}\n'
+""" + routing + switch + '}\n'
         source = directory / 'main.swift'
-        source.write_text(HARNESS + mode + model + CHECKS)
+        source.write_text(HARNESS + mode + routing_mode + model + CHECKS)
         cls.executable = directory / 'switch-tests'
         result = subprocess.run(['xcrun', 'swiftc', '-module-cache-path', str(directory / 'modules'),
                         str(source), '-o', str(cls.executable)], capture_output=True, text=True)
         if result.returncode != 0:
             raise AssertionError(result.stdout + result.stderr)
+
+    def test_routing_change_restarts_connected_vpn_after_disconnection(self):
+        self.run_scenario('routing_connected')
+
+    def test_offline_routing_choice_does_not_start_vpn(self):
+        self.run_scenario('routing_offline')
+
+    def test_routing_cannot_change_during_vpn_transition(self):
+        self.run_scenario('routing_transition')
+
+    def test_same_routing_does_not_restart_vpn(self):
+        self.run_scenario('routing_same')
+
+    def test_routing_waits_until_managers_are_loaded(self):
+        self.run_scenario('routing_not_loaded')
+
+    def test_invalid_routing_does_not_stop_working_vpn(self):
+        self.run_scenario('routing_invalid')
+
+    def test_routing_stop_timeout_does_not_start_new_vpn(self):
+        self.run_scenario('routing_timeout')
 
     def test_connected_switch_waits_for_old_tunnel(self):
         self.run_scenario('connected')

@@ -31,12 +31,14 @@ final class PrototypeModel: ObservableObject {
     func isAvailable(_ mode: PrototypeConnectionMode) -> Bool { mode == .vless ? hasVLESS : hasLink }
     @Published var exportURL: URL?
     @Published private(set) var connectionMode: PrototypeConnectionMode = .vkTurn
+    @Published private(set) var routingMode: PrototypeRoutingMode = .enabled
     private var manager: NETunnelProviderManager?
 
     func load() async {
         busy = true
         defer { busy = false }
         connectionMode = PrototypeConnectionMode(rawValue: UserDefaults.standard.string(forKey: "prototype.connection.mode") ?? "") ?? .vkTurn
+        routingMode = PrototypeRoutingMode(rawValue: UserDefaults.standard.string(forKey: "prototype.routing.mode") ?? "") ?? .enabled
         do {
             #if !targetEnvironment(simulator)
                 let managers = try await NETunnelProviderManager.loadAllFromPreferences()
@@ -131,6 +133,55 @@ final class PrototypeModel: ObservableObject {
         }
     }
 
+    func setRoutingMode(_ mode: PrototypeRoutingMode) async {
+        guard managersLoaded, !busy, mode != routingMode else { return }
+        busy = true
+        error = nil
+        defer { busy = false }
+        do {
+            let state = manager?.connection.status ?? .disconnected
+            guard state == .connected || state == .disconnected || state == .invalid else {
+                throw NSError(domain: "Prototype", code: 1, userInfo: [NSLocalizedDescriptionKey: "Дождитесь завершения текущего подключения."])
+            }
+            let route = try prepareRouting(mode)
+            let restart = state == .connected
+            if restart { try await stopForModeChange() }
+            // The extension also reads this file when VPN is started from system Settings.
+            try writeRouting(route)
+            routingMode = mode
+            UserDefaults.standard.set(mode.rawValue, forKey: "prototype.routing.mode")
+            if restart { await start() }
+        } catch { self.error = error.localizedDescription }
+    }
+
+    private func prepareRouting(_ mode: PrototypeRoutingMode) throws -> Data {
+        guard let routeURL = Bundle.main.url(forResource: "routing", withExtension: "json") else {
+            throw CocoaError(.fileNoSuchFile)
+        }
+        let rulesDirectory = FilePath.prototypeRuleSetDirectory.appendingPathComponent("Initial", isDirectory: true)
+        let source = try Data(contentsOf: routeURL)
+        let route = try PrototypeRouting.route(from: source, mode: mode, initialDirectory: rulesDirectory)
+        struct Routing: Decodable {
+            struct RuleSet: Decodable { let tag: String }
+            let ruleSet: [RuleSet]
+            enum CodingKeys: String, CodingKey { case ruleSet = "rule_set" }
+        }
+        let routing = try JSONDecoder().decode(Routing.self, from: route)
+        try FileManager.default.createDirectory(at: rulesDirectory, withIntermediateDirectories: true)
+        for rule in routing.ruleSet {
+            guard let resource = Bundle.main.url(forResource: rule.tag, withExtension: "srs", subdirectory: "RuleSets")
+                ?? Bundle.main.url(forResource: rule.tag, withExtension: "srs") else { throw CocoaError(.fileNoSuchFile) }
+            try Data(contentsOf: resource).write(to: rulesDirectory.appendingPathComponent(rule.tag + ".srs"), options: .atomic)
+        }
+        return route
+    }
+
+    private func writeRouting(_ route: Data) throws {
+        try FileManager.default.createDirectory(at: FilePath.sharedDirectory, withIntermediateDirectories: true)
+        try route.write(to: FilePath.sharedDirectory.appendingPathComponent("prototype-routing.json"),
+                        options: [.atomic, .completeFileProtectionUntilFirstUserAuthentication])
+    }
+
     func switchConnection(to mode: PrototypeConnectionMode) async {
         guard managersLoaded, !busy, mode != connectionMode else { return }
         guard mode != .vkTurn || hasLink, mode != .vless || hasVLESS else {
@@ -146,21 +197,23 @@ final class PrototypeModel: ObservableObject {
                 throw NSError(domain: "Prototype", code: 1, userInfo: [NSLocalizedDescriptionKey: "Дождитесь завершения текущего подключения."])
             }
             let restart = state == .connected
-            if restart {
-                manager?.connection.stopVPNTunnel()
-                let deadline = ContinuousClock.now.advanced(by: .seconds(15))
-                while let state = manager?.connection.status, state != .disconnected, state != .invalid {
-                    guard ContinuousClock.now < deadline else {
-                        throw NSError(domain: "Prototype", code: 2, userInfo: [NSLocalizedDescriptionKey: "VPN не отключился за 15 секунд. Повторите переключение."])
-                    }
-                    try await Task.sleep(for: .milliseconds(100))
-                }
-                try Task.checkCancellation()
-            }
+            if restart { try await stopForModeChange() }
             connectionMode = mode
             UserDefaults.standard.set(mode.rawValue, forKey: "prototype.connection.mode")
             if restart { await start() }
         } catch { self.error = error.localizedDescription }
+    }
+
+    private func stopForModeChange() async throws {
+        manager?.connection.stopVPNTunnel()
+        let deadline = ContinuousClock.now.advanced(by: .seconds(15))
+        while let state = manager?.connection.status, state != .disconnected, state != .invalid {
+            guard ContinuousClock.now < deadline else {
+                throw NSError(domain: "Prototype", code: 2, userInfo: [NSLocalizedDescriptionKey: "VPN не отключился за 15 секунд. Повторите переключение."])
+            }
+            try await Task.sleep(for: .milliseconds(100))
+        }
+        try Task.checkCancellation()
     }
 
     func start() async {
@@ -169,30 +222,13 @@ final class PrototypeModel: ObservableObject {
         do {
             try ensureStopped()
             guard isAvailable(connectionMode) else { throw PrototypeSubscriptionError.missingConfiguration }
-            guard let routeURL = Bundle.main.url(forResource: "routing", withExtension: "json") else {
-                throw CocoaError(.fileNoSuchFile)
-            }
+            try writeRouting(prepareRouting(routingMode))
             let directory = FilePath.sharedDirectory
             footprint = "—"
             let statusURL = directory.appendingPathComponent("prototype-status.json")
             if FileManager.default.fileExists(atPath: statusURL.path) {
                 try FileManager.default.removeItem(at: statusURL)
             }
-            let rulesDirectory = FilePath.workingDirectory.appendingPathComponent("rulesets")
-            try FileManager.default.createDirectory(at: rulesDirectory, withIntermediateDirectories: true)
-            struct Routing: Decodable {
-                struct RuleSet: Decodable { let tag: String }
-                let ruleSet: [RuleSet]
-                enum CodingKeys: String, CodingKey { case ruleSet = "rule_set" }
-            }
-            let routing = try JSONDecoder().decode(Routing.self, from: Data(contentsOf: routeURL))
-            for rule in routing.ruleSet {
-                guard let resource = Bundle.main.url(forResource: rule.tag, withExtension: "srs", subdirectory: "RuleSets")
-                    ?? Bundle.main.url(forResource: rule.tag, withExtension: "srs") else { throw CocoaError(.fileNoSuchFile) }
-                try Data(contentsOf: resource).write(to: rulesDirectory.appendingPathComponent(rule.tag + ".srs"), options: .atomic)
-            }
-            try FileManager.default.createDirectory(at: directory, withIntermediateDirectories: true)
-            try Data(contentsOf: routeURL).write(to: directory.appendingPathComponent("prototype-routing.json"), options: [.atomic, .completeFileProtectionUntilFirstUserAuthentication])
             if connectionMode == .vless {
                 guard let node = subscription.vlessOutbound else { throw PrototypeSubscriptionError.missingConfiguration }
                 try node.write(to: directory.appendingPathComponent("prototype-vless.json"), options: [.atomic, .completeFileProtectionUntilFirstUserAuthentication])
@@ -271,6 +307,23 @@ struct PrototypeView: View {
     private enum Input { case subscription, vkTurn }
     @FocusState private var focusedInput: Input?
     var body: some View {
+        TabView {
+            vpnView
+                .tabItem { Label("VPN", systemImage: "shield.lefthalf.filled") }
+            PrototypeRoutingView(model: model)
+                .tabItem { Label("Роутинги", systemImage: "arrow.triangle.branch") }
+        }
+        .task {
+            await model.load()
+            subscriptionURL = model.subscription.sourceURL ?? ""
+            while !Task.isCancelled {
+                await model.refresh()
+                try? await Task.sleep(for: .seconds(1))
+            }
+        }
+    }
+
+    private var vpnView: some View {
         NavigationStack {
             Form {
                 Section("Режим подключения") {
@@ -345,6 +398,8 @@ struct PrototypeView: View {
                 }
                 Section("Состояние") {
                     LabeledContent("VPN", value: model.status)
+                        .accessibilityIdentifier("prototype.status")
+                        .accessibilityValue(model.status)
                     LabeledContent("Память расширения", value: model.footprint)
                     Button("Подключить") { Task { await model.start() } }
                         .accessibilityIdentifier("prototype.start")
@@ -411,14 +466,6 @@ struct PrototypeView: View {
                 defer { if accessed { url.stopAccessingSecurityScopedResource() } }
                 try model.importVLESS(Data(contentsOf: url))
             } catch { model.error = PrototypeSubscriptionError.invalidVLESS.localizedDescription }
-        }
-        .task {
-            await model.load()
-            subscriptionURL = model.subscription.sourceURL ?? ""
-            while !Task.isCancelled {
-                await model.refresh()
-                try? await Task.sleep(for: .seconds(1))
-            }
         }
     }
 }

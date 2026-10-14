@@ -40,6 +40,10 @@ public enum FilePath {
     #endif
 
     public static var iCloudDirectory = FileManager.default.url(forUbiquityContainerIdentifier: nil)?.appendingPathComponent("Documents", isDirectory: true) ?? URL(string: "stub")!
+
+    public static var prototypeRuleSetDirectory: URL {
+        sharedDirectory.appendingPathComponent("Library/Application Support/PrototypeRuleSets", isDirectory: true)
+    }
 }
 
 public extension URL {

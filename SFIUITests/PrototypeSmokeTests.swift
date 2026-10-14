@@ -72,6 +72,28 @@ final class PrototypeSmokeTests: XCTestCase {
         add(screenshot)
     }
 
+    func testRoutingChoicePersistsAndDoesNotStartVPN() {
+        let app = launchEmpty()
+        app.tabBars.buttons["Роутинги"].tap()
+        let picker = app.segmentedControls["prototype.routing.mode"]
+        XCTAssertTrue(picker.waitForExistence(timeout: 5))
+        picker.buttons["Russia inside"].tap()
+        XCTAssertTrue(picker.buttons["Russia inside"].isSelected)
+        app.tabBars.buttons["VPN"].tap()
+        app.buttons["prototype.logs"].tap()
+        XCTAssertTrue(app.staticTexts["VPN отключён"].waitForExistence(timeout: 5))
+        app.terminate()
+        app.launch()
+        XCTAssertTrue(app.tabBars.buttons["Роутинги"].waitForExistence(timeout: 10))
+        app.tabBars.buttons["Роутинги"].tap()
+        XCTAssertTrue(picker.buttons["Russia inside"].isSelected)
+        picker.buttons["С роутингом"].tap()
+        XCTAssertTrue(picker.buttons["С роутингом"].isSelected)
+        let screenshot = XCTAttachment(screenshot: app.screenshot())
+        screenshot.lifetime = .keepAlways
+        add(screenshot)
+    }
+
     func testModePickerShowsSelectedModeAndPreservesChoice() {
         let app = launchEmpty()
         importVLESS(app)

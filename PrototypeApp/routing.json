@@ -67,130 +67,235 @@
   ],
   "rule_set": [
     {
-      "type": "local",
+      "type": "remote",
       "tag": "geosite-win-spy",
       "format": "binary",
-      "path": "rulesets/geosite-win-spy.srs"
+      "url": "https://raw.githubusercontent.com/hydraponique/roscomvpn-geosite/release/sing-box/win-spy.srs",
+      "initial_path": "rulesets/geosite-win-spy.srs",
+      "update_interval": "1d",
+      "http_client": {
+        "detour": "vk-wg"
+      }
     },
     {
-      "type": "local",
+      "type": "remote",
       "tag": "geosite-torrent",
       "format": "binary",
-      "path": "rulesets/geosite-torrent.srs"
+      "url": "https://raw.githubusercontent.com/hydraponique/roscomvpn-geosite/release/sing-box/torrent.srs",
+      "initial_path": "rulesets/geosite-torrent.srs",
+      "update_interval": "1d",
+      "http_client": {
+        "detour": "vk-wg"
+      }
     },
     {
-      "type": "local",
+      "type": "remote",
       "tag": "geosite-category-ads",
       "format": "binary",
-      "path": "rulesets/geosite-category-ads.srs"
+      "url": "https://raw.githubusercontent.com/hydraponique/roscomvpn-geosite/release/sing-box/category-ads.srs",
+      "initial_path": "rulesets/geosite-category-ads.srs",
+      "update_interval": "1d",
+      "http_client": {
+        "detour": "vk-wg"
+      }
     },
     {
-      "type": "local",
+      "type": "remote",
       "tag": "geosite-google-play",
       "format": "binary",
-      "path": "rulesets/geosite-google-play.srs"
+      "url": "https://raw.githubusercontent.com/hydraponique/roscomvpn-geosite/release/sing-box/google-play.srs",
+      "initial_path": "rulesets/geosite-google-play.srs",
+      "update_interval": "1d",
+      "http_client": {
+        "detour": "vk-wg"
+      }
     },
     {
-      "type": "local",
+      "type": "remote",
       "tag": "geosite-github",
       "format": "binary",
-      "path": "rulesets/geosite-github.srs"
+      "url": "https://raw.githubusercontent.com/hydraponique/roscomvpn-geosite/release/sing-box/github.srs",
+      "initial_path": "rulesets/geosite-github.srs",
+      "update_interval": "1d",
+      "http_client": {
+        "detour": "vk-wg"
+      }
     },
     {
-      "type": "local",
+      "type": "remote",
       "tag": "geosite-twitch-ads",
       "format": "binary",
-      "path": "rulesets/geosite-twitch-ads.srs"
+      "url": "https://raw.githubusercontent.com/hydraponique/roscomvpn-geosite/release/sing-box/twitch-ads.srs",
+      "initial_path": "rulesets/geosite-twitch-ads.srs",
+      "update_interval": "1d",
+      "http_client": {
+        "detour": "vk-wg"
+      }
     },
     {
-      "type": "local",
+      "type": "remote",
       "tag": "geosite-youtube",
       "format": "binary",
-      "path": "rulesets/geosite-youtube.srs"
+      "url": "https://raw.githubusercontent.com/hydraponique/roscomvpn-geosite/release/sing-box/youtube.srs",
+      "initial_path": "rulesets/geosite-youtube.srs",
+      "update_interval": "1d",
+      "http_client": {
+        "detour": "vk-wg"
+      }
     },
     {
-      "type": "local",
+      "type": "remote",
       "tag": "geosite-telegram",
       "format": "binary",
-      "path": "rulesets/geosite-telegram.srs"
+      "url": "https://raw.githubusercontent.com/hydraponique/roscomvpn-geosite/release/sing-box/telegram.srs",
+      "initial_path": "rulesets/geosite-telegram.srs",
+      "update_interval": "1d",
+      "http_client": {
+        "detour": "vk-wg"
+      }
     },
     {
-      "type": "local",
+      "type": "remote",
       "tag": "geosite-private",
       "format": "binary",
-      "path": "rulesets/geosite-private.srs"
+      "url": "https://raw.githubusercontent.com/hydraponique/roscomvpn-geosite/release/sing-box/private.srs",
+      "initial_path": "rulesets/geosite-private.srs",
+      "update_interval": "1d",
+      "http_client": {
+        "detour": "vk-wg"
+      }
     },
     {
-      "type": "local",
+      "type": "remote",
       "tag": "geosite-category-ru",
       "format": "binary",
-      "path": "rulesets/geosite-category-ru.srs"
+      "url": "https://raw.githubusercontent.com/hydraponique/roscomvpn-geosite/release/sing-box/category-ru.srs",
+      "initial_path": "rulesets/geosite-category-ru.srs",
+      "update_interval": "1d",
+      "http_client": {
+        "detour": "vk-wg"
+      }
     },
     {
-      "type": "local",
+      "type": "remote",
       "tag": "geosite-whitelist",
       "format": "binary",
-      "path": "rulesets/geosite-whitelist.srs"
+      "url": "https://raw.githubusercontent.com/hydraponique/roscomvpn-geosite/release/sing-box/whitelist.srs",
+      "initial_path": "rulesets/geosite-whitelist.srs",
+      "update_interval": "1d",
+      "http_client": {
+        "detour": "vk-wg"
+      }
     },
     {
-      "type": "local",
+      "type": "remote",
       "tag": "geosite-microsoft",
       "format": "binary",
-      "path": "rulesets/geosite-microsoft.srs"
+      "url": "https://raw.githubusercontent.com/hydraponique/roscomvpn-geosite/release/sing-box/microsoft.srs",
+      "initial_path": "rulesets/geosite-microsoft.srs",
+      "update_interval": "1d",
+      "http_client": {
+        "detour": "vk-wg"
+      }
     },
     {
-      "type": "local",
+      "type": "remote",
       "tag": "geosite-apple",
       "format": "binary",
-      "path": "rulesets/geosite-apple.srs"
+      "url": "https://raw.githubusercontent.com/hydraponique/roscomvpn-geosite/release/sing-box/apple.srs",
+      "initial_path": "rulesets/geosite-apple.srs",
+      "update_interval": "1d",
+      "http_client": {
+        "detour": "vk-wg"
+      }
     },
     {
-      "type": "local",
+      "type": "remote",
       "tag": "geosite-epicgames",
       "format": "binary",
-      "path": "rulesets/geosite-epicgames.srs"
+      "url": "https://raw.githubusercontent.com/hydraponique/roscomvpn-geosite/release/sing-box/epicgames.srs",
+      "initial_path": "rulesets/geosite-epicgames.srs",
+      "update_interval": "1d",
+      "http_client": {
+        "detour": "vk-wg"
+      }
     },
     {
-      "type": "local",
+      "type": "remote",
       "tag": "geosite-riot",
       "format": "binary",
-      "path": "rulesets/geosite-riot.srs"
+      "url": "https://raw.githubusercontent.com/hydraponique/roscomvpn-geosite/release/sing-box/riot.srs",
+      "initial_path": "rulesets/geosite-riot.srs",
+      "update_interval": "1d",
+      "http_client": {
+        "detour": "vk-wg"
+      }
     },
     {
-      "type": "local",
+      "type": "remote",
       "tag": "geosite-escapefromtarkov",
       "format": "binary",
-      "path": "rulesets/geosite-escapefromtarkov.srs"
+      "url": "https://raw.githubusercontent.com/hydraponique/roscomvpn-geosite/release/sing-box/escapefromtarkov.srs",
+      "initial_path": "rulesets/geosite-escapefromtarkov.srs",
+      "update_interval": "1d",
+      "http_client": {
+        "detour": "vk-wg"
+      }
     },
     {
-      "type": "local",
+      "type": "remote",
       "tag": "geosite-steam",
       "format": "binary",
-      "path": "rulesets/geosite-steam.srs"
+      "url": "https://raw.githubusercontent.com/hydraponique/roscomvpn-geosite/release/sing-box/steam.srs",
+      "initial_path": "rulesets/geosite-steam.srs",
+      "update_interval": "1d",
+      "http_client": {
+        "detour": "vk-wg"
+      }
     },
     {
-      "type": "local",
+      "type": "remote",
       "tag": "geosite-twitch",
       "format": "binary",
-      "path": "rulesets/geosite-twitch.srs"
+      "url": "https://raw.githubusercontent.com/hydraponique/roscomvpn-geosite/release/sing-box/twitch.srs",
+      "initial_path": "rulesets/geosite-twitch.srs",
+      "update_interval": "1d",
+      "http_client": {
+        "detour": "vk-wg"
+      }
     },
     {
-      "type": "local",
+      "type": "remote",
       "tag": "geosite-pinterest",
       "format": "binary",
-      "path": "rulesets/geosite-pinterest.srs"
+      "url": "https://raw.githubusercontent.com/hydraponique/roscomvpn-geosite/release/sing-box/pinterest.srs",
+      "initial_path": "rulesets/geosite-pinterest.srs",
+      "update_interval": "1d",
+      "http_client": {
+        "detour": "vk-wg"
+      }
     },
     {
-      "type": "local",
+      "type": "remote",
       "tag": "geosite-faceit",
       "format": "binary",
-      "path": "rulesets/geosite-faceit.srs"
+      "url": "https://raw.githubusercontent.com/hydraponique/roscomvpn-geosite/release/sing-box/faceit.srs",
+      "initial_path": "rulesets/geosite-faceit.srs",
+      "update_interval": "1d",
+      "http_client": {
+        "detour": "vk-wg"
+      }
     },
     {
-      "type": "local",
+      "type": "remote",
       "tag": "geoip-direct",
       "format": "binary",
-      "path": "rulesets/geoip-direct.srs"
+      "url": "https://raw.githubusercontent.com/hydraponique/roscomvpn-geoip/release/sing-box/direct.srs",
+      "initial_path": "rulesets/geoip-direct.srs",
+      "update_interval": "1d",
+      "http_client": {
+        "detour": "vk-wg"
+      }
     }
   ],
   "final": "vk-wg",

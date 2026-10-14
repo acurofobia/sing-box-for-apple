@@ -2,6 +2,12 @@
 
 The routing application in `PrototypeApp/` is the primary application on `main`.
 It supports VLESS and VK TURN with application-owned DNS and routing rule sets.
+The **Роутинги** tab selects the existing RoscomVPN rules or **Russia inside**
+from [itdoginfo/allow-domains](https://github.com/itdoginfo/allow-domains).
+Russia inside sends listed domains through the VPN and all other traffic directly.
+Changing routing automatically reconnects an active VPN; an offline VPN stays off.
+Both modes update their rule sets through the selected VPN using native sing-box
+downloads, with persistent caching and bundled lists as an initial fallback.
 The original standalone iOS interface has been retired; shared libraries and
 other upstream platform targets remain available where required.
 
