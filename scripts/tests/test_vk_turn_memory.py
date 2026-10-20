@@ -16,6 +16,15 @@ class MemoryTests(unittest.TestCase):
         path.write_text('elapsed_seconds,phase,metric,unit,footprint_bytes,requested_turn_connections,active_turn_connections,turn_tx_bytes,turn_rx_bytes\n' + rows)
         return path
 
+    def test_time_weighted_stats_do_not_overweight_bursts_of_samples(self):
+        path = self.capture('120,vless,phys_footprint,bytes,20971520,0,0,0,0\n180,vless,phys_footprint,bytes,104857600,0,0,0,0\n181,vless,phys_footprint,bytes,104857600,0,0,0,0\n182,stopped,phys_footprint,bytes,104857600,0,0,0,0\n')
+        result = analyzer.analyze(path)
+        self.assertEqual(result['median'], 100)
+        self.assertEqual(result['aggregation'], 'sample-weighted')
+        self.assertEqual(result['time_weighted']['duration_seconds'], 62)
+        self.assertEqual(result['time_weighted']['median'], 20)
+        self.assertEqual(result['time_weighted']['p95'], 20)
+
     def test_excludes_warmup_but_keeps_startup_peak(self):
         path = self.capture('0,combined-startup,phys_footprint,bytes,104857600,1,0,0,0\n120,combined,phys_footprint,bytes,20971520,1,1,10,20\n121,combined,phys_footprint,bytes,23068672,1,1,30,50\n')
         result = analyzer.analyze(path)

@@ -34,7 +34,7 @@ class ServerTests(unittest.TestCase):
         self.directory.cleanup()
 
     def write_env(self, vk='wdtt://example.com:443:a:b:password:call', token='test-token'):
-        self.env.write_text(f'SUBSCRIPTION_TOKEN={token}\nSING_BOX_CONFIG_PATH=config.json\nVK_TURN_LINK="{vk}"\n')
+        self.env.write_text(f'SUBSCRIPTION_TOKEN={token}\nSING_BOX_CONFIG_PATH=config.json\nVK_TURN_LINK="{vk}"\nUI_DOCUMENT_URL=http://localhost:8081/v1/subscription\nUI_DOCUMENT_TOKEN=synthetic_ui_token_123\n')
 
     def get(self, path='/subscription/test-token'):
         try:
@@ -46,11 +46,13 @@ class ServerTests(unittest.TestCase):
             self.assertEqual(response.headers['Cache-Control'], 'no-store')
             return json.load(response)
 
-    def test_subscription_contains_only_two_links(self):
+    def test_subscription_contains_vpn_and_authorized_ui_links(self):
         result = self.get()
         self.assertEqual(result, {
             'sing_box_url': self.url + '/subscription/test-token/config',
             'vk_turn_link': 'wdtt://example.com:443:a:b:password:call',
+            'ui_url': 'http://localhost:8081/v1/subscription',
+            'ui_token': 'synthetic_ui_token_123',
         })
         self.assertEqual(self.get('/subscription/test-token/config'),
                          {'outbounds': [{'type': 'direct'}]})
@@ -94,7 +96,7 @@ class ServerTests(unittest.TestCase):
     def test_metadata_is_not_required_or_returned(self):
         with self.env.open('a') as file:
             file.write('PLAN_NAME=""\nREMAINING_DAYS=invalid\n')
-        self.assertEqual(set(self.get()), {'sing_box_url', 'vk_turn_link'})
+        self.assertEqual(set(self.get()), {'sing_box_url', 'vk_turn_link', 'ui_url', 'ui_token'})
 
     def test_config_link_is_disabled_and_token_is_reloaded(self):
         self.write_env(token='replacement')
@@ -117,6 +119,26 @@ class ServerTests(unittest.TestCase):
             body = error.exception.read().decode()
         self.assertNotIn('test-token', stderr.getvalue() + body)
         self.assertNotIn('secret-invalid-json', stderr.getvalue() + body)
+
+    def test_ui_settings_are_reloaded_and_empty_token_is_null(self):
+        self.env.write_text(self.env.read_text().replace('synthetic_ui_token_123', ''))
+        self.assertIsNone(self.get()['ui_token'])
+        self.env.write_text(self.env.read_text().replace('localhost:8081', 'localhost:8082'))
+        self.assertEqual(self.get()['ui_url'], 'http://localhost:8082/v1/subscription')
+
+    def test_invalid_ui_settings_fail_without_disclosing_values(self):
+        original = self.env.read_text()
+        for replacement in ['', 'file:///secret', 'http://user:secret@example.org/ui',
+                            'https://example.org:99999/ui']:
+            self.env.write_text(original.replace('http://localhost:8081/v1/subscription', replacement))
+            with self.subTest(url=replacement), self.assertRaises(HTTPError) as error:
+                self.get()
+            self.assertEqual(error.exception.code, 503)
+            self.assertNotIn(b'secret', error.exception.read())
+        self.env.write_text(original.replace('synthetic_ui_token_123', 'invalid!'))
+        with self.assertRaises(HTTPError) as error:
+            self.get()
+        self.assertEqual(error.exception.code, 503)
 
 
 if __name__ == '__main__':

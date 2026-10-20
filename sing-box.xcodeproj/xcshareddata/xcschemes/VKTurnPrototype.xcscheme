@@ -32,7 +32,7 @@
       <Testables>
          <TestableReference skipped="NO" parallelizable="NO">
             <BuildableReference BuildableIdentifier="primary" BlueprintIdentifier="3A6313712F0CEF3D0060A550" BuildableName="SFIUITests.xctest" BlueprintName="SFIUITests" ReferencedContainer="container:sing-box.xcodeproj"/>
-         <SelectedTests><Test Identifier="PrototypeSmokeTests"/></SelectedTests></TestableReference>
+         <SelectedTests><Test Identifier="PrototypeSmokeTests"/><Test Identifier="PrototypeDeviceRoutingTests"/></SelectedTests></TestableReference>
       </Testables>
    </TestAction>
    <LaunchAction

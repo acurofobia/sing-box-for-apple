@@ -1,6 +1,1227 @@
 {
   "sourceLanguage" : "en",
   "strings" : {
+    "Туннель поднят · все выходы недоступны": {
+      "extractionState": "manual",
+      "localizations": {
+        "ru": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Туннель поднят · все выходы недоступны"
+          }
+        }
+      }
+    },
+    "Добавьте подписку": {
+      "extractionState": "manual",
+      "localizations": {
+        "ru": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Добавьте подписку"
+          }
+        }
+      }
+    },
+    "Вставьте ссылку на подписку, чтобы начать пользоваться VPN.": {
+      "extractionState": "manual",
+      "localizations": {
+        "ru": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Вставьте ссылку на подписку, чтобы начать пользоваться VPN."
+          }
+        }
+      }
+    },
+    "Ссылка на подписку": {
+      "extractionState": "manual",
+      "localizations": {
+        "ru": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Ссылка на подписку"
+          }
+        }
+      }
+    },
+    "Вставьте ссылку": {
+      "extractionState": "manual",
+      "localizations": {
+        "ru": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Вставьте ссылку"
+          }
+        }
+      }
+    },
+    "Где взять ссылку?": {
+      "extractionState": "manual",
+      "localizations": {
+        "ru": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Где взять ссылку?"
+          }
+        }
+      }
+    },
+    "Обновлено %@, %@": {
+      "extractionState": "manual",
+      "localizations": {
+        "ru": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Обновлено %@, %@"
+          }
+        }
+      }
+    },
+    "Обновлено —": {
+      "extractionState": "manual",
+      "localizations": {
+        "ru": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Обновлено —"
+          }
+        }
+      }
+    },
+    "сегодня": {
+      "extractionState": "manual",
+      "localizations": {
+        "ru": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "сегодня"
+          }
+        }
+      }
+    },
+    "Проверить пинг": {
+      "extractionState": "manual",
+      "localizations": {
+        "ru": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Проверить пинг"
+          }
+        }
+      }
+    },
+    "Не удалось проверить пинг.": {
+      "extractionState": "manual",
+      "localizations": {
+        "ru": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Не удалось проверить пинг."
+          }
+        }
+      }
+    },
+    "Трафик": {
+      "extractionState": "manual",
+      "localizations": {
+        "ru": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Трафик"
+          }
+        }
+      }
+    },
+    "Скачивание": {
+      "extractionState": "manual",
+      "localizations": {
+        "ru": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Скачивание"
+          }
+        }
+      }
+    },
+    "в день": {
+      "extractionState": "manual",
+      "localizations": {
+        "ru": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "в день"
+          }
+        }
+      }
+    },
+    "в неделю": {
+      "extractionState": "manual",
+      "localizations": {
+        "ru": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "в неделю"
+          }
+        }
+      }
+    },
+    "в месяц": {
+      "extractionState": "manual",
+      "localizations": {
+        "ru": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "в месяц"
+          }
+        }
+      }
+    },
+    "всего": {
+      "extractionState": "manual",
+      "localizations": {
+        "ru": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "всего"
+          }
+        }
+      }
+    },
+    "Нет доступных конфигураций подключения. Обновите подписку или измените ссылку.": {
+      "extractionState": "manual",
+      "localizations": {
+        "ru": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Нет доступных конфигураций подключения. Обновите подписку или измените ссылку."
+          }
+        }
+      }
+    },
+    "%.1f МиБ": {
+      "extractionState": "manual",
+      "localizations": {
+        "ru": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "%.1f МиБ"
+          }
+        }
+      }
+    },
+    "/с": {
+      "extractionState": "manual",
+      "localizations": {
+        "ru": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "/с"
+          }
+        }
+      }
+    },
+    "VPN не отключился за 15 секунд. Повторите переключение.": {
+      "extractionState": "manual",
+      "localizations": {
+        "ru": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "VPN не отключился за 15 секунд. Повторите переключение."
+          }
+        }
+      }
+    },
+    "VPN отключён": {
+      "extractionState": "manual",
+      "localizations": {
+        "ru": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "VPN отключён"
+          }
+        }
+      }
+    },
+    "В разработке": {
+      "extractionState": "manual",
+      "localizations": {
+        "ru": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "В разработке"
+          }
+        }
+      }
+    },
+    "Введите HTTP(S)-ссылку подписки без логина и пароля.": {
+      "extractionState": "manual",
+      "localizations": {
+        "ru": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Введите HTTP(S)-ссылку подписки без логина и пароля."
+          }
+        }
+      }
+    },
+    "Восстановление…": {
+      "extractionState": "manual",
+      "localizations": {
+        "ru": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Восстановление…"
+          }
+        }
+      }
+    },
+    "Всего": {
+      "extractionState": "manual",
+      "localizations": {
+        "ru": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Всего"
+          }
+        }
+      }
+    },
+    "Вставить": {
+      "extractionState": "manual",
+      "localizations": {
+        "ru": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Вставить"
+          }
+        }
+      }
+    },
+    "Выберите режим": {
+      "extractionState": "manual",
+      "localizations": {
+        "ru": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Выберите режим"
+          }
+        }
+      }
+    },
+    "Выбор сохраняется. Если VPN подключён, он автоматически переподключится с новыми правилами.": {
+      "extractionState": "manual",
+      "localizations": {
+        "ru": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Выбор сохраняется. Если VPN подключён, он автоматически переподключится с новыми правилами."
+          }
+        }
+      }
+    },
+    "Выбранный режим недоступен. Для следующего подключения выберите другой режим.": {
+      "extractionState": "manual",
+      "localizations": {
+        "ru": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Выбранный режим недоступен. Для следующего подключения выберите другой режим."
+          }
+        }
+      }
+    },
+    "Выбрано": {
+      "extractionState": "manual",
+      "localizations": {
+        "ru": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Выбрано"
+          }
+        }
+      }
+    },
+    "Длительность": {
+      "extractionState": "manual",
+      "localizations": {
+        "ru": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Длительность"
+          }
+        }
+      }
+    },
+    "Добавить подписку": {
+      "extractionState": "manual",
+      "localizations": {
+        "ru": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Добавить подписку"
+          }
+        }
+      }
+    },
+    "Дождитесь завершения текущего подключения.": {
+      "extractionState": "manual",
+      "localizations": {
+        "ru": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Дождитесь завершения текущего подключения."
+          }
+        }
+      }
+    },
+    "Дождитесь загрузки состояния VPN. Если произошла ошибка, перезапустите приложение.": {
+      "extractionState": "manual",
+      "localizations": {
+        "ru": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Дождитесь загрузки состояния VPN. Если произошла ошибка, перезапустите приложение."
+          }
+        }
+      }
+    },
+    "Домены из Russia inside (itdoginfo/allow-domains) идут через выбранный VPN. Весь остальной трафик — напрямую. Настройки DNS сохраняются.": {
+      "extractionState": "manual",
+      "localizations": {
+        "ru": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Домены из Russia inside (itdoginfo/allow-domains) идут через выбранный VPN. Весь остальной трафик — напрямую. Настройки DNS сохраняются."
+          }
+        }
+      }
+    },
+    "Доступно": {
+      "extractionState": "manual",
+      "localizations": {
+        "ru": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Доступно"
+          }
+        }
+      }
+    },
+    "За день": {
+      "extractionState": "manual",
+      "localizations": {
+        "ru": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "За день"
+          }
+        }
+      }
+    },
+    "За месяц": {
+      "extractionState": "manual",
+      "localizations": {
+        "ru": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "За месяц"
+          }
+        }
+      }
+    },
+    "За неделю": {
+      "extractionState": "manual",
+      "localizations": {
+        "ru": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "За неделю"
+          }
+        }
+      }
+    },
+    "Загрузка": {
+      "extractionState": "manual",
+      "localizations": {
+        "ru": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Загрузка"
+          }
+        }
+      }
+    },
+    "Загрузка подписки…": {
+      "extractionState": "manual",
+      "localizations": {
+        "ru": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Загрузка подписки…"
+          }
+        }
+      }
+    },
+    "Закрыть": {
+      "extractionState": "manual",
+      "localizations": {
+        "ru": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Закрыть"
+          }
+        }
+      }
+    },
+    "Закрыть выбор режима": {
+      "extractionState": "manual",
+      "localizations": {
+        "ru": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Закрыть выбор режима"
+          }
+        }
+      }
+    },
+    "Изменить": {
+      "extractionState": "manual",
+      "localizations": {
+        "ru": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Изменить"
+          }
+        }
+      }
+    },
+    "Изменить подписку": {
+      "extractionState": "manual",
+      "localizations": {
+        "ru": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Изменить подписку"
+          }
+        }
+      }
+    },
+    "Импортируйте конфигурацию для выбранного режима.": {
+      "extractionState": "manual",
+      "localizations": {
+        "ru": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Импортируйте конфигурацию для выбранного режима."
+          }
+        }
+      }
+    },
+    "Интервал": {
+      "extractionState": "manual",
+      "localizations": {
+        "ru": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Интервал"
+          }
+        }
+      }
+    },
+    "Конфигурация VLESS некорректна. Режим недоступен.": {
+      "extractionState": "manual",
+      "localizations": {
+        "ru": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Конфигурация VLESS некорректна. Режим недоступен."
+          }
+        }
+      }
+    },
+    "Логи": {
+      "extractionState": "manual",
+      "localizations": {
+        "ru": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Логи"
+          }
+        }
+      }
+    },
+    "Логи · ": {
+      "extractionState": "manual",
+      "localizations": {
+        "ru": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Логи · "
+          }
+        }
+      }
+    },
+    "Маршрут": {
+      "extractionState": "manual",
+      "localizations": {
+        "ru": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Маршрут"
+          }
+        }
+      }
+    },
+    "Настройки приложения": {
+      "extractionState": "manual",
+      "localizations": {
+        "ru": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Настройки приложения"
+          }
+        }
+      }
+    },
+    "Не удалось загрузить сохранённое состояние приложения.": {
+      "extractionState": "manual",
+      "localizations": {
+        "ru": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Не удалось загрузить сохранённое состояние приложения."
+          }
+        }
+      }
+    },
+    "Не удалось обновить подписку. Проверьте сеть и сервер. Сохранённые данные не изменены.": {
+      "extractionState": "manual",
+      "localizations": {
+        "ru": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Не удалось обновить подписку. Проверьте сеть и сервер. Сохранённые данные не изменены."
+          }
+        }
+      }
+    },
+    "Не удалось открыть ссылку.": {
+      "extractionState": "manual",
+      "localizations": {
+        "ru": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Не удалось открыть ссылку."
+          }
+        }
+      }
+    },
+    "Нет доступных режимов": {
+      "extractionState": "manual",
+      "localizations": {
+        "ru": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Нет доступных режимов"
+          }
+        }
+      }
+    },
+    "Нет записей по запросу": {
+      "extractionState": "manual",
+      "localizations": {
+        "ru": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Нет записей по запросу"
+          }
+        }
+      }
+    },
+    "Нужен JSON с одним VLESS-сервером или сервером R3-N1 без detour.": {
+      "extractionState": "manual",
+      "localizations": {
+        "ru": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Нужен JSON с одним VLESS-сервером или сервером R3-N1 без detour."
+          }
+        }
+      }
+    },
+    "Обновите сервер подписки: отсутствует ссылка на оформление.": {
+      "extractionState": "manual",
+      "localizations": {
+        "ru": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Обновите сервер подписки: отсутствует ссылка на оформление."
+          }
+        }
+      }
+    },
+    "Обновить": {
+      "extractionState": "manual",
+      "localizations": {
+        "ru": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Обновить"
+          }
+        }
+      }
+    },
+    "Обновление списков": {
+      "extractionState": "manual",
+      "localizations": {
+        "ru": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Обновление списков"
+          }
+        }
+      }
+    },
+    "Одна ссылка для подключения и данных подписки.": {
+      "extractionState": "manual",
+      "localizations": {
+        "ru": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Одна ссылка для подключения и данных подписки."
+          }
+        }
+      }
+    },
+    "Ожидание записей…": {
+      "extractionState": "manual",
+      "localizations": {
+        "ru": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Ожидание записей…"
+          }
+        }
+      }
+    },
+    "Остановите VPN перед изменением конфигураций.": {
+      "extractionState": "manual",
+      "localizations": {
+        "ru": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Остановите VPN перед изменением конфигураций."
+          }
+        }
+      }
+    },
+    "Ответ сервера превышает допустимый размер.": {
+      "extractionState": "manual",
+      "localizations": {
+        "ru": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Ответ сервера превышает допустимый размер."
+          }
+        }
+      }
+    },
+    "Отключение…": {
+      "extractionState": "manual",
+      "localizations": {
+        "ru": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Отключение…"
+          }
+        }
+      }
+    },
+    "Отключено": {
+      "extractionState": "manual",
+      "localizations": {
+        "ru": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Отключено"
+          }
+        }
+      }
+    },
+    "Отключите VPN перед изменением ссылки подписки.": {
+      "extractionState": "manual",
+      "localizations": {
+        "ru": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Отключите VPN перед изменением ссылки подписки."
+          }
+        }
+      }
+    },
+    "Отключить": {
+      "extractionState": "manual",
+      "localizations": {
+        "ru": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Отключить"
+          }
+        }
+      }
+    },
+    "Открыть системные настройки": {
+      "extractionState": "manual",
+      "localizations": {
+        "ru": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Открыть системные настройки"
+          }
+        }
+      }
+    },
+    "Отмена": {
+      "extractionState": "manual",
+      "localizations": {
+        "ru": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Отмена"
+          }
+        }
+      }
+    },
+    "Отправка": {
+      "extractionState": "manual",
+      "localizations": {
+        "ru": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Отправка"
+          }
+        }
+      }
+    },
+    "Отправлено": {
+      "extractionState": "manual",
+      "localizations": {
+        "ru": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Отправлено"
+          }
+        }
+      }
+    },
+    "Ошибка": {
+      "extractionState": "manual",
+      "localizations": {
+        "ru": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Ошибка"
+          }
+        }
+      }
+    },
+    "Память": {
+      "extractionState": "manual",
+      "localizations": {
+        "ru": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Память"
+          }
+        }
+      }
+    },
+    "Пауза": {
+      "extractionState": "manual",
+      "localizations": {
+        "ru": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Пауза"
+          }
+        }
+      }
+    },
+    "Пинг": {
+      "extractionState": "manual",
+      "localizations": {
+        "ru": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Пинг"
+          }
+        }
+      }
+    },
+    "Подключение": {
+      "extractionState": "manual",
+      "localizations": {
+        "ru": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Подключение"
+          }
+        }
+      }
+    },
+    "Подключение…": {
+      "extractionState": "manual",
+      "localizations": {
+        "ru": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Подключение…"
+          }
+        }
+      }
+    },
+    "Подключено": {
+      "extractionState": "manual",
+      "localizations": {
+        "ru": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Подключено"
+          }
+        }
+      }
+    },
+    "Подключить": {
+      "extractionState": "manual",
+      "localizations": {
+        "ru": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Подключить"
+          }
+        }
+      }
+    },
+    "Подписка": {
+      "extractionState": "manual",
+      "localizations": {
+        "ru": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Подписка"
+          }
+        }
+      }
+    },
+    "Подробнее": {
+      "extractionState": "manual",
+      "localizations": {
+        "ru": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Подробнее"
+          }
+        }
+      }
+    },
+    "Поиск": {
+      "extractionState": "manual",
+      "localizations": {
+        "ru": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Поиск"
+          }
+        }
+      }
+    },
+    "Получено": {
+      "extractionState": "manual",
+      "localizations": {
+        "ru": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Получено"
+          }
+        }
+      }
+    },
+    "Продолжить": {
+      "extractionState": "manual",
+      "localizations": {
+        "ru": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Продолжить"
+          }
+        }
+      }
+    },
+    "Профиль": {
+      "extractionState": "manual",
+      "localizations": {
+        "ru": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Профиль"
+          }
+        }
+      }
+    },
+    "Раз в сутки": {
+      "extractionState": "manual",
+      "localizations": {
+        "ru": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Раз в сутки"
+          }
+        }
+      }
+    },
+    "Развёрнуто": {
+      "extractionState": "manual",
+      "localizations": {
+        "ru": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Развёрнуто"
+          }
+        }
+      }
+    },
+    "Режим маршрутизации": {
+      "extractionState": "manual",
+      "localizations": {
+        "ru": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Режим маршрутизации"
+          }
+        }
+      }
+    },
+    "Режим недоступен": {
+      "extractionState": "manual",
+      "localizations": {
+        "ru": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Режим недоступен"
+          }
+        }
+      }
+    },
+    "Режим подключения": {
+      "extractionState": "manual",
+      "localizations": {
+        "ru": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Режим подключения"
+          }
+        }
+      }
+    },
+    "Роутинг": {
+      "extractionState": "manual",
+      "localizations": {
+        "ru": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Роутинг"
+          }
+        }
+      }
+    },
+    "Роутинги": {
+      "extractionState": "manual",
+      "localizations": {
+        "ru": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Роутинги"
+          }
+        }
+      }
+    },
+    "Свернуть": {
+      "extractionState": "manual",
+      "localizations": {
+        "ru": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Свернуть"
+          }
+        }
+      }
+    },
+    "Свёрнуто": {
+      "extractionState": "manual",
+      "localizations": {
+        "ru": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Свёрнуто"
+          }
+        }
+      }
+    },
+    "Сервер": {
+      "extractionState": "manual",
+      "localizations": {
+        "ru": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Сервер"
+          }
+        }
+      }
+    },
+    "Сервер вернул некорректное оформление подписки.": {
+      "extractionState": "manual",
+      "localizations": {
+        "ru": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Сервер вернул некорректное оформление подписки."
+          }
+        }
+      }
+    },
+    "Сервер вернул некорректные данные подписки.": {
+      "extractionState": "manual",
+      "localizations": {
+        "ru": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Сервер вернул некорректные данные подписки."
+          }
+        }
+      }
+    },
+    "Скопировать журнал": {
+      "extractionState": "manual",
+      "localizations": {
+        "ru": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Скопировать журнал"
+          }
+        }
+      }
+    },
+    "Сохранить": {
+      "extractionState": "manual",
+      "localizations": {
+        "ru": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Сохранить"
+          }
+        }
+      }
+    },
+    "Списки выбранного режима обновляются автоматически, пока VPN подключён. При ошибке используются сохранённые списки, а при первом запуске — встроенные.": {
+      "extractionState": "manual",
+      "localizations": {
+        "ru": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Списки выбранного режима обновляются автоматически, пока VPN подключён. При ошибке используются сохранённые списки, а при первом запуске — встроенные."
+          }
+        }
+      }
+    },
+    "Ссылка VK TURN некорректна. Режим недоступен.": {
+      "extractionState": "manual",
+      "localizations": {
+        "ru": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Ссылка VK TURN некорректна. Режим недоступен."
+          }
+        }
+      }
+    },
+    "Ссылка sing-box некорректна. Режим VLESS недоступен.": {
+      "extractionState": "manual",
+      "localizations": {
+        "ru": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Ссылка sing-box некорректна. Режим VLESS недоступен."
+          }
+        }
+      }
+    },
+    "Ссылка подписки": {
+      "extractionState": "manual",
+      "localizations": {
+        "ru": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Ссылка подписки"
+          }
+        }
+      }
+    },
+    "Трафик распределяется по правилам: через VPN, напрямую или блокируется.": {
+      "extractionState": "manual",
+      "localizations": {
+        "ru": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Трафик распределяется по правилам: через VPN, напрямую или блокируется."
+          }
+        }
+      }
+    },
+    "Через выбранный VPN": {
+      "extractionState": "manual",
+      "localizations": {
+        "ru": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Через выбранный VPN"
+          }
+        }
+      }
+    },
+    "Это действие пока не поддерживается приложением.": {
+      "extractionState": "manual",
+      "localizations": {
+        "ru": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Это действие пока не поддерживается приложением."
+          }
+        }
+      }
+    },
+    "Этот режим пока не поддерживается приложением.": {
+      "extractionState": "manual",
+      "localizations": {
+        "ru": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Этот режим пока не поддерживается приложением."
+          }
+        }
+      }
+    },
+    "Этот элемент сейчас недоступен.": {
+      "extractionState": "manual",
+      "localizations": {
+        "ru": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Этот элемент сейчас недоступен."
+          }
+        }
+      }
+    },
     "[age](https://github.com/filosottile/age) is a modern and secure asymmetric encryption tool. When enabled, the zip file is encrypted with this project's public key so it can be posted publicly, e.g. in GitHub issues." : {
       "localizations" : {
         "fa" : {

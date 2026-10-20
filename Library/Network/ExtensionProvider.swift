@@ -27,7 +27,13 @@ open class ExtensionProvider: NEPacketTunnelProvider {
 
     public var overridePreferences: OverridePreferences?
 
+    /// Subclasses may latch cancellation before the new server can start a core.
+    open func prepareServiceStart(_: LibboxCommandServer) throws {}
+
     private func applyStartOptions(_ options: [String: NSObject]) throws {
+        if let policy = options["priorityFailoverJSON"], !(policy is String) {
+            throw ExtensionStartupError("(packet-tunnel) error: invalid priorityFailoverJSON type")
+        }
         try ApplicationLocale.apply(options["locale"] as? String)
         tunnelOptions = options
         overridePreferences = OverridePreferences(
@@ -186,6 +192,7 @@ open class ExtensionProvider: NEPacketTunnelProvider {
         if let error {
             throw ExtensionStartupError("(packet-tunnel): create command server error: \(error.localizedDescription)")
         }
+        try prepareServiceStart(commandServer!)
         do {
             try commandServer!.start()
         } catch {
@@ -235,6 +242,14 @@ open class ExtensionProvider: NEPacketTunnelProvider {
         }
 
         let options = LibboxOverrideOptions()
+        if let policy = tunnelOptions?["priorityFailoverJSON"] as? String {
+            var validationError: NSError?
+            LibboxValidatePriorityFailover(configContent, policy, &validationError)
+            if let validationError {
+                throw validationError
+            }
+            options.priorityFailoverJSON = policy
+        }
         do {
             try commandServer!.startOrReloadService(configContent, options: options)
         } catch {

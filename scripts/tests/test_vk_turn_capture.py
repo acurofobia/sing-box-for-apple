@@ -12,19 +12,27 @@ import Foundation
 
 private var testUptime = 0.0
 private enum ConnectionStatus { case connected, connecting, disconnecting, reasserting, disconnected, invalid }
-private struct TestConnection { var status: ConnectionStatus }
+private struct TestConnection { var status: ConnectionStatus; var connectedDate: Date? { nil } }
 private struct TestManager { var connection: TestConnection }
 private enum FilePath { static var sharedDirectory = FileManager.default.temporaryDirectory }
 private struct UIStatus: Encodable {
     let footprintBytes: UInt64 = 41_943_040
-    let phase = "combined"
+    var phase = "combined"
     let error: String?
     let updatedAt: Date
+    var failover: TestFailover? = nil
+}
+private struct TestFailover: Encodable {
+ let mode = "automatic"; let selected = "b2"; let primaryHealth = "down"; let allDown = true
 }
 private struct TestStats {
     let activeConnections: Int = 30
     let txBytes: Int = 10
     let rxBytes: Int = 20
+}
+private final class LibboxCommandServer {
+ var state = #"{"mode":"automatic","selected":"b2","primaryHealth":"down","allDown":true}"#
+ func priorityFailoverStatus(_ error: inout NSError?) -> String { state }
 }
 private func LibboxGetVKTurnPrototypeStats(_ id: Int64) -> TestStats? { TestStats() }
 '''
@@ -59,16 +67,21 @@ func csvTimes() throws -> [Double] {
 }
 
 switch CommandLine.arguments[1] {
-case "disconnected_error", "stale", "connected":
+case "disconnected_error", "stale", "connected", "all_down", "stale_all_down":
     let scenario = CommandLine.arguments[1]
     FilePath.sharedDirectory = directory
-    let payload = UIStatus(error: scenario == "disconnected_error" ? "Bootstrap failed" : nil,
-                           updatedAt: Date(timeIntervalSinceNow: scenario == "stale" ? -10 : 0))
+    var payload = UIStatus(error: scenario == "disconnected_error" ? "Bootstrap failed" : nil,
+                           updatedAt: Date(timeIntervalSinceNow: ["stale", "stale_all_down"].contains(scenario) ? -10 : 0))
+    if ["all_down", "stale_all_down"].contains(scenario) { payload.failover = TestFailover(); payload.phase = "vless" }
     try JSONEncoder().encode(payload).write(to: statusURL)
     let model = TestModel()
     model.manager = TestManager(connection: TestConnection(status: scenario == "disconnected_error" ? .disconnected : .connected))
     await model.refresh()
-    if scenario == "disconnected_error" {
+    if scenario == "all_down" {
+        expect(model.status == "Туннель поднят · все выходы недоступны", "All-down presented as connected internet")
+    } else if scenario == "stale_all_down" {
+        expect(model.status == "Подключено", "Stale failover presented as current")
+    } else if scenario == "disconnected_error" {
         expect(model.footprint == "—", "Disconnected VPN shows memory")
         expect(model.error == "Bootstrap failed", "Disconnected VPN hides startup error")
     } else if scenario == "stale" {
@@ -76,6 +89,16 @@ case "disconnected_error", "stale", "connected":
     } else {
         expect(model.footprint == "40.0 МиБ", "Fresh connected memory missing")
     }
+case "failover":
+    let server = LibboxCommandServer()
+    capture.setFailoverServer(server)
+    capture.tick(at: 0, phase: "vless")
+    let failover = try status()["failover"] as? [String: Any]
+    expect(failover?["selected"] as? String == "b2", "Missing live selector status")
+    expect(failover?["allDown"] as? Bool == true, "All-down hidden by tunnel state")
+    capture.setFailoverServer(nil)
+    capture.tick(at: 1, phase: "vless")
+    expect(try status()["failover"] == nil, "Stopped server retained")
 case "live":
     capture.tick(at: 719)
     capture.tick(at: 721, phase: "after_limit")
@@ -114,10 +137,10 @@ class CaptureTests(unittest.TestCase):
         capture = capture.replace('ProcessInfo.processInfo.systemUptime', 'testUptime')
         swift = directory / 'main.swift'
         app = (ROOT / 'PrototypeApp/Application.swift').read_text()
-        refresh = '    func refresh() async {' + app.split('    func refresh() async {', 1)[1].split('    func exportCapture()', 1)[0]
+        refresh = '    func refresh() async {' + app.split('    func refresh() async {', 1)[1].rsplit('\n}', 1)[0]
         model = ('private final class TestModel {\n'
                  '    var manager: TestManager?\n    var footprint = "—"\n'
-                 '    var status = "Отключено"\n    var error: String?\n' + refresh + '}\n')
+                 '    var vpnState: ConnectionStatus = .disconnected\n    var connectedAt: Date?\n    var status = "Отключено"\n    var error: String?\n' + refresh + '}\n')
         swift.write_text(HARNESS + capture + model + CHECKS)
         cls.executable = directory / 'capture-tests'
         subprocess.run(['xcrun', 'swiftc', '-module-cache-path', str(directory / 'modules'),
@@ -126,6 +149,13 @@ class CaptureTests(unittest.TestCase):
     def run_scenario(self, name):
         result = subprocess.run([str(self.executable), name], capture_output=True, text=True)
         self.assertEqual(result.returncode, 0, result.stdout + result.stderr)
+
+    def test_failover_status_uses_existing_sampler_and_releases_server(self):
+        self.run_scenario("failover")
+
+    def test_all_down_is_distinct_from_tunnel_connected_and_expires(self):
+        self.run_scenario("all_down")
+        self.run_scenario("stale_all_down")
 
     def test_live_status_continues_after_twelve_minutes(self):
         self.run_scenario('live')

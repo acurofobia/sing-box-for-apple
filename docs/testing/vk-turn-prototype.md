@@ -245,3 +245,48 @@ and offline routing changes, transitions, unchanged selections, corrupt resource
 and stop timeout. `PrototypeSmokeTests/testRoutingChoicePersistsAndDoesNotStartVPN`
 checks the new segment and persistence in the simulator. Physical-device tests
 remain opt-in because they temporarily change the active VPN.
+
+## Native Remnawave four-node failover (2026-10-20)
+
+The compatible client sends `X-Subscription-Capabilities: vless-failover-v1`
+on descriptor/config/UI requests. Config may be a typed provisioning document
+(`kind=vless-failover`, schemaVersion 1), containing four personal nodes and a
+priority policy. It is validated and cached atomically with the UI. HTTP 503,
+invalid policy, cancellation and stale transactions retain the previous cache;
+a successful restricted/unavailable document removes VLESS for the next start.
+Legacy single-node JSON and VK TURN remain independent modes.
+
+At start the app writes one immutable `prototype-vless.json`. The extension
+creates four VLESS outbounds, one `vk-wg` selector with connection interruption,
+and one existing TUN/core. DNS, routes and remote rule-set downloads still target
+`vk-wg`; node hostname resolution uses direct bootstrap DNS. Policy is validated
+against the final config and passed through Libbox's external override. All-down
+never changes proxy routing to direct. Ordinary failover does not reload NEVPN.
+
+The existing memory sampler also exports optional failover status in
+`prototype-status.json`; UI considers it current for at most 5 s. There is no
+second timer, history array, temporary probe core or periodic reserve warming.
+The selector holds a healthy backup until three primary successes. The two
+health URLs share a 5 s outbound deadline, with sequential candidates; all-down
+startup can therefore take approximately 20 s plus initialization. Network
+restrictions on both health URLs can produce false all-down.
+
+For the cross-repository synthetic contract check, set `VPN_BACKEND_PYTHON` to
+an existing backend Python 3.13 environment and put the existing Go toolchain in
+PATH, then run the script suite. The test creates two synthetic users, changes a
+group and revokes a key, passes backend responses through production Swift and
+builds/validates them with production Go/Libbox; it uses no production keys.
+
+```sh
+VPN_BACKEND_PYTHON=/path/to/backend/python python3 -m unittest discover -s scripts/tests -v
+python3 scripts/tests/prototype_ui_fixture.py
+# In another terminal:
+xcodebuild test -project sing-box.xcodeproj -scheme VKTurnPrototype \
+  -destination 'platform=iOS Simulator,id=<UDID>' \
+  -only-testing:SFIUITests/PrototypeSmokeTests \
+  -only-testing:SFIUITests/PrototypeDeviceRoutingTests
+```
+
+The device routing test intentionally skips on simulator. Device networking and
+memory acceptance remain separate: see [remnawave-failover-memory.md](remnawave-failover-memory.md).
+No production deployment or feature enablement is part of this local change.

@@ -15,21 +15,26 @@ final class PrototypeDeviceRoutingTests: XCTestCase {
                               "Enable this device check explicitly; it changes the active VPN temporarily.")
             continueAfterFailure = false
             app.launch()
-            XCTAssertTrue(app.tabBars.buttons["Роутинги"].waitForExistence(timeout: 15))
-            let connectionPicker = app.segmentedControls["prototype.mode"]
-            let originalMode = connectionPicker.buttons["VLESS"].isSelected ? "VLESS" : "VK TURN"
-            let modes = ["VLESS", "VK TURN"].filter { connectionPicker.buttons[$0].isEnabled }
+            XCTAssertTrue(app.tabBars.buttons["Роутинг"].waitForExistence(timeout: 15))
+            app.tabBars.buttons["Подключение"].tap()
+            app.buttons["prototype.mode"].tap()
+            let originalMode = app.buttons["prototype.ui.option01"].value as? String == "Выбрано" ? "option01" : "option02"
+            let modes = ["option01", "option02"].filter { app.buttons["prototype.ui." + $0].isEnabled }
+            let modeTitles = Dictionary(uniqueKeysWithValues: modes.map { ($0, app.buttons["prototype.ui." + $0].label) })
+            app.buttons["prototype.mode.close"].tap()
             try XCTSkipIf(modes.isEmpty, "Import a VPN configuration on the iPhone before running this check.")
             _ = reveal("prototype.stop")
             let wasConnected = status.value as? String == "Подключено"
-            app.tabBars.buttons["Роутинги"].tap()
+            app.tabBars.buttons["Роутинг"].tap()
             let routingPicker = app.segmentedControls["prototype.routing.mode"]
             let originalRouting = routingPicker.buttons["Russia inside"].isSelected ? "Russia inside" : "С роутингом"
-            app.tabBars.buttons["VPN"].tap()
+            app.tabBars.buttons["Подключение"].tap()
             defer {
                 stopVPN()
                 choose(mode: originalMode, routing: originalRouting)
-                if wasConnected { startVPN() }
+                if wasConnected {
+                    startVPN()
+                }
             }
 
             for mode in modes {
@@ -45,16 +50,19 @@ final class PrototypeDeviceRoutingTests: XCTestCase {
 
                     let session = URLSession(configuration: .ephemeral)
                     defer { session.invalidateAndCancel() }
-                    var request = URLRequest(url: URL(string: "https://captive.apple.com/hotspot-detect.html")!)
+                    var request = try URLRequest(url: XCTUnwrap(URL(string: "https://captive.apple.com/hotspot-detect.html")))
                     request.timeoutInterval = 30
                     let (data, response) = try await session.data(for: request)
                     XCTAssertEqual((response as? HTTPURLResponse)?.statusCode, 200)
-                    XCTAssertTrue(String(decoding: data, as: UTF8.self).contains("Success"))
+                    XCTAssertTrue(String(data: data, encoding: .utf8)?.contains("Success") == true)
 
+                    app.tabBars.buttons["Профиль"].tap()
                     app.buttons["prototype.logs"].tap()
-                    XCTAssertTrue(app.navigationBars["Логи · " + mode].waitForExistence(timeout: 10))
+                    XCTAssertTrue(app.navigationBars["Логи · " + (modeTitles[mode] ?? mode)].waitForExistence(timeout: 10))
                     let search = app.searchFields.firstMatch
-                    if !search.isHittable { app.swipeDown() }
+                    if !search.isHittable {
+                        app.swipeDown()
+                    }
                     XCTAssertTrue(search.waitForExistence(timeout: 10))
                     search.tap()
                     search.typeText("captive.apple.com")
@@ -79,12 +87,12 @@ final class PrototypeDeviceRoutingTests: XCTestCase {
                         add(evidence)
                     }
                     app.navigationBars.buttons.element(boundBy: 0).tap()
-                    app.tabBars.buttons["Роутинги"].tap()
+                    app.tabBars.buttons["Роутинг"].tap()
                     let screenshot = XCTAttachment(screenshot: app.screenshot())
                     screenshot.name = "Routing choice on iPhone: \(mode), \(routing)"
                     screenshot.lifetime = .keepAlways
                     add(screenshot)
-                    app.tabBars.buttons["VPN"].tap()
+                    app.tabBars.buttons["Подключение"].tap()
                 }
             }
         #endif
@@ -92,21 +100,29 @@ final class PrototypeDeviceRoutingTests: XCTestCase {
 
     private func reveal(_ identifier: String) -> XCUIElement {
         let button = app.buttons[identifier]
-        for _ in 0..<5 {
-            if button.isHittable { return button }
+        for _ in 0 ..< 5 {
+            if button.isHittable {
+                return button
+            }
             app.swipeUp()
         }
         return button
     }
 
     private func choose(mode: String, routing: String) {
-        let picker = app.segmentedControls["prototype.mode"]
-        for _ in 0..<5 {
-            if picker.isHittable { break }
+        let picker = app.buttons["prototype.mode"]
+        for _ in 0 ..< 5 {
+            if picker.isHittable {
+                break
+            }
             app.swipeDown()
         }
-        picker.buttons[mode].tap()
-        app.tabBars.buttons["Роутинги"].tap()
+        picker.tap()
+        let option = app.buttons["prototype.ui." + mode]
+        XCTAssertTrue(option.waitForExistence(timeout: 5))
+        option.tap()
+        XCTAssertTrue(picker.waitForExistence(timeout: 5))
+        app.tabBars.buttons["Роутинг"].tap()
         let selected = app.segmentedControls["prototype.routing.mode"].buttons[routing]
         selected.tap()
         let applied = XCTNSPredicateExpectation(predicate: NSPredicate { _, _ in
@@ -114,12 +130,14 @@ final class PrototypeDeviceRoutingTests: XCTestCase {
         }, object: nil)
         XCTAssertEqual(XCTWaiter.wait(for: [applied], timeout: 30), .completed,
                        "Routing change did not finish: " + routing)
-        app.tabBars.buttons["VPN"].tap()
+        app.tabBars.buttons["Подключение"].tap()
     }
 
     private func stopVPN() {
         let stop = reveal("prototype.stop")
-        if stop.isEnabled { stop.tap() }
+        if stop.exists, stop.isEnabled {
+            stop.tap()
+        }
         waitForStatus("Отключено", timeout: 30)
     }
 

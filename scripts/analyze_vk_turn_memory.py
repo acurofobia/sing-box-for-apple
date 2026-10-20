@@ -45,7 +45,25 @@ def analyze(path: Path, warmup: float = 120) -> dict:
     if phase in ('baseline', 'vless') and (requested != 0 or min(active) != 0 or max(active) != 0):
         raise ValueError('Non-TURN mode contains active or requested TURN sessions')
     values = sorted(r['footprint'] / 1048576 for r in steady)
+    # Hold each observed footprint until the next timestamp. The final sample
+    # has no known duration; never assign it an invented interval.
+    intervals = [(row['footprint'] / 1048576, following['elapsed'] - max(warmup, row['elapsed']))
+                 for row, following in zip(rows, rows[1:])
+                 if row['phase'] == phase and following['elapsed'] > max(warmup, row['elapsed'])]
+    weighted = None
+    if intervals:
+        duration = sum(weight for _, weight in intervals)
+        def quantile(fraction):
+            accumulated = 0
+            for value, weight in sorted(intervals):
+                accumulated += weight
+                if accumulated >= duration * fraction:
+                    return value
+            return max(value for value, _ in intervals)
+        weighted = dict(duration_seconds=duration, median=quantile(.5), p95=quantile(.95),
+                        method='previous sample held until next timestamp')
     return dict(mode=phase, metric='phys_footprint', unit='MiB', warmup_seconds=warmup,
+                aggregation='sample-weighted', time_weighted=weighted,
                 duration_seconds=rows[-1]['elapsed'], steady_samples=len(values),
                 median=statistics.median(values), p95=values[math.ceil(len(values) * .95) - 1],
                 steady_peak=max(values), startup_inclusive_peak=max(r['footprint'] for r in rows) / 1048576,
