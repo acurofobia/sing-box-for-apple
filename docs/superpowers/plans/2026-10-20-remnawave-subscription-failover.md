@@ -346,3 +346,47 @@ iPhone 13 / iOS 27.0.1 обнаружен, но paired реальные VLESS/wo
 `VPN_BACKEND_PYTHON` — **71/71 OK**; повторный native UI smoke — **1 passed,
 1 device test skipped, TEST SUCCEEDED**. `git diff --check` в приложении,
 ядре и backend — без ошибок. Все исходные незакоммиченные изменения сохранены.
+
+## Разрешённый персональный pilot: deployment 2026-10-20
+
+После локального этапа пользователь отдельно разрешил commit/push в GitHub,
+production deployment, сборку и установку на телефон. Предоставленная владельцем
+ссылка использована для read-only сопоставления с единственным активным user ID;
+ссылка, ID, Bearer, UUID и ключи в этот отчёт не включены.
+
+- Backend code: `4ef1d8c` (первый implementation commit `55cdccb`), GitHub `vpn/main`.
+- Приложение: `7303275`, GitHub `sing-box-for-apple/codex/geosite-geodata`.
+- Ядро: `1c3c78d5`, GitHub `sing-box/codex/vk-turn-routing-prototype`.
+- Production checkout обновлён fast-forward; существующие env/data изменения
+  сохранены. Предыдущие env, согласованный SQLite backup и image сохранены в
+  закрытом `vpn-rollbacks/remnawave-failover-20261020` домашнего каталога SSH
+  пользователя. Изменялся только backend-контейнер; Remnawave/SRR/templates,
+  группы, тарифы, ключи и устройства HWID не изменялись.
+- Образ собран на panel. Отдельный контейнер без сети, production env и volumes:
+  **125/125 targeted tests OK**. Локально эти же 125 проверок и 17 Swift/import
+  tests со сквозным backend→Swift→Go/Libbox fixture также проходят. Полный backend
+  suite: 337 tests, те же шесть baseline failures.
+- Первая реальная проверка выявила обязательный X-Forwarded-For в установленном
+  reverse-proxy guard Remnawave. Fetch теперь передаёт только валидированный ASGI
+  peer, игнорируя клиентский header. RED→GREEN проверяет подмену и неверный IP.
+- Реальный Xray JSON использует implicit field rules с network=tcp,udp и
+  roundRobin/settings={} для единственной цели. Эти подтверждённые варианты
+  добавлены с RED→GREEN; TCP-only/UDP-only, неизвестные стратегии и непустые
+  настройки по-прежнему отклоняются. Приоритет получен из ссылок графа, а не
+  порядка массива. Четыре настоящих выхода успешно прошли production Swift
+  decoder, Go generator, Libbox policy validation и Libbox CheckConfig.
+- Backend healthy. `APP_SUBSCRIPTION_VLESS_ENABLED=true`, allowlist содержит
+  ровно одного владельца. Через оба существующих origin: descriptor/config/UI
+  HTTP 200; четыре VLESS; no-store и Vary capability; без/с неверным Bearer 401,
+  без capability 406. Legacy HAPP/sing-box/browser: **6/6 status/body/header
+  responses неизменны** относительно baseline до развёртывания, в том числе
+  после включения pilot. Новых proxy routes нет.
+- Подписанный VKTurnPrototype **BUILD SUCCEEDED**, установлен поверх прежнего
+  приложения на iPhone 13 и запущен; данные не удалялись. VPN-туннель, нагрузка,
+  UDP/QUIC, экран/смена сети и память остаются этапом проверки на телефоне.
+  Замеров phys_footprint и чисел прироста памяти этот deployment не даёт.
+
+Откат pilot: выключить только APP_SUBSCRIPTION_VLESS_ENABLED и пересоздать
+backend (`docker compose up -d --no-deps backend`), сохранив allowlist и прочие
+env значения. При необходимости доступен прежний image
+`vpn-backend:before-remnawave-failover-20261020`. Массовое включение не выполнено.
