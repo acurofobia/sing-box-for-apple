@@ -1,13 +1,26 @@
 import Library
 import NetworkExtension
 import SwiftUI
-import UniformTypeIdentifiers
 
 enum PrototypeConnectionMode: String, CaseIterable {
     case vkTurn = "vk-turn"
     case vless
 
-    var title: String { self == .vless ? "VLESS" : "VK TURN" }
+    var optionID: String {
+        self == .vless ? "option01" : "option02"
+    }
+
+    static func from(optionID: String) -> Self? {
+        switch optionID {
+        case "option01": return .vless
+        case "option02": return .vkTurn
+        default: return nil
+        }
+    }
+
+    var title: String {
+        self == .vless ? "VLESS" : "VK TURN"
+    }
 }
 
 @main
@@ -26,19 +39,89 @@ final class PrototypeModel: ObservableObject {
     @Published var busy = true
     private var managersLoaded = false
     @Published private(set) var subscription = PrototypeSubscription()
-    var hasLink: Bool { subscription.vkTurnLink != nil }
-    var hasVLESS: Bool { subscription.vlessOutbound != nil }
-    func isAvailable(_ mode: PrototypeConnectionMode) -> Bool { mode == .vless ? hasVLESS : hasLink }
-    @Published var exportURL: URL?
+    var hasLink: Bool {
+        subscription.vkTurnLink != nil
+    }
+
+    var hasVLESS: Bool {
+        subscription.vlessOutbound != nil || subscription.vlessProvisioning?.isAvailable == true
+    }
+
+    func isAvailable(_ mode: PrototypeConnectionMode) -> Bool {
+        subscription.isAvailable(optionID: mode.optionID)
+    }
+
+    @Published private(set) var subscriptionLoading = false
+    @Published private(set) var replacingSubscription = false
+    @Published private(set) var subscriptionError: String?
+    @Published private(set) var hasSelectedMode = false
+    @Published private(set) var vpnState: NEVPNStatus = .disconnected
+    @Published private(set) var connectedAt: Date?
+    @Published private(set) var retainedModeTitle: String?
+    private var loaded = false
+    private var connectionGeneration: UInt64 = 0
+    private var hasInitializedSelection = false
+    private lazy var preferences: UserDefaults = {
+        #if DEBUG && targetEnvironment(simulator)
+            if ProcessInfo.processInfo.environment["PROTOTYPE_UI_TESTING"] == "1",
+               let defaults = UserDefaults(suiteName: "PrototypeUITests")
+            {
+                return defaults
+            }
+        #endif
+        return .standard
+    }()
+
+    private lazy var store = PrototypeSubscriptionStore(cacheURL: cacheURL)
+    private var cacheURL: URL {
+        #if DEBUG && targetEnvironment(simulator)
+            if ProcessInfo.processInfo.environment["PROTOTYPE_UI_TESTING"] == "1" {
+                return FileManager.default.temporaryDirectory.appendingPathComponent("prototype-ui-tests/subscription.json")
+            }
+        #endif
+        return FilePath.sharedDirectory.appendingPathComponent("prototype-subscription.json")
+    }
+
+    var modeTitle: String {
+        guard hasSelectedMode else { return String(localized: "Выберите режим") }
+        return subscription.uiDocument?.blocks.first(where: { $0.id == "block04" })?.items?.first(where: { $0.id == connectionMode.optionID })?.title
+            ?? retainedModeTitle ?? (hasSelectedMode ? connectionMode.title : String(localized: "Выберите режим"))
+    }
+
+    var canStart: Bool {
+        hasSelectedMode && isAvailable(connectionMode) && !busy && !replacingSubscription && (vpnState == .disconnected || vpnState == .invalid)
+    }
+
+    var canStop: Bool {
+        vpnState != .disconnected && vpnState != .invalid
+    }
+
+    var modeWarning: String? {
+        guard hasSelectedMode else { return String(localized: "Нет доступных режимов") }
+        guard !isAvailable(connectionMode) else { return nil }
+        return String(localized: "Выбранный режим недоступен. Для следующего подключения выберите другой режим.")
+    }
+
     @Published private(set) var connectionMode: PrototypeConnectionMode = .vkTurn
     @Published private(set) var routingMode: PrototypeRoutingMode = .enabled
     private var manager: NETunnelProviderManager?
 
     func load() async {
+        guard !loaded else { return }
+        loaded = true
         busy = true
         defer { busy = false }
-        connectionMode = PrototypeConnectionMode(rawValue: UserDefaults.standard.string(forKey: "prototype.connection.mode") ?? "") ?? .vkTurn
-        routingMode = PrototypeRoutingMode(rawValue: UserDefaults.standard.string(forKey: "prototype.routing.mode") ?? "") ?? .enabled
+        #if DEBUG && targetEnvironment(simulator)
+            if ProcessInfo.processInfo.environment["PROTOTYPE_UI_TESTING"] == "1",
+               ProcessInfo.processInfo.environment["PROTOTYPE_UI_RESET"] == "1"
+            {
+                preferences.removePersistentDomain(forName: "PrototypeUITests")
+            }
+        #endif
+        hasInitializedSelection = preferences.bool(forKey: "prototype.connection.selectionInitialized")
+        hasSelectedMode = preferences.string(forKey: "prototype.connection.mode") != nil
+        connectionMode = PrototypeConnectionMode(rawValue: preferences.string(forKey: "prototype.connection.mode") ?? "") ?? .vkTurn
+        routingMode = PrototypeRoutingMode(rawValue: preferences.string(forKey: "prototype.routing.mode") ?? "") ?? .enabled
         do {
             #if !targetEnvironment(simulator)
                 let managers = try await NETunnelProviderManager.loadAllFromPreferences()
@@ -47,24 +130,23 @@ final class PrototypeModel: ObservableObject {
             // Simulator cannot run packet tunnels, but can import and display configurations.
             managersLoaded = true
             try ServiceSetup.apply(crashReportSource: "PrototypeApplication")
-            let cache = FilePath.sharedDirectory.appendingPathComponent("prototype-subscription.json")
-            if FileManager.default.fileExists(atPath: cache.path) {
-                subscription = try JSONDecoder().decode(PrototypeSubscription.self, from: Data(contentsOf: cache))
-            } else if manager?.connection.status == nil || manager?.connection.status == .disconnected || manager?.connection.status == .invalid {
-                // Discard credentials injected by older prototype builds.
-                try VKTurnConfigurationStore.clear()
-                try removeRuntimeVLESS()
-                let seed = FileManager.default.urls(for: .documentDirectory, in: .userDomainMask)[0]
-                    .appendingPathComponent("prototype-settings.json")
-                if FileManager.default.fileExists(atPath: seed.path) { try FileManager.default.removeItem(at: seed) }
-            }
-            if let settings = (manager?.protocolConfiguration as? NETunnelProviderProtocol)?.providerConfiguration {
-                if manager?.connection.status == .connected || manager?.connection.status == .connecting {
-                    connectionMode = PrototypeConnectionMode(rawValue: settings["mode"] as? String ?? "") ?? .vkTurn
+            #if DEBUG && targetEnvironment(simulator)
+                if ProcessInfo.processInfo.environment["PROTOTYPE_UI_TESTING"] == "1",
+                   ProcessInfo.processInfo.environment["PROTOTYPE_UI_RESET"] == "1"
+                {
+                    try? FileManager.default.removeItem(at: cacheURL)
+                    hasSelectedMode = false
                 }
+            #endif
+            try store.load()
+            subscription = store.snapshot
+            chooseInitialMode()
+            if let settings = (manager?.protocolConfiguration as? NETunnelProviderProtocol)?.providerConfiguration, manager?.connection.status == .connected || manager?.connection.status == .connecting {
+                connectionMode = PrototypeConnectionMode(rawValue: settings["mode"] as? String ?? "") ?? .vkTurn
+                hasSelectedMode = true
             }
             await refresh()
-        } catch { self.error = error.localizedDescription }
+        } catch { self.error = String(localized: "Не удалось загрузить сохранённое состояние приложения.") }
     }
 
     private func ensureStopped() throws {
@@ -75,66 +157,79 @@ final class PrototypeModel: ObservableObject {
 
     private func removeRuntimeVLESS() throws {
         let url = FilePath.sharedDirectory.appendingPathComponent("prototype-vless.json")
-        if FileManager.default.fileExists(atPath: url.path) { try FileManager.default.removeItem(at: url) }
-    }
-
-    private func save(_ updated: PrototypeSubscription) throws {
-        try ensureStopped()
-        let directory = FilePath.sharedDirectory
-        try FileManager.default.createDirectory(at: directory, withIntermediateDirectories: true)
-        try removeRuntimeVLESS()
-        try VKTurnConfigurationStore.clear()
-        try JSONEncoder().encode(updated).write(to: directory.appendingPathComponent("prototype-subscription.json"),
-                                               options: [.atomic, .completeFileProtectionUntilFirstUserAuthentication])
-        subscription = updated
-        if !isAvailable(connectionMode) {
-            if hasVLESS { connectionMode = .vless } else if hasLink { connectionMode = .vkTurn }
-            UserDefaults.standard.set(connectionMode.rawValue, forKey: "prototype.connection.mode")
+        if FileManager.default.fileExists(atPath: url.path) {
+            try FileManager.default.removeItem(at: url)
         }
-        error = nil
     }
 
-    func saveLink(_ text: String) throws {
-        _ = try VKTurnConfiguration.importLink(text)
-        var updated = subscription
-        updated.sourceURL = nil
-        updated.singBoxURL = nil
-        updated.warnings = []
-        updated.vkTurnLink = text.trimmingCharacters(in: .whitespacesAndNewlines)
-        try save(updated)
+    private func chooseInitialMode() {
+        guard !hasSelectedMode, !hasInitializedSelection, subscription.isComplete else { return }
+        hasInitializedSelection = true
+        preferences.set(true, forKey: "prototype.connection.selectionInitialized")
+        let items = subscription.uiDocument?.block("block04")?.items ?? []
+        if let mode = items.compactMap({ PrototypeConnectionMode.from(optionID: $0.id) }).first(where: { isAvailable($0) }) {
+            connectionMode = mode
+            hasSelectedMode = true
+            preferences.set(mode.rawValue, forKey: "prototype.connection.mode")
+        }
     }
 
-    func importVLESS(_ data: Data) throws {
-        guard let node = try PrototypeSubscription.extractVLESS(data) else { throw PrototypeSubscriptionError.invalidVLESS }
-        var updated = subscription
-        updated.sourceURL = nil
-        updated.singBoxURL = nil
-        updated.warnings = []
-        updated.vlessOutbound = node
-        try save(updated)
+    func refreshSubscription() async {
+        guard let source = subscription.sourceURL, !store.isLoading else { return }
+        await fetchSubscription(source, replacing: false)
     }
 
-    func clearConfigurations() throws { try save(PrototypeSubscription()) }
-
-    func updateSubscription(_ text: String) async {
-        guard !busy else { return }
-        busy = true
-        error = nil
-        defer { busy = false }
+    @discardableResult func replaceSubscription(_ source: String) async -> Bool {
         do {
             try ensureStopped()
-            let updated = try await PrototypeSubscription.download(text.trimmingCharacters(in: .whitespacesAndNewlines))
-            try save(updated)
-        } catch let issue as PrototypeSubscriptionError {
-            error = issue.localizedDescription
         } catch {
-            // URLSession errors may contain the credential-bearing subscription URL.
-            self.error = "Не удалось обновить подписку. Проверьте сеть и сервер. Сохранённые конфиги не изменены."
+            subscriptionError = PrototypeSubscriptionError.stopBeforeImport.localizedDescription; return false
         }
+        return await fetchSubscription(source.trimmingCharacters(in: .whitespacesAndNewlines), replacing: true)
+    }
+
+    func cancelSubscriptionReplacement() {
+        guard replacingSubscription else { return }
+        store.cancel()
+        replacingSubscription = false
+        subscriptionLoading = false
+    }
+
+    @discardableResult private func fetchSubscription(_ source: String, replacing: Bool) async -> Bool {
+        subscriptionLoading = true
+        replacingSubscription = replacing
+        subscriptionError = nil
+        defer {
+            subscriptionLoading = store.isLoading
+            if !store.isLoading {
+                replacingSubscription = false
+            }
+        }
+        do {
+            let updated = try await store.update(source, replacing: replacing) {
+                if replacing {
+                    try self.ensureStopped()
+                }
+            }
+            guard let updated else { return false }
+            retainedModeTitle = modeTitle
+            subscription = updated
+            chooseInitialMode()
+            return true
+        } catch let issue as PrototypeSubscriptionError {
+            subscriptionError = issue.localizedDescription
+        } catch is PrototypeUIError {
+            subscriptionError = PrototypeUIError.invalidDocument.localizedDescription
+        } catch {
+            // System/network errors can include the credential-bearing URL.
+            subscriptionError = String(localized: "Не удалось обновить подписку. Проверьте сеть и сервер. Сохранённые данные не изменены.")
+        }
+        return false
     }
 
     func setRoutingMode(_ mode: PrototypeRoutingMode) async {
         guard managersLoaded, !busy, mode != routingMode else { return }
+        let generation = connectionGeneration
         busy = true
         error = nil
         defer { busy = false }
@@ -145,12 +240,17 @@ final class PrototypeModel: ObservableObject {
             }
             let route = try prepareRouting(mode)
             let restart = state == .connected
-            if restart { try await stopForModeChange() }
+            if restart {
+                try await stopForModeChange()
+            }
+            guard generation == connectionGeneration else { return }
             // The extension also reads this file when VPN is started from system Settings.
             try writeRouting(route)
             routingMode = mode
-            UserDefaults.standard.set(mode.rawValue, forKey: "prototype.routing.mode")
-            if restart { await start() }
+            preferences.set(mode.rawValue, forKey: "prototype.routing.mode")
+            if restart {
+                await startConnection()
+            }
         } catch { self.error = error.localizedDescription }
     }
 
@@ -184,10 +284,11 @@ final class PrototypeModel: ObservableObject {
 
     func switchConnection(to mode: PrototypeConnectionMode) async {
         guard managersLoaded, !busy, mode != connectionMode else { return }
-        guard mode != .vkTurn || hasLink, mode != .vless || hasVLESS else {
+        guard isAvailable(mode) else {
             error = "Импортируйте конфигурацию для выбранного режима."
             return
         }
+        let generation = connectionGeneration
         busy = true
         error = nil
         defer { busy = false }
@@ -197,10 +298,17 @@ final class PrototypeModel: ObservableObject {
                 throw NSError(domain: "Prototype", code: 1, userInfo: [NSLocalizedDescriptionKey: "Дождитесь завершения текущего подключения."])
             }
             let restart = state == .connected
-            if restart { try await stopForModeChange() }
+            if restart {
+                try await stopForModeChange()
+            }
+            guard generation == connectionGeneration else { return }
+            guard isAvailable(mode) else { throw PrototypeSubscriptionError.missingConfiguration }
             connectionMode = mode
-            UserDefaults.standard.set(mode.rawValue, forKey: "prototype.connection.mode")
-            if restart { await start() }
+            hasSelectedMode = true
+            preferences.set(mode.rawValue, forKey: "prototype.connection.mode")
+            if restart {
+                await startConnection()
+            }
         } catch { self.error = error.localizedDescription }
     }
 
@@ -217,11 +325,17 @@ final class PrototypeModel: ObservableObject {
     }
 
     func start() async {
-        busy = true; error = nil; exportURL = nil
+        guard !busy else { return }
+        await startConnection()
+    }
+
+    private func startConnection() async {
+        let generation = connectionGeneration
+        busy = true; error = nil
         defer { busy = false }
         do {
             try ensureStopped()
-            guard isAvailable(connectionMode) else { throw PrototypeSubscriptionError.missingConfiguration }
+            guard hasSelectedMode, !replacingSubscription, isAvailable(connectionMode) else { throw PrototypeSubscriptionError.missingConfiguration }
             try writeRouting(prepareRouting(routingMode))
             let directory = FilePath.sharedDirectory
             footprint = "—"
@@ -229,8 +343,18 @@ final class PrototypeModel: ObservableObject {
             if FileManager.default.fileExists(atPath: statusURL.path) {
                 try FileManager.default.removeItem(at: statusURL)
             }
+            try removeRuntimeVLESS()
+            try VKTurnConfigurationStore.clear()
             if connectionMode == .vless {
-                guard let node = subscription.vlessOutbound else { throw PrototypeSubscriptionError.missingConfiguration }
+                try subscription.validateVLESS()
+                let node: Data
+                if let provisioning = subscription.vlessProvisioning, provisioning.isAvailable {
+                    node = try JSONEncoder().encode(provisioning)
+                } else if let outbound = subscription.vlessOutbound {
+                    node = outbound
+                } else {
+                    throw PrototypeSubscriptionError.missingConfiguration
+                }
                 try node.write(to: directory.appendingPathComponent("prototype-vless.json"), options: [.atomic, .completeFileProtectionUntilFirstUserAuthentication])
             } else if let link = subscription.vkTurnLink {
                 try VKTurnConfigurationStore.save(VKTurnConfiguration.importLink(link))
@@ -246,17 +370,29 @@ final class PrototypeModel: ObservableObject {
             try await manager.saveToPreferences()
             try await manager.loadFromPreferences()
             self.manager = manager
+            guard generation == connectionGeneration else { return }
+            guard isAvailable(connectionMode) else { throw PrototypeSubscriptionError.missingConfiguration }
             try manager.connection.startVPNTunnel()
         } catch { self.error = error.localizedDescription }
     }
 
     func stop() {
+        connectionGeneration &+= 1
         manager?.connection.stopVPNTunnel()
     }
 
     func refresh() async {
         footprint = "—"
+        #if DEBUG && targetEnvironment(simulator)
+            if ProcessInfo.processInfo.environment["PROTOTYPE_UI_CONNECTED"] == "1" {
+                vpnState = .connected
+                status = "Подключено"
+                return
+            }
+        #endif
         guard let manager else { return }
+        vpnState = manager.connection.status
+        connectedAt = manager.connection.connectedDate
         switch manager.connection.status {
         case .connected: status = "Подключено"
         case .connecting: status = "Подключение…"
@@ -266,206 +402,21 @@ final class PrototypeModel: ObservableObject {
         }
         let directory = FilePath.sharedDirectory
         if let data = try? Data(contentsOf: directory.appendingPathComponent("prototype-status.json")) {
-            struct CaptureStatus: Decodable { let footprintBytes: UInt64; let phase: String; let error: String?; let updatedAt: Date }
+            struct Failover: Decodable { let mode: String; let selected: String?; let primaryHealth: String?; let allDown: Bool }
+            struct CaptureStatus: Decodable { let footprintBytes: UInt64; let phase: String; let error: String?; let updatedAt: Date; let failover: Failover? }
             if let capture = try? JSONDecoder().decode(CaptureStatus.self, from: data) {
                 if manager.connection.status != .disconnected, manager.connection.status != .invalid,
-                   Date().timeIntervalSince(capture.updatedAt) <= 5 {
+                   Date().timeIntervalSince(capture.updatedAt) <= 5
+                {
                     footprint = String(format: "%.1f МиБ", Double(capture.footprintBytes) / 1_048_576)
+                    if manager.connection.status == .connected, capture.phase == "vless", capture.failover?.allDown == true {
+                        status = String(localized: "Туннель поднят · все выходы недоступны")
+                    }
                 }
                 if let message = capture.error {
                     error = message
                 }
             }
-        }
-    }
-
-    func exportCapture() {
-        do {
-            let directory = FilePath.sharedDirectory.appendingPathComponent("Library/Caches/Prototype")
-            let files = try FileManager.default.contentsOfDirectory(at: directory, includingPropertiesForKeys: [.contentModificationDateKey])
-                .filter { $0.pathExtension == "csv" }
-                .sorted { $0.lastPathComponent > $1.lastPathComponent }
-            guard let latest = files.first else { throw CocoaError(.fileNoSuchFile) }
-            let destination = FileManager.default.urls(for: .documentDirectory, in: .userDomainMask)[0].appendingPathComponent(latest.lastPathComponent)
-            if FileManager.default.fileExists(atPath: destination.path) {
-                try FileManager.default.removeItem(at: destination)
-            }
-            try FileManager.default.copyItem(at: latest, to: destination)
-            exportURL = destination
-        } catch { self.error = error.localizedDescription }
-    }
-}
-
-struct PrototypeView: View {
-    @StateObject private var model = PrototypeModel()
-    @State private var link = ""
-    @State private var showLinks = false
-    @State private var subscriptionURL = ""
-    @State private var jsonText = ""
-    @State private var showJSON = false
-    @State private var showFileImporter = false
-    private enum Input { case subscription, vkTurn }
-    @FocusState private var focusedInput: Input?
-    var body: some View {
-        TabView {
-            vpnView
-                .tabItem { Label("VPN", systemImage: "shield.lefthalf.filled") }
-            PrototypeRoutingView(model: model)
-                .tabItem { Label("Роутинги", systemImage: "arrow.triangle.branch") }
-        }
-        .task {
-            await model.load()
-            subscriptionURL = model.subscription.sourceURL ?? ""
-            while !Task.isCancelled {
-                await model.refresh()
-                try? await Task.sleep(for: .seconds(1))
-            }
-        }
-    }
-
-    private var vpnView: some View {
-        NavigationStack {
-            Form {
-                Section("Режим подключения") {
-                    Picker("Режим подключения", selection: Binding(
-                        get: { model.connectionMode },
-                        set: { mode in Task { await model.switchConnection(to: mode) } }
-                    )) {
-                        ForEach(PrototypeConnectionMode.allCases, id: \.self) { mode in
-                            if #available(iOS 17.0, *) {
-                                Text(mode.title).tag(mode)
-                                    .selectionDisabled(!model.isAvailable(mode))
-                            } else {
-                                Text(mode.title).tag(mode)
-                                    .disabled(!model.isAvailable(mode))
-                            }
-                        }
-                    }
-                    .pickerStyle(.segmented)
-                    .accessibilityIdentifier("prototype.mode")
-                    .disabled(model.busy || (!model.hasLink && !model.hasVLESS) ||
-                        (model.status != "Отключено" && model.status != "Подключено"))
-                }
-                Section("Подписка") {
-                    TextField("http(s)://…/subscription/…", text: $subscriptionURL)
-                        .textInputAutocapitalization(.never).autocorrectionDisabled()
-                        .keyboardType(.URL).submitLabel(.done)
-                        .focused($focusedInput, equals: .subscription)
-                        .onSubmit { focusedInput = nil }
-                        .accessibilityIdentifier("prototype.subscription.url")
-                    Button("Получить конфиги") {
-                        let source = subscriptionURL
-                        focusedInput = nil
-                        Task { await model.updateSubscription(source) }
-                    }
-                    .accessibilityIdentifier("prototype.subscription.fetch")
-                    .disabled(subscriptionURL.trimmingCharacters(in: .whitespacesAndNewlines).isEmpty || model.busy || model.status != "Отключено")
-                    ForEach(model.subscription.warnings, id: \.self) { Text($0).foregroundStyle(.orange) }
-                    Button("Удалить конфиги", role: .destructive) {
-                        do { try model.clearConfigurations(); subscriptionURL = ""; link = ""; jsonText = "" } catch { model.error = error.localizedDescription }
-                    }
-                    .accessibilityIdentifier("prototype.configs.clear")
-                    .disabled(model.busy || model.status != "Отключено")
-                }
-                Section("VLESS") {
-                    Text(model.hasVLESS ? "Конфигурация импортирована" : "Конфигурация отсутствует")
-                    Button("Импортировать JSON-файл") { showFileImporter = true }
-                        .disabled(model.busy || model.status != "Отключено")
-                    Button("Вставить JSON") { showJSON = true }
-                        .accessibilityIdentifier("prototype.vless.paste")
-                        .disabled(model.busy || model.status != "Отключено")
-                }
-                Section("VK TURN") {
-                    Group {
-                        if showLinks { TextField("wdtt://… или vkturnproxy://…", text: $link) } else { SecureField("wdtt://… или vkturnproxy://…", text: $link) }
-                    }
-                        .textInputAutocapitalization(.never).autocorrectionDisabled()
-                        .keyboardType(.URL).submitLabel(.done)
-                        .focused($focusedInput, equals: .vkTurn)
-                        .onSubmit { focusedInput = nil }
-                    Button(model.hasLink ? "Заменить ссылку" : "Сохранить ссылку") {
-                        let importedLink = link
-                        focusedInput = nil
-                        do {
-                            try model.saveLink(importedLink)
-                            link = ""
-                            model.error = nil
-                        } catch {
-                            model.error = error.localizedDescription
-                        }
-                    }.disabled(link.isEmpty || model.busy || model.status != "Отключено")
-                        .accessibilityIdentifier("prototype.vk.save")
-                }
-                Section("Состояние") {
-                    LabeledContent("VPN", value: model.status)
-                        .accessibilityIdentifier("prototype.status")
-                        .accessibilityValue(model.status)
-                    LabeledContent("Память расширения", value: model.footprint)
-                    Button("Подключить") { Task { await model.start() } }
-                        .accessibilityIdentifier("prototype.start")
-                        .disabled(model.busy || model.status != "Отключено" || !model.isAvailable(model.connectionMode))
-                    Button("Отключить") { model.stop() }
-                        .accessibilityIdentifier("prototype.stop")
-                        .disabled(model.busy || model.status == "Отключено")
-                    Button("Подготовить отчёт памяти") { model.exportCapture() }
-                    if let url = model.exportURL {
-                        ShareLink("Экспортировать CSV", item: url)
-                    }
-                }
-                if let error = model.error {
-                    Section("Ошибка") { Text(error).foregroundStyle(.red).textSelection(.enabled) }
-                }
-            }.navigationTitle("VPN")
-                .toolbar {
-                    ToolbarItem(placement: .topBarTrailing) {
-                        Button { showLinks.toggle() } label: {
-                            Label(showLinks ? "Скрыть ссылки" : "Показать ссылки", systemImage: showLinks ? "eye.slash" : "eye")
-                        }
-                        .accessibilityIdentifier("prototype.links.reveal")
-                    }
-                    ToolbarItem(placement: .topBarTrailing) {
-                        NavigationLink {
-                            PrototypeLogView(model: model)
-                        } label: {
-                            Label("Логи", systemImage: "text.alignleft")
-                        }
-                        .accessibilityIdentifier("prototype.logs")
-                    }
-                }
-        }
-        .sheet(isPresented: $showJSON) {
-            NavigationStack {
-                TextEditor(text: $jsonText)
-                    .font(.system(.caption, design: .monospaced))
-                    .textInputAutocapitalization(.never).autocorrectionDisabled()
-                    .accessibilityIdentifier("prototype.vless.json")
-                    .padding()
-                    .navigationTitle("Импорт VLESS")
-                    .toolbar {
-                        ToolbarItem(placement: .cancellationAction) { Button("Отмена") { showJSON = false; jsonText = "" } }
-                        ToolbarItem(placement: .confirmationAction) {
-                            Button("Импортировать") {
-                                do {
-                                    try model.importVLESS(Data(jsonText.utf8))
-                                    jsonText = ""
-                                    showJSON = false
-                                } catch {
-                                    model.error = PrototypeSubscriptionError.invalidVLESS.localizedDescription
-                                    showJSON = false
-                                    jsonText = ""
-                                }
-                            }.disabled(jsonText.isEmpty)
-                        }
-                    }
-            }
-        }
-        .fileImporter(isPresented: $showFileImporter, allowedContentTypes: [.json]) { result in
-            do {
-                let url = try result.get()
-                let accessed = url.startAccessingSecurityScopedResource()
-                defer { if accessed { url.stopAccessingSecurityScopedResource() } }
-                try model.importVLESS(Data(contentsOf: url))
-            } catch { model.error = PrototypeSubscriptionError.invalidVLESS.localizedDescription }
         }
     }
 }

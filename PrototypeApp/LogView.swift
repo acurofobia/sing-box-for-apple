@@ -9,7 +9,10 @@ struct PrototypeLogView: View {
     @State private var searchText = ""
     @State private var pausedLogs: [LogEntry]?
 
-    private var logs: [LogEntry] { pausedLogs ?? client.logBuffer.entries }
+    private var logs: [LogEntry] {
+        pausedLogs ?? client.logBuffer.entries
+    }
+
     private var visibleLogs: [LogEntry] {
         searchText.isEmpty ? logs : logs.filter { $0.message.localizedCaseInsensitiveContains(searchText) }
     }
@@ -42,7 +45,7 @@ struct PrototypeLogView: View {
                 }
             }
         }
-        .navigationTitle("Логи · " + model.connectionMode.title)
+        .navigationTitle("Логи · " + model.modeTitle)
         .navigationBarTitleDisplayMode(.inline)
         .searchable(text: $searchText, prompt: "Поиск")
         .toolbar {
@@ -65,13 +68,18 @@ struct PrototypeLogView: View {
             defer { client.disconnect() }
             guard scenePhase == .active else { return }
             while !Task.isCancelled {
-                if model.status == "Подключено" || model.status == "Подключение…" {
-                    if !client.isConnected { client.connect() }
+                if model.vpnState == .connected || model.vpnState == .connecting {
+                    if !client.isConnected {
+                        client.connect()
+                    }
                 } else {
                     client.disconnect()
                 }
-                do { try await Task.sleep(for: .seconds(1)) }
-                catch { return }
+                do {
+                    try await Task.sleep(for: .seconds(1))
+                } catch {
+                    return
+                }
             }
         }
     }

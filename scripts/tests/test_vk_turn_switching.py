@@ -25,11 +25,13 @@ private final class TestConnection {
     }
 }
 private final class TestManager { let connection = TestConnection() }
+private enum PrototypeSubscriptionError: Error { case missingConfiguration }
 private enum VKTurnError: Error { case missingConfiguration }
 private enum UserDefaults {
     static let standard = TestDefaults()
     final class TestDefaults {
         func set(_ value: String, forKey key: String) { events.append("saved:" + value) }
+        func set(_ value: Bool, forKey key: String) {}
     }
 }
 func expect(_ condition: Bool, _ message: String) {
@@ -106,6 +108,39 @@ case "not_loaded":
     await model.switchConnection(to: .vless)
     expect(events.isEmpty, "uninitialized model changed the existing VPN")
     expect(model.connectionMode == .vkTurn, "uninitialized model changed selection")
+case "empty_initial_selection":
+    model.hasSelectedMode = false
+    model.hasVLESS = false
+    model.hasLink = false
+    model.chooseInitialMode()
+    expect(!model.hasSelectedMode, "empty initial snapshot selected a mode")
+    model.hasVLESS = true
+    model.chooseInitialMode()
+    expect(!model.hasSelectedMode && events.isEmpty, "refresh selected a newly available transport")
+case "explicit_disconnect":
+    Task { @MainActor in
+        try? await Task.sleep(for: .milliseconds(5))
+        model.stop()
+    }
+    await model.switchConnection(to: .vless)
+    expect(!events.contains(where: { $0.hasPrefix("start:") || $0.hasPrefix("saved:") }), "explicit disconnect allowed pending mode restart")
+    expect(model.connectionMode == .vkTurn, "explicit disconnect changed mode")
+case "explicit_disconnect_routing":
+    Task { @MainActor in
+        try? await Task.sleep(for: .milliseconds(5))
+        model.stop()
+    }
+    await model.setRoutingMode(.russiaInside)
+    expect(!events.contains(where: { $0.hasPrefix("start:") || $0.hasPrefix("saved:") }), "explicit disconnect allowed routing restart")
+    expect(model.routingMode == .enabled, "explicit disconnect changed routing")
+case "revoked_during_stop":
+    Task { @MainActor in
+        try? await Task.sleep(for: .milliseconds(5))
+        model.hasVLESS = false
+    }
+    await model.switchConnection(to: .vless)
+    expect(events == ["stop", "disconnected"], "revoked mode restarted after waiting for disconnection")
+    expect(model.connectionMode == .vkTurn, "revoked mode changed selection")
 case "same":
     await model.switchConnection(to: .vkTurn)
     expect(events.isEmpty, "selecting active mode restarted VPN")
@@ -129,12 +164,24 @@ class SwitchingTests(unittest.TestCase):
         routing_source = (ROOT / 'Library/Network/PrototypeRouting.swift').read_text()
         routing_mode = routing_source.split('public enum PrototypeRouting {', 1)[0]
         routing = '    func setRoutingMode' + app.split('    func setRoutingMode', 1)[1].split('    private func prepareRouting', 1)[0]
+        initial = '    private func chooseInitialMode() {' + app.split('    private func chooseInitialMode() {', 1)[1].split('    func refreshSubscription()', 1)[0]
+        initial = initial.replace('private func chooseInitialMode', 'func chooseInitialMode')
+        stop = '    func stop() {' + app.split('    func stop() {', 1)[1].split('    func refresh()', 1)[0]
         model = r"""
 @MainActor
 private final class TestModel {
     var manager: TestManager? = TestManager()
     var connectionMode: PrototypeConnectionMode = .vkTurn
     var busy = false
+    var connectionGeneration: UInt64 = 0
+    let preferences = UserDefaults.standard
+    var hasSelectedMode = true
+    var hasInitializedSelection = false
+    struct Item { let id: String }
+    struct Block { var items: [Item]? = [Item(id: "option01"), Item(id: "option02")] }
+    struct Document { func block(_ id: String) -> Block? { Block() } }
+    struct Snapshot { let isComplete = true; let uiDocument: Document? = Document() }
+    let subscription = Snapshot()
     var managersLoaded = true
     var routingMode: PrototypeRoutingMode = .enabled
     var failPreparation = false
@@ -147,15 +194,16 @@ private final class TestModel {
     var baseline = false
     var hasLink = true
     var hasVLESS = true
+    func isAvailable(_ mode: PrototypeConnectionMode) -> Bool { mode == .vless ? hasVLESS : hasLink }
     var error: String?
     func setStatus(_ status: ConnectionStatus) { manager?.connection.status = status }
     func setMode(_ mode: PrototypeConnectionMode) { connectionMode = mode }
     func setHasLink(_ value: Bool) { hasLink = value }
-    func start() async {
+    func startConnection() async {
         expect(manager?.connection.status == .disconnected, "old tunnel still active")
         events.append("start:" + connectionMode.rawValue)
     }
-""" + routing + switch + '}\n'
+""" + initial + routing + switch + stop + '}\n'
         source = directory / 'main.swift'
         source.write_text(HARNESS + mode + routing_mode + model + CHECKS)
         cls.executable = directory / 'switch-tests'
@@ -202,6 +250,18 @@ private final class TestModel {
 
     def test_initialization_blocks_switching_until_vpn_state_is_known(self):
         self.run_scenario('not_loaded')
+
+    def test_refresh_does_not_select_a_mode_after_initial_empty_snapshot(self):
+        self.run_scenario("empty_initial_selection")
+
+    def test_explicit_disconnect_cancels_pending_mode_restart(self):
+        self.run_scenario("explicit_disconnect")
+
+    def test_explicit_disconnect_cancels_pending_routing_restart(self):
+        self.run_scenario("explicit_disconnect_routing")
+
+    def test_mode_revoked_while_stopping_cannot_be_started(self):
+        self.run_scenario("revoked_during_stop")
 
     def test_selecting_same_mode_does_not_restart(self):
         self.run_scenario('same')

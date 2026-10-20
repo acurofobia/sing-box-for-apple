@@ -34,9 +34,6 @@ struct PrototypeRoutingView: View {
                     Text("Списки выбранного режима обновляются автоматически, пока VPN подключён. При ошибке используются сохранённые списки, а при первом запуске — встроенные.")
                         .foregroundStyle(.secondary)
                 }
-                if let error = model.error {
-                    Section("Ошибка") { Text(error).foregroundStyle(.red).textSelection(.enabled) }
-                }
             }
             .navigationTitle("Роутинги")
         }

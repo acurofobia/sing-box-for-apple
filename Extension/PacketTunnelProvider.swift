@@ -10,12 +10,20 @@ final class PacketTunnelProvider: ExtensionProvider {
     private let stateLock = NSLock()
     private var stopped = false
     private var startupFinished: AsyncStream<Void>?
+    private var startingServer: LibboxCommandServer?
+
+    override func prepareServiceStart(_ server: LibboxCommandServer) throws {
+        try stateLock.withLock {
+            guard !stopped else { throw CancellationError() }
+            startingServer = server
+        }
+    }
 
     override func startTunnel(options: [String: NSObject]?) async throws {
         let completion = AsyncStream<Void>.makeStream()
         defer {
             completion.continuation.finish()
-            stateLock.withLock { startupFinished = nil }
+            stateLock.withLock { startupFinished = nil; startingServer = nil }
         }
         let generation = stateLock.withLock {
             startupFinished = completion.stream
@@ -28,6 +36,10 @@ final class PacketTunnelProvider: ExtensionProvider {
         let vless = !baseline && mode == "vless"
         let connections = settings["connections"] as? Int ?? 30
         let directory = FilePath.sharedDirectory
+        defer {
+            // Every start regenerates config; also clear stale snapshots on failure.
+            try? FileManager.default.removeItem(at: directory.appendingPathComponent("start_options.plist"))
+        }
         let capture = try PrototypeMemoryCapture(directory: directory, baseline: baseline, connections: connections, vless: vless)
         self.capture = capture
         capture.start()
@@ -35,9 +47,28 @@ final class PacketTunnelProvider: ExtensionProvider {
             let data = try Data(contentsOf: directory.appendingPathComponent("prototype-routing.json"))
             let route = try JSONSerialization.jsonObject(with: data)
             var input: [String: Any] = ["route": route, "baseline": baseline, "mode": mode, "generation": generation, "cache_path": directory.appendingPathComponent("Library/Caches/Prototype").path]
+            var priorityFailoverJSON: String?
             if vless {
                 let node = try Data(contentsOf: directory.appendingPathComponent("prototype-vless.json"))
-                input["vless"] = try JSONSerialization.jsonObject(with: node)
+                guard node.count <= 8 * 1024 * 1024,
+                      let document = try JSONSerialization.jsonObject(with: node) as? [String: Any]
+                else { throw VKTurnError.invalidField }
+                if document["kind"] != nil || document["schemaVersion"] != nil {
+                    guard let version = document["schemaVersion"] as? NSNumber,
+                          CFGetTypeID(version) != CFBooleanGetTypeID(), version == 1,
+                          document["kind"] as? String == "vless-failover", document["state"] as? String == "available",
+                          document["reason"] == nil || document["reason"] is NSNull,
+                          let nodes = document["outbounds"] as? [[String: Any]], nodes.count == 4,
+                          let policy = document["failover"] as? [String: Any], let primary = policy["primary"] as? String
+                    else { throw VKTurnError.invalidField }
+                    input["vless_outbounds"] = nodes
+                    input["vless_primary"] = primary
+                    let policyData = try JSONSerialization.data(withJSONObject: policy)
+                    guard let policyText = String(bytes: policyData, encoding: .utf8) else { throw VKTurnError.invalidField }
+                    priorityFailoverJSON = policyText
+                } else {
+                    input["vless"] = document
+                }
             } else if !baseline {
                 let configuration = try VKTurnConfigurationStore.load()
                 guard let proxyText = configuration.proxyConfig,
@@ -84,14 +115,24 @@ final class PacketTunnelProvider: ExtensionProvider {
             let cacheDirectory = FilePath.prototypeRuleSetDirectory
             try FileManager.default.createDirectory(at: cacheDirectory, withIntermediateDirectories: true)
             let configuration = try PrototypeRouting.configurationWithPersistentCache(Data(session.configuration.utf8), directory: cacheDirectory)
+            guard let configText = String(bytes: configuration, encoding: .utf8) else { throw VKTurnError.invalidField }
             var effective = options ?? [:]
-            effective["configContent"] = NSString(string: String(decoding: configuration, as: UTF8.self))
-            effective["systemProxyEnabled"] = NSNumber(value: false)
-            defer {
-                // Every start regenerates config; do not retain provisioned keys in the snapshot.
-                try? FileManager.default.removeItem(at: directory.appendingPathComponent("start_options.plist"))
+            // Derive policy exclusively from this runtime document, never start options.
+            effective.removeValue(forKey: "priorityFailoverJSON")
+            if let priorityFailoverJSON {
+                var validationError: NSError?
+                LibboxValidatePriorityFailover(configText, priorityFailoverJSON, &validationError)
+                if let validationError {
+                    throw validationError
+                }
+                effective["priorityFailoverJSON"] = NSString(string: priorityFailoverJSON)
             }
+            effective["configContent"] = NSString(string: configText)
+            effective["systemProxyEnabled"] = NSNumber(value: false)
             try await super.startTunnel(options: effective)
+            if priorityFailoverJSON != nil {
+                capture.setFailoverServer(commandServer)
+            }
             LibboxSetVKTurnPrototypeLogServer(commandServer)
             commandServer?.writeMessage(4, message: "[VPN] Connected: " + (vless ? "VLESS" : "VK TURN"))
             if !baseline {
@@ -111,6 +152,10 @@ final class PacketTunnelProvider: ExtensionProvider {
             guard !stateLock.withLock({ stopped }) else { throw CancellationError() }
             capture.setPhase(baseline ? "baseline" : vless ? "vless" : "combined")
         } catch {
+            capture.setFailoverServer(nil)
+            if commandServer != nil {
+                await super.stopTunnel(with: .providerFailed)
+            }
             let id = stateLock.withLock { let id = sessionID; sessionID = 0; return id }
             LibboxStopVKTurnPrototype(id)
             LibboxSetVKTurnPrototypeLogServer(nil)
@@ -120,12 +165,15 @@ final class PacketTunnelProvider: ExtensionProvider {
     }
 
     override func stopTunnel(with reason: NEProviderStopReason) async {
-        let (id, startup) = stateLock.withLock {
+        let (id, startup, server) = stateLock.withLock {
             stopped = true
             let id = sessionID
             sessionID = 0
-            return (id, startupFinished)
+            return (id, startupFinished, startingServer)
         }
+        // Cancel the core context before joining startup. This also latches a
+        // stop that races between server publication and StartOrReloadService.
+        server?.cancelServiceStart()
         // Cancel TURN before WireGuard joins its send/receive workers.
         LibboxCancelVKTurnPrototype()
         LibboxStopVKTurnPrototype(id)
@@ -134,7 +182,9 @@ final class PacketTunnelProvider: ExtensionProvider {
         if let startup {
             for await _ in startup {}
         }
+        stateLock.withLock { startingServer = nil }
         LibboxSetVKTurnPrototypeLogServer(nil)
+        capture?.setFailoverServer(nil)
         await super.stopTunnel(with: reason)
         capture?.stop()
         capture = nil
@@ -154,6 +204,11 @@ private final class PrototypeMemoryCapture {
     private var sessionID: Int64 = 0
     private var finished = false
     private var nextMinuteSample = 780.0
+    private var failoverServer: LibboxCommandServer?
+
+    func setFailoverServer(_ server: LibboxCommandServer?) {
+        queue.sync { failoverServer = server }
+    }
 
     init(directory: URL, baseline: Bool, connections: Int, vless: Bool = false) throws {
         self.directory = directory
@@ -200,6 +255,7 @@ private final class PrototypeMemoryCapture {
     private func finish() {
         guard !finished else { return }
         finished = true
+        failoverServer = nil
         timer?.cancel(); timer = nil
         try? file.synchronize()
         try? file.close()
@@ -228,8 +284,14 @@ private final class PrototypeMemoryCapture {
                     nextMinuteSample = (floor(elapsed / 60) + 1) * 60
                 }
             }
-            struct Status: Encodable { let footprintBytes: UInt64; let phase: String; let error: String?; let updatedAt: Date }
-            let data = try JSONEncoder().encode(Status(footprintBytes: info.phys_footprint, phase: phase, error: lastError, updatedAt: Date()))
+            struct Failover: Codable { let mode: String; let selected: String?; let primaryHealth: String?; let allDown: Bool }
+            struct Status: Encodable { let footprintBytes: UInt64; let phase: String; let error: String?; let updatedAt: Date; let failover: Failover? }
+            var failover: Failover?
+            var statusError: NSError?
+            if let text = failoverServer?.priorityFailoverStatus(&statusError), statusError == nil {
+                failover = try? JSONDecoder().decode(Failover.self, from: Data(text.utf8))
+            }
+            let data = try JSONEncoder().encode(Status(footprintBytes: info.phys_footprint, phase: phase, error: lastError, updatedAt: Date(), failover: failover))
             try data.write(to: directory.appendingPathComponent("prototype-status.json"), options: [.atomic, .completeFileProtectionUntilFirstUserAuthentication])
         } catch { timer?.cancel(); timer = nil }
     }

@@ -28,9 +28,24 @@ def read_env(path):
 
 
 def subscription(values, config_url):
+    ui_url = values.get('UI_DOCUMENT_URL', '').strip()
+    ui_token = values.get('UI_DOCUMENT_TOKEN', '').strip() or None
+    try:
+        parsed = urlsplit(ui_url)
+        if (parsed.scheme not in ('http', 'https') or not parsed.hostname
+                or parsed.username is not None or parsed.password is not None
+                or parsed.fragment or (parsed.port is not None and not 1 <= parsed.port <= 65535)
+                or any(character.isspace() or ord(character) < 32 or character == '\\' for character in ui_url)):
+            raise ValueError('Invalid UI URL')
+    except ValueError:
+        raise ValueError('Invalid UI settings') from None
+    if ui_token is not None and not re.fullmatch(r'[A-Za-z0-9_-]{16,256}', ui_token):
+        raise ValueError('Invalid UI settings')
     return {
         'sing_box_url': config_url if values.get('SING_BOX_CONFIG_PATH', '').strip() else None,
         'vk_turn_link': values.get('VK_TURN_LINK', '').strip() or None,
+        'ui_url': ui_url,
+        'ui_token': ui_token,
     }
 
 
