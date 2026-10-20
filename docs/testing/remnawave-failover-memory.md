@@ -4,11 +4,15 @@ Status on 2026-10-20: **not measured; hardware acceptance is incomplete**.
 
 A physical iPhone 13 (iPhone14,5), iOS 27.0.1 (24A446), was detected through
 CoreDevice. Libbox was rebuilt with Go 1.26.0 and the signed VKTurnPrototype
-Debug build succeeded. This run did not install synthetic provisioning over the
-phone's saved personal subscription or connect production accounts for a test.
+Debug build succeeded. After a separate deployment instruction, the app was
+installed and launched on this phone. A single-user production pilot was enabled
+and the owner's actual four-node provisioning passed Swift and Go/Libbox config
+validation. No device VPN traffic/workload or footprint measurement was performed.
 There is no isolated Remnawave test instance; the user confirmed that its
-SRR/HWID generated-response acceptance must remain incomplete. The local
-synthetic HTTP/Swift/Go roundtrip is not evidence of a physical VPN connection.
+SRR/HWID synthetic acceptance remains incomplete. The authorized owner's real
+response was subsequently verified through both production origins; this is
+personal pilot validation, not an isolated eight-group test or physical VPN
+connection.
 
 | Scenario | Median / p95 | Startup-inclusive peak | Delta vs one VLESS | Settled after transitions |
 |---|---|---|---|---|
