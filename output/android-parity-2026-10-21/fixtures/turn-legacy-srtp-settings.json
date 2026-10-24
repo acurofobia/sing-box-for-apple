@@ -1,0 +1,13 @@
+{
+  "version": 1,
+  "type": "connection",
+  "settings": {
+    "privateKey": "AAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAA=",
+    "peerPublicKey": "AQEBAQEBAQEBAQEBAQEBAQEBAQEBAQEBAQEBAQEBAQE=",
+    "tunnelAddress": "10.0.0.2/32",
+    "vkLink": "https://vk.ru/call/join/synthetic",
+    "peerAddress": "example.org:443",
+    "useSrtp": true,
+    "useWrapA": false
+  }
+}

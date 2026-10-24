@@ -37,6 +37,7 @@ private class ExtensionProvider {
  func prepareServiceStart(_ server: LibboxCommandServer) throws {}
 }
 private final class Capture {
+ func setHealthServer(_ server: LibboxCommandServer?) {}
  func setFailoverServer(_ server: LibboxCommandServer?) {}
  func stop() {}
 }

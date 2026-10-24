@@ -1,0 +1,56 @@
+<!doctype html>
+<html lang="ru"><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1">
+<title>Sing Android — комплект макетов</title>
+<style>body{margin:0;background:#f2f2f7;color:#161616;font:16px/1.55 system-ui,sans-serif}header,main,footer{max-width:1200px;margin:auto;padding:28px}header{padding-bottom:10px}h1{font-size:32px;margin:0 0 12px}h2{font-size:18px}a{color:#a61643}nav{display:flex;flex-wrap:wrap;gap:12px 24px;margin:22px 0}.grid{display:grid;grid-template-columns:repeat(auto-fit,minmax(330px,1fr));gap:24px}article{background:white;border-radius:22px;padding:18px}.pair{display:flex;gap:12px}figure{margin:0;flex:1;min-width:0}figcaption{font-size:13px;color:#777;margin-bottom:8px}img{display:block;width:100%;height:auto;border-radius:10px}code{background:#eee;padding:2px 6px;border-radius:4px}.note{padding:16px 20px;border-left:4px solid #a61643;background:white;border-radius:8px}.button{display:inline-block;background:#a61643;color:white;border-radius:22px;padding:9px 18px;text-decoration:none}footer{color:#666}video{width:100%;max-width:360px;background:#eee;border-radius:18px}</style>
+<header><h1>Sing Android</h1><p>Комплект для Windows и разработки с Codex · 20 октября 2026</p>
+<p>11 экранов, точные размеры, ресурсы, поведение, Swift-эталон и тестовые данные. Все ссылки работают локально после распаковки.</p>
+<nav><a class="button" href="CODEX_START_PROMPT.txt">Задание для Codex</a><a href="README.md">Как начать</a><a href="docs/BEHAVIOR.md">Поведение</a><a href="docs/ANDROID.md">Android</a><a href="docs/ACCEPTANCE.md">Проверка</a><a href="design/spec/tokens.json">Стили JSON</a><a href="design/source/sing-vpn-interface.sketch">Исходник Sketch</a></nav>
+<div class="note">Откройте эту папку в Codex и передайте текст из CODEX_START_PROMPT.txt. Используйте PNG для визуального эталона, JSON для координат, Swift для поведения. Системные панели Android адаптируются под устройство.</div></header>
+<main><div class="grid"><article><h2>00 · Добавление подписки</h2>
+    <div class="pair"><figure><figcaption>Макет</figcaption><a href="design/screens/2x/00-onboarding-empty.png"><img src="design/screens/1x/00-onboarding-empty.png" alt="Добавление подписки"></a></figure>
+    <figure><figcaption>Приложение iOS</figcaption><a href="reference/app-screens/00-onboarding-empty.png"><img src="reference/app-screens/00-onboarding-empty.png" alt="Эталон приложения"></a></figure></div>
+    <p><a href="design/screens/2x/00-onboarding-empty.png">PNG 2×</a> · <a href="design/spec/layouts/00-onboarding-empty.json">Координаты JSON</a></p></article>
+<article><h2>00a · Ссылка вставлена</h2>
+    <div class="pair"><figure><figcaption>Макет</figcaption><a href="design/screens/2x/00a-onboarding-filled.png"><img src="design/screens/1x/00a-onboarding-filled.png" alt="Ссылка вставлена"></a></figure>
+    <figure><figcaption>Приложение iOS</figcaption><a href="reference/app-screens/00a-onboarding-filled.png"><img src="reference/app-screens/00a-onboarding-filled.png" alt="Эталон приложения"></a></figure></div>
+    <p><a href="design/screens/2x/00a-onboarding-filled.png">PNG 2×</a> · <a href="design/spec/layouts/00a-onboarding-filled.json">Координаты JSON</a></p></article>
+<article><h2>01 · Подключено: компактно</h2>
+    <div class="pair"><figure><figcaption>Макет</figcaption><a href="design/screens/2x/01-connected-compact.png"><img src="design/screens/1x/01-connected-compact.png" alt="Подключено: компактно"></a></figure>
+    <figure><figcaption>Приложение iOS</figcaption><a href="reference/app-screens/01-connected-compact.png"><img src="reference/app-screens/01-connected-compact.png" alt="Эталон приложения"></a></figure></div>
+    <p><a href="design/screens/2x/01-connected-compact.png">PNG 2×</a> · <a href="design/spec/layouts/01-connected-compact.json">Координаты JSON</a></p></article>
+<article><h2>02 · Подключено: подробно</h2>
+    <div class="pair"><figure><figcaption>Макет</figcaption><a href="design/screens/2x/02-connected-expanded.png"><img src="design/screens/1x/02-connected-expanded.png" alt="Подключено: подробно"></a></figure>
+    <figure><figcaption>Приложение iOS</figcaption><a href="reference/app-screens/02-connected-expanded.png"><img src="reference/app-screens/02-connected-expanded.png" alt="Эталон приложения"></a></figure></div>
+    <p><a href="design/screens/2x/02-connected-expanded.png">PNG 2×</a> · <a href="design/spec/layouts/02-connected-expanded.json">Координаты JSON</a></p></article>
+<article><h2>03 · Выбор режима</h2>
+    <div class="pair"><figure><figcaption>Макет</figcaption><a href="design/screens/2x/03-mode-drawer.png"><img src="design/screens/1x/03-mode-drawer.png" alt="Выбор режима"></a></figure>
+    <figure><figcaption>Приложение iOS</figcaption><a href="reference/app-screens/03-mode-drawer.png"><img src="reference/app-screens/03-mode-drawer.png" alt="Эталон приложения"></a></figure></div>
+    <p><a href="design/screens/2x/03-mode-drawer.png">PNG 2×</a> · <a href="design/spec/layouts/03-mode-drawer.json">Координаты JSON</a></p></article>
+<article><h2>03a · Ограничение тарифа</h2>
+    <div class="pair"><figure><figcaption>Макет</figcaption><a href="design/screens/2x/03a-mode-drawer-restricted.png"><img src="design/screens/1x/03a-mode-drawer-restricted.png" alt="Ограничение тарифа"></a></figure>
+    <figure><figcaption>Приложение iOS</figcaption><a href="reference/app-screens/03a-mode-drawer-restricted.png"><img src="reference/app-screens/03a-mode-drawer-restricted.png" alt="Эталон приложения"></a></figure></div>
+    <p><a href="design/screens/2x/03a-mode-drawer-restricted.png">PNG 2×</a> · <a href="design/spec/layouts/03a-mode-drawer-restricted.json">Координаты JSON</a></p></article>
+<article><h2>04 · Отключено: компактно</h2>
+    <div class="pair"><figure><figcaption>Макет</figcaption><a href="design/screens/2x/04-disconnected-compact.png"><img src="design/screens/1x/04-disconnected-compact.png" alt="Отключено: компактно"></a></figure>
+    <figure><figcaption>Приложение iOS</figcaption><a href="reference/app-screens/04-disconnected-compact.png"><img src="reference/app-screens/04-disconnected-compact.png" alt="Эталон приложения"></a></figure></div>
+    <p><a href="design/screens/2x/04-disconnected-compact.png">PNG 2×</a> · <a href="design/spec/layouts/04-disconnected-compact.json">Координаты JSON</a></p></article>
+<article><h2>05 · Отключено: подробно</h2>
+    <div class="pair"><figure><figcaption>Макет</figcaption><a href="design/screens/2x/05-disconnected-expanded.png"><img src="design/screens/1x/05-disconnected-expanded.png" alt="Отключено: подробно"></a></figure>
+    <figure><figcaption>Приложение iOS</figcaption><a href="reference/app-screens/05-disconnected-expanded.png"><img src="reference/app-screens/05-disconnected-expanded.png" alt="Эталон приложения"></a></figure></div>
+    <p><a href="design/screens/2x/05-disconnected-expanded.png">PNG 2×</a> · <a href="design/spec/layouts/05-disconnected-expanded.json">Координаты JSON</a></p></article>
+<article><h2>06 · Профиль</h2>
+    <div class="pair"><figure><figcaption>Макет</figcaption><a href="design/screens/2x/06-profile.png"><img src="design/screens/1x/06-profile.png" alt="Профиль"></a></figure>
+    <figure><figcaption>Приложение iOS</figcaption><a href="reference/app-screens/06-profile.png"><img src="reference/app-screens/06-profile.png" alt="Эталон приложения"></a></figure></div>
+    <p><a href="design/screens/2x/06-profile.png">PNG 2×</a> · <a href="design/spec/layouts/06-profile.json">Координаты JSON</a></p></article>
+<article><h2>07 · Личный кабинет</h2>
+    <div class="pair"><figure><figcaption>Макет</figcaption><a href="design/screens/2x/07-account-dialog.png"><img src="design/screens/1x/07-account-dialog.png" alt="Личный кабинет"></a></figure>
+    <figure><figcaption>Приложение iOS</figcaption><a href="reference/app-screens/07-account-dialog.png"><img src="reference/app-screens/07-account-dialog.png" alt="Эталон приложения"></a></figure></div>
+    <p><a href="design/screens/2x/07-account-dialog.png">PNG 2×</a> · <a href="design/spec/layouts/07-account-dialog.json">Координаты JSON</a></p></article>
+<article><h2>08 · Роутинг</h2>
+    <div class="pair"><figure><figcaption>Макет</figcaption><a href="design/screens/2x/08-routing-enabled.png"><img src="design/screens/1x/08-routing-enabled.png" alt="Роутинг"></a></figure>
+    <figure><figcaption>Приложение iOS</figcaption><a href="reference/app-screens/08-routing-enabled.png"><img src="reference/app-screens/08-routing-enabled.png" alt="Эталон приложения"></a></figure></div>
+    <p><a href="design/screens/2x/08-routing-enabled.png">PNG 2×</a> · <a href="design/spec/layouts/08-routing-enabled.json">Координаты JSON</a></p></article></div>
+<h2>Жест VPN-карточки</h2><p>Дополнительная запись 19 октября: жест, а не цветовой эталон. Финальные цвета и геометрия — на макетах выше.</p>
+<video controls preload="metadata" src="reference/videos/vpn-card-gesture.mp4"></video>
+<p><a href="reference/videos/vpn-card-gesture.mp4">Открыть MP4 отдельно</a> · <a href="docs/PROVENANCE.md">Происхождение и границы эталонов</a></p></main>
+<footer>Для чтения JSON/Markdown используйте Codex или текстовый редактор. В комплекте нет готового APK. Проверка файлов: <code>py -3 tools/verify_package.py</code>.</footer></html>

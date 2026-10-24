@@ -1,0 +1,160 @@
+{
+  "screens": [
+    {
+      "id": "00",
+      "name": "00-onboarding-empty",
+      "title": "Добавление подписки",
+      "sketchFrameId": "0D4A7BF3-C3FA-42F2-BDA1-62DD33E0A307",
+      "logicalSize": {
+        "width": 390,
+        "height": 844
+      },
+      "png1x": "design/screens/1x/00-onboarding-empty.png",
+      "png2x": "design/screens/2x/00-onboarding-empty.png",
+      "layout": "design/spec/layouts/00-onboarding-empty.json",
+      "appScreenshot": "reference/app-screens/00-onboarding-empty.png"
+    },
+    {
+      "id": "00a",
+      "name": "00a-onboarding-filled",
+      "title": "Ссылка вставлена",
+      "sketchFrameId": "6A52DF39-6861-4477-BA63-3B380A6287FE",
+      "logicalSize": {
+        "width": 390,
+        "height": 844
+      },
+      "png1x": "design/screens/1x/00a-onboarding-filled.png",
+      "png2x": "design/screens/2x/00a-onboarding-filled.png",
+      "layout": "design/spec/layouts/00a-onboarding-filled.json",
+      "appScreenshot": "reference/app-screens/00a-onboarding-filled.png"
+    },
+    {
+      "id": "01",
+      "name": "01-connected-compact",
+      "title": "Подключено: компактно",
+      "sketchFrameId": "1F1BCC60-7F60-4353-82E0-24CBA52DEECE",
+      "logicalSize": {
+        "width": 390,
+        "height": 844
+      },
+      "png1x": "design/screens/1x/01-connected-compact.png",
+      "png2x": "design/screens/2x/01-connected-compact.png",
+      "layout": "design/spec/layouts/01-connected-compact.json",
+      "appScreenshot": "reference/app-screens/01-connected-compact.png"
+    },
+    {
+      "id": "02",
+      "name": "02-connected-expanded",
+      "title": "Подключено: подробно",
+      "sketchFrameId": "AF0FE632-D69A-4955-945E-9DA948D7226B",
+      "logicalSize": {
+        "width": 390,
+        "height": 844
+      },
+      "png1x": "design/screens/1x/02-connected-expanded.png",
+      "png2x": "design/screens/2x/02-connected-expanded.png",
+      "layout": "design/spec/layouts/02-connected-expanded.json",
+      "appScreenshot": "reference/app-screens/02-connected-expanded.png"
+    },
+    {
+      "id": "03",
+      "name": "03-mode-drawer",
+      "title": "Выбор режима",
+      "sketchFrameId": "4836DC0B-FA5E-4230-A711-D9BFFDB8CC1E",
+      "logicalSize": {
+        "width": 390,
+        "height": 844
+      },
+      "png1x": "design/screens/1x/03-mode-drawer.png",
+      "png2x": "design/screens/2x/03-mode-drawer.png",
+      "layout": "design/spec/layouts/03-mode-drawer.json",
+      "appScreenshot": "reference/app-screens/03-mode-drawer.png"
+    },
+    {
+      "id": "03a",
+      "name": "03a-mode-drawer-restricted",
+      "title": "Ограничение тарифа",
+      "sketchFrameId": "9CF47344-2529-4BE8-8D61-876D39F115A5",
+      "logicalSize": {
+        "width": 390,
+        "height": 844
+      },
+      "png1x": "design/screens/1x/03a-mode-drawer-restricted.png",
+      "png2x": "design/screens/2x/03a-mode-drawer-restricted.png",
+      "layout": "design/spec/layouts/03a-mode-drawer-restricted.json",
+      "appScreenshot": "reference/app-screens/03a-mode-drawer-restricted.png"
+    },
+    {
+      "id": "04",
+      "name": "04-disconnected-compact",
+      "title": "Отключено: компактно",
+      "sketchFrameId": "9DC15F1C-5E00-4769-BBD5-F5445B362CAB",
+      "logicalSize": {
+        "width": 390,
+        "height": 844
+      },
+      "png1x": "design/screens/1x/04-disconnected-compact.png",
+      "png2x": "design/screens/2x/04-disconnected-compact.png",
+      "layout": "design/spec/layouts/04-disconnected-compact.json",
+      "appScreenshot": "reference/app-screens/04-disconnected-compact.png"
+    },
+    {
+      "id": "05",
+      "name": "05-disconnected-expanded",
+      "title": "Отключено: подробно",
+      "sketchFrameId": "444A6BD9-6997-4AF9-BB4F-18B107E94755",
+      "logicalSize": {
+        "width": 390,
+        "height": 844
+      },
+      "png1x": "design/screens/1x/05-disconnected-expanded.png",
+      "png2x": "design/screens/2x/05-disconnected-expanded.png",
+      "layout": "design/spec/layouts/05-disconnected-expanded.json",
+      "appScreenshot": "reference/app-screens/05-disconnected-expanded.png"
+    },
+    {
+      "id": "06",
+      "name": "06-profile",
+      "title": "Профиль",
+      "sketchFrameId": "B6354B48-201B-4D50-AB61-11092BB596D3",
+      "logicalSize": {
+        "width": 390,
+        "height": 844
+      },
+      "png1x": "design/screens/1x/06-profile.png",
+      "png2x": "design/screens/2x/06-profile.png",
+      "layout": "design/spec/layouts/06-profile.json",
+      "appScreenshot": "reference/app-screens/06-profile.png"
+    },
+    {
+      "id": "07",
+      "name": "07-account-dialog",
+      "title": "Личный кабинет",
+      "sketchFrameId": "912B71F5-988F-4FFF-BA7B-E96265974D49",
+      "logicalSize": {
+        "width": 390,
+        "height": 844
+      },
+      "png1x": "design/screens/1x/07-account-dialog.png",
+      "png2x": "design/screens/2x/07-account-dialog.png",
+      "layout": "design/spec/layouts/07-account-dialog.json",
+      "appScreenshot": "reference/app-screens/07-account-dialog.png"
+    },
+    {
+      "id": "08",
+      "name": "08-routing-enabled",
+      "title": "Роутинг",
+      "sketchFrameId": "4701C194-743B-4B50-82A6-E1943A15A773",
+      "logicalSize": {
+        "width": 390,
+        "height": 844
+      },
+      "png1x": "design/screens/1x/08-routing-enabled.png",
+      "png2x": "design/screens/2x/08-routing-enabled.png",
+      "layout": "design/spec/layouts/08-routing-enabled.json",
+      "appScreenshot": "reference/app-screens/08-routing-enabled.png"
+    }
+  ],
+  "units": "Sketch points; PNG pixels equal points at 1x",
+  "locale": "ru_RU"
+}

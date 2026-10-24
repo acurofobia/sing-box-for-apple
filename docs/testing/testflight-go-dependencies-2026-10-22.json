@@ -1,0 +1,1616 @@
+{
+  "scope": "Source dependency graph for current experimental/libbox, not verified SBOM of prebuilt Libbox.xcframework or final IPA",
+  "command": [
+    "go",
+    "list",
+    "-mod=readonly",
+    "-deps",
+    "-tags",
+    "with_gvisor,with_wireguard,with_utls,with_clash_api,with_low_memory,badlinkname,tfogo_checklinkname0",
+    "-f",
+    "{{if .Module}}{{.Module.Path}}|{{.Module.Version}}|{{.Module.Dir}}{{end}}",
+    "./experimental/libbox"
+  ],
+  "environment": {
+    "GOOS": "ios",
+    "GOARCH": "arm64",
+    "CGO_ENABLED": "1",
+    "GOTOOLCHAIN": "local",
+    "GOPROXY": "off",
+    "GOSUMDB": "off"
+  },
+  "module_count": 103,
+  "notes": [
+    "License detection is provisional; nested candidate texts need per-package/per-file review.",
+    "Swift SPM packages, standard Go toolchain runtime, and rule-set datasets are outside this file.",
+    "Local replacement github.com/cacggghp/vk-turn-proxy uses ThirdParty/VKTurnProxy.",
+    "Core local replacement prevents its downstream speedtest replacement applying automatically; speedtest absent actual selected iOS graph."
+  ],
+  "modules": [
+    {
+      "module": "filippo.io/age",
+      "version": "v1.3.1",
+      "directory": "<go-module-cache>/age@v1.3.1",
+      "root_license_detections": [
+        {
+          "path": "LICENSE",
+          "provisional_spdx": "BSD-verify-clauses"
+        }
+      ],
+      "all_license_notice_candidates": [
+        ".github/workflows/LICENSE.suffix.txt",
+        "LICENSE"
+      ],
+      "review_flags": []
+    },
+    {
+      "module": "filippo.io/edwards25519",
+      "version": "v1.2.0",
+      "directory": "<go-module-cache>/edwards25519@v1.2.0",
+      "root_license_detections": [
+        {
+          "path": "LICENSE",
+          "provisional_spdx": "BSD-verify-clauses"
+        }
+      ],
+      "all_license_notice_candidates": [
+        "LICENSE"
+      ],
+      "review_flags": []
+    },
+    {
+      "module": "filippo.io/hpke",
+      "version": "v0.4.0",
+      "directory": "<go-module-cache>/hpke@v0.4.0",
+      "root_license_detections": [
+        {
+          "path": "LICENSE",
+          "provisional_spdx": "BSD-verify-clauses"
+        }
+      ],
+      "all_license_notice_candidates": [
+        "LICENSE"
+      ],
+      "review_flags": []
+    },
+    {
+      "module": "github.com/ajg/form",
+      "version": "v1.5.1",
+      "directory": "<go-module-cache>/form@v1.5.1",
+      "root_license_detections": [
+        {
+          "path": "LICENSE",
+          "provisional_spdx": "BSD-verify-clauses"
+        }
+      ],
+      "all_license_notice_candidates": [
+        "LICENSE"
+      ],
+      "review_flags": []
+    },
+    {
+      "module": "github.com/andybalholm/brotli",
+      "version": "v1.2.0",
+      "directory": "<go-module-cache>/brotli@v1.2.0",
+      "root_license_detections": [
+        {
+          "path": "LICENSE",
+          "provisional_spdx": "MIT"
+        }
+      ],
+      "all_license_notice_candidates": [
+        "LICENSE"
+      ],
+      "review_flags": []
+    },
+    {
+      "module": "github.com/anmitsu/go-shlex",
+      "version": "v0.0.0-20200514113438-38f4b401e2be",
+      "directory": "<go-module-cache>/go-shlex@v0.0.0-20200514113438-38f4b401e2be",
+      "root_license_detections": [
+        {
+          "path": "LICENSE",
+          "provisional_spdx": "MIT"
+        }
+      ],
+      "all_license_notice_candidates": [
+        "LICENSE"
+      ],
+      "review_flags": []
+    },
+    {
+      "module": "github.com/anytls/sing-anytls",
+      "version": "v0.0.11",
+      "directory": "<go-module-cache>/sing-anytls@v0.0.11",
+      "root_license_detections": [
+        {
+          "path": "LICENSE",
+          "provisional_spdx": "GPL-family-verify-version-from-grant-not-license-template"
+        }
+      ],
+      "all_license_notice_candidates": [
+        "LICENSE"
+      ],
+      "review_flags": []
+    },
+    {
+      "module": "github.com/bdandy/go-errors",
+      "version": "v1.2.2",
+      "directory": "<go-module-cache>/go-errors@v1.2.2",
+      "root_license_detections": [
+        {
+          "path": "LICENSE",
+          "provisional_spdx": "MIT"
+        }
+      ],
+      "all_license_notice_candidates": [
+        "LICENSE"
+      ],
+      "review_flags": []
+    },
+    {
+      "module": "github.com/bdandy/go-socks4",
+      "version": "v1.2.3",
+      "directory": "<go-module-cache>/go-socks4@v1.2.3",
+      "root_license_detections": [
+        {
+          "path": "LICENSE",
+          "provisional_spdx": "MIT"
+        }
+      ],
+      "all_license_notice_candidates": [
+        "LICENSE"
+      ],
+      "review_flags": []
+    },
+    {
+      "module": "github.com/bogdanfinn/fhttp",
+      "version": "v0.6.8",
+      "directory": "<go-module-cache>/fhttp@v0.6.8",
+      "root_license_detections": [],
+      "all_license_notice_candidates": [],
+      "review_flags": [
+        "No top-level license; per-file/source ancestry review required"
+      ]
+    },
+    {
+      "module": "github.com/bogdanfinn/quic-go-utls",
+      "version": "v1.0.9-utls",
+      "directory": "<go-module-cache>/quic-go-utls@v1.0.9-utls",
+      "root_license_detections": [
+        {
+          "path": "LICENSE",
+          "provisional_spdx": "MIT"
+        }
+      ],
+      "all_license_notice_candidates": [
+        "LICENSE"
+      ],
+      "review_flags": []
+    },
+    {
+      "module": "github.com/bogdanfinn/tls-client",
+      "version": "v1.14.0",
+      "directory": "<go-module-cache>/tls-client@v1.14.0",
+      "root_license_detections": [
+        {
+          "path": "LICENSE",
+          "provisional_spdx": "BSD-verify-clauses"
+        }
+      ],
+      "all_license_notice_candidates": [
+        "LICENSE"
+      ],
+      "review_flags": []
+    },
+    {
+      "module": "github.com/bogdanfinn/utls",
+      "version": "v1.7.7-barnius",
+      "directory": "<go-module-cache>/utls@v1.7.7-barnius",
+      "root_license_detections": [
+        {
+          "path": "LICENSE",
+          "provisional_spdx": "BSD-verify-clauses"
+        }
+      ],
+      "all_license_notice_candidates": [
+        "LICENSE",
+        "dicttls/LICENSE"
+      ],
+      "review_flags": []
+    },
+    {
+      "module": "github.com/bogdanfinn/websocket",
+      "version": "v1.5.5-barnius",
+      "directory": "<go-module-cache>/websocket@v1.5.5-barnius",
+      "root_license_detections": [
+        {
+          "path": "LICENSE",
+          "provisional_spdx": "BSD-verify-clauses"
+        }
+      ],
+      "all_license_notice_candidates": [
+        "LICENSE"
+      ],
+      "review_flags": []
+    },
+    {
+      "module": "github.com/cacggghp/vk-turn-proxy",
+      "version": "v0.0.0",
+      "directory": "ThirdParty/VKTurnProxy",
+      "root_license_detections": [
+        {
+          "path": "LICENSE",
+          "provisional_spdx": "GPL-family-verify-version-from-grant-not-license-template"
+        }
+      ],
+      "all_license_notice_candidates": [
+        "LICENSE",
+        "third_party/speedtest-go/LICENSE"
+      ],
+      "review_flags": []
+    },
+    {
+      "module": "github.com/caddyserver/certmagic",
+      "version": "v0.25.3-0.20260421143802-60d9d8b415d6",
+      "directory": "<go-module-cache>/certmagic@v0.25.3-0.20260421143802-60d9d8b415d6",
+      "root_license_detections": [
+        {
+          "path": "LICENSE.txt",
+          "provisional_spdx": "Apache-2.0-or-mixed-see-file"
+        }
+      ],
+      "all_license_notice_candidates": [
+        "LICENSE.txt"
+      ],
+      "review_flags": []
+    },
+    {
+      "module": "github.com/caddyserver/zerossl",
+      "version": "v0.1.5",
+      "directory": "<go-module-cache>/zerossl@v0.1.5",
+      "root_license_detections": [
+        {
+          "path": "LICENSE",
+          "provisional_spdx": "MIT"
+        }
+      ],
+      "all_license_notice_candidates": [
+        "LICENSE"
+      ],
+      "review_flags": []
+    },
+    {
+      "module": "github.com/cbeuw/connutil",
+      "version": "v1.0.1",
+      "directory": "<go-module-cache>/connutil@v1.0.1",
+      "root_license_detections": [
+        {
+          "path": "LICENSE",
+          "provisional_spdx": "Apache-2.0-or-mixed-see-file"
+        }
+      ],
+      "all_license_notice_candidates": [
+        "LICENSE"
+      ],
+      "review_flags": []
+    },
+    {
+      "module": "github.com/coder/websocket",
+      "version": "v1.8.14",
+      "directory": "<go-module-cache>/websocket@v1.8.14",
+      "root_license_detections": [
+        {
+          "path": "LICENSE.txt",
+          "provisional_spdx": "ISC"
+        }
+      ],
+      "all_license_notice_candidates": [
+        "LICENSE.txt"
+      ],
+      "review_flags": []
+    },
+    {
+      "module": "github.com/creack/pty",
+      "version": "v1.1.24",
+      "directory": "<go-module-cache>/pty@v1.1.24",
+      "root_license_detections": [
+        {
+          "path": "LICENSE",
+          "provisional_spdx": "MIT"
+        }
+      ],
+      "all_license_notice_candidates": [
+        "LICENSE"
+      ],
+      "review_flags": []
+    },
+    {
+      "module": "github.com/cretz/bine",
+      "version": "v0.2.0",
+      "directory": "<go-module-cache>/bine@v0.2.0",
+      "root_license_detections": [
+        {
+          "path": "LICENSE",
+          "provisional_spdx": "MIT"
+        }
+      ],
+      "all_license_notice_candidates": [
+        "LICENSE"
+      ],
+      "review_flags": []
+    },
+    {
+      "module": "github.com/database64128/netx-go",
+      "version": "v0.1.1",
+      "directory": "<go-module-cache>/netx-go@v0.1.1",
+      "root_license_detections": [
+        {
+          "path": "LICENSE",
+          "provisional_spdx": "BSD-verify-clauses"
+        }
+      ],
+      "all_license_notice_candidates": [
+        "LICENSE"
+      ],
+      "review_flags": []
+    },
+    {
+      "module": "github.com/database64128/tfo-go/v2",
+      "version": "v2.3.2",
+      "directory": "<go-module-cache>/v2@v2.3.2",
+      "root_license_detections": [
+        {
+          "path": "LICENSE",
+          "provisional_spdx": "MIT"
+        }
+      ],
+      "all_license_notice_candidates": [
+        "LICENSE"
+      ],
+      "review_flags": []
+    },
+    {
+      "module": "github.com/fsnotify/fsnotify",
+      "version": "v1.9.0",
+      "directory": "<go-module-cache>/fsnotify@v1.9.0",
+      "root_license_detections": [
+        {
+          "path": "LICENSE",
+          "provisional_spdx": "BSD-verify-clauses"
+        }
+      ],
+      "all_license_notice_candidates": [
+        "LICENSE"
+      ],
+      "review_flags": []
+    },
+    {
+      "module": "github.com/fxamacker/cbor/v2",
+      "version": "v2.9.0",
+      "directory": "<go-module-cache>/v2@v2.9.0",
+      "root_license_detections": [
+        {
+          "path": "LICENSE",
+          "provisional_spdx": "MIT"
+        }
+      ],
+      "all_license_notice_candidates": [
+        "LICENSE"
+      ],
+      "review_flags": []
+    },
+    {
+      "module": "github.com/gaissmai/bart",
+      "version": "v0.26.1",
+      "directory": "<go-module-cache>/bart@v0.26.1",
+      "root_license_detections": [
+        {
+          "path": "LICENSE",
+          "provisional_spdx": "MIT"
+        }
+      ],
+      "all_license_notice_candidates": [
+        "LICENSE"
+      ],
+      "review_flags": []
+    },
+    {
+      "module": "github.com/go-chi/chi/v5",
+      "version": "v5.2.5",
+      "directory": "<go-module-cache>/v5@v5.2.5",
+      "root_license_detections": [
+        {
+          "path": "LICENSE",
+          "provisional_spdx": "MIT"
+        }
+      ],
+      "all_license_notice_candidates": [
+        "LICENSE"
+      ],
+      "review_flags": []
+    },
+    {
+      "module": "github.com/go-chi/render",
+      "version": "v1.0.3",
+      "directory": "<go-module-cache>/render@v1.0.3",
+      "root_license_detections": [
+        {
+          "path": "LICENSE",
+          "provisional_spdx": "MIT"
+        }
+      ],
+      "all_license_notice_candidates": [
+        "LICENSE"
+      ],
+      "review_flags": []
+    },
+    {
+      "module": "github.com/gobwas/httphead",
+      "version": "v0.1.0",
+      "directory": "<go-module-cache>/httphead@v0.1.0",
+      "root_license_detections": [
+        {
+          "path": "LICENSE",
+          "provisional_spdx": "MIT"
+        }
+      ],
+      "all_license_notice_candidates": [
+        "LICENSE"
+      ],
+      "review_flags": []
+    },
+    {
+      "module": "github.com/gobwas/pool",
+      "version": "v0.2.1",
+      "directory": "<go-module-cache>/pool@v0.2.1",
+      "root_license_detections": [
+        {
+          "path": "LICENSE",
+          "provisional_spdx": "MIT"
+        }
+      ],
+      "all_license_notice_candidates": [
+        "LICENSE"
+      ],
+      "review_flags": []
+    },
+    {
+      "module": "github.com/gofrs/uuid/v5",
+      "version": "v5.5.1",
+      "directory": "<go-module-cache>/v5@v5.5.1",
+      "root_license_detections": [
+        {
+          "path": "LICENSE",
+          "provisional_spdx": "MIT"
+        }
+      ],
+      "all_license_notice_candidates": [
+        "LICENSE"
+      ],
+      "review_flags": []
+    },
+    {
+      "module": "github.com/golang/groupcache",
+      "version": "v0.0.0-20241129210726-2c02b8208cf8",
+      "directory": "<go-module-cache>/groupcache@v0.0.0-20241129210726-2c02b8208cf8",
+      "root_license_detections": [
+        {
+          "path": "LICENSE",
+          "provisional_spdx": "Apache-2.0-or-mixed-see-file"
+        }
+      ],
+      "all_license_notice_candidates": [
+        "LICENSE"
+      ],
+      "review_flags": []
+    },
+    {
+      "module": "github.com/google/btree",
+      "version": "v1.1.3",
+      "directory": "<go-module-cache>/btree@v1.1.3",
+      "root_license_detections": [
+        {
+          "path": "LICENSE",
+          "provisional_spdx": "Apache-2.0-or-mixed-see-file"
+        }
+      ],
+      "all_license_notice_candidates": [
+        "LICENSE"
+      ],
+      "review_flags": []
+    },
+    {
+      "module": "github.com/google/uuid",
+      "version": "v1.6.0",
+      "directory": "<go-module-cache>/uuid@v1.6.0",
+      "root_license_detections": [
+        {
+          "path": "LICENSE",
+          "provisional_spdx": "BSD-verify-clauses"
+        }
+      ],
+      "all_license_notice_candidates": [
+        "LICENSE"
+      ],
+      "review_flags": []
+    },
+    {
+      "module": "github.com/hashicorp/yamux",
+      "version": "v0.1.2",
+      "directory": "<go-module-cache>/yamux@v0.1.2",
+      "root_license_detections": [
+        {
+          "path": "LICENSE",
+          "provisional_spdx": "MPL-2.0"
+        }
+      ],
+      "all_license_notice_candidates": [
+        "LICENSE"
+      ],
+      "review_flags": []
+    },
+    {
+      "module": "github.com/hdevalence/ed25519consensus",
+      "version": "v0.2.0",
+      "directory": "<go-module-cache>/ed25519consensus@v0.2.0",
+      "root_license_detections": [
+        {
+          "path": "LICENSE",
+          "provisional_spdx": "BSD-verify-clauses"
+        }
+      ],
+      "all_license_notice_candidates": [
+        "LICENSE"
+      ],
+      "review_flags": []
+    },
+    {
+      "module": "github.com/huin/goupnp",
+      "version": "v1.3.0",
+      "directory": "<go-module-cache>/goupnp@v1.3.0",
+      "root_license_detections": [
+        {
+          "path": "LICENSE",
+          "provisional_spdx": "BSD-verify-clauses"
+        }
+      ],
+      "all_license_notice_candidates": [
+        "LICENSE"
+      ],
+      "review_flags": []
+    },
+    {
+      "module": "github.com/klauspost/compress",
+      "version": "v1.19.1",
+      "directory": "<go-module-cache>/compress@v1.19.1",
+      "root_license_detections": [
+        {
+          "path": "LICENSE",
+          "provisional_spdx": "Apache-2.0-or-mixed-see-file"
+        }
+      ],
+      "all_license_notice_candidates": [
+        "LICENSE",
+        "gzhttp/LICENSE",
+        "internal/lz4ref/LICENSE",
+        "internal/snapref/LICENSE",
+        "s2/LICENSE",
+        "s2/cmd/internal/filepathx/LICENSE",
+        "s2/cmd/internal/readahead/LICENSE",
+        "snappy/LICENSE",
+        "snappy/xerial/LICENSE",
+        "zstd/internal/xxhash/LICENSE.txt"
+      ],
+      "review_flags": []
+    },
+    {
+      "module": "github.com/klauspost/cpuid/v2",
+      "version": "v2.3.0",
+      "directory": "<go-module-cache>/v2@v2.3.0",
+      "root_license_detections": [
+        {
+          "path": "LICENSE",
+          "provisional_spdx": "MIT"
+        }
+      ],
+      "all_license_notice_candidates": [
+        "LICENSE"
+      ],
+      "review_flags": []
+    },
+    {
+      "module": "github.com/kr/fs",
+      "version": "v0.1.0",
+      "directory": "<go-module-cache>/fs@v0.1.0",
+      "root_license_detections": [
+        {
+          "path": "LICENSE",
+          "provisional_spdx": "BSD-verify-clauses"
+        }
+      ],
+      "all_license_notice_candidates": [
+        "LICENSE"
+      ],
+      "review_flags": []
+    },
+    {
+      "module": "github.com/libdns/libdns",
+      "version": "v1.1.1",
+      "directory": "<go-module-cache>/libdns@v1.1.1",
+      "root_license_detections": [
+        {
+          "path": "LICENSE",
+          "provisional_spdx": "MIT"
+        }
+      ],
+      "all_license_notice_candidates": [
+        "LICENSE"
+      ],
+      "review_flags": []
+    },
+    {
+      "module": "github.com/logrusorgru/aurora",
+      "version": "v2.0.3+incompatible",
+      "directory": "<go-module-cache>/aurora@v2.0.3+incompatible",
+      "root_license_detections": [
+        {
+          "path": "LICENSE",
+          "provisional_spdx": "Unlicense"
+        }
+      ],
+      "all_license_notice_candidates": [
+        "LICENSE"
+      ],
+      "review_flags": []
+    },
+    {
+      "module": "github.com/metacubex/utls",
+      "version": "v1.8.7",
+      "directory": "<go-module-cache>/utls@v1.8.7",
+      "root_license_detections": [
+        {
+          "path": "LICENSE",
+          "provisional_spdx": "BSD-verify-clauses"
+        }
+      ],
+      "all_license_notice_candidates": [
+        "LICENSE",
+        "dicttls/LICENSE"
+      ],
+      "review_flags": []
+    },
+    {
+      "module": "github.com/mholt/acmez/v3",
+      "version": "v3.1.6",
+      "directory": "<go-module-cache>/v3@v3.1.6",
+      "root_license_detections": [
+        {
+          "path": "LICENSE",
+          "provisional_spdx": "Apache-2.0-or-mixed-see-file"
+        }
+      ],
+      "all_license_notice_candidates": [
+        "LICENSE"
+      ],
+      "review_flags": []
+    },
+    {
+      "module": "github.com/miekg/dns",
+      "version": "v1.1.72",
+      "directory": "<go-module-cache>/dns@v1.1.72",
+      "root_license_detections": [
+        {
+          "path": "LICENSE",
+          "provisional_spdx": "BSD-verify-clauses"
+        }
+      ],
+      "all_license_notice_candidates": [
+        "COPYRIGHT",
+        "LICENSE"
+      ],
+      "review_flags": []
+    },
+    {
+      "module": "github.com/pion/dtls/v3",
+      "version": "v3.1.5",
+      "directory": "<go-module-cache>/v3@v3.1.5",
+      "root_license_detections": [
+        {
+          "path": "LICENSE",
+          "provisional_spdx": "MIT"
+        }
+      ],
+      "all_license_notice_candidates": [
+        "LICENSE"
+      ],
+      "review_flags": []
+    },
+    {
+      "module": "github.com/pion/logging",
+      "version": "v0.2.4",
+      "directory": "<go-module-cache>/logging@v0.2.4",
+      "root_license_detections": [
+        {
+          "path": "LICENSE",
+          "provisional_spdx": "MIT"
+        }
+      ],
+      "all_license_notice_candidates": [
+        "LICENSE"
+      ],
+      "review_flags": []
+    },
+    {
+      "module": "github.com/pion/randutil",
+      "version": "v0.1.0",
+      "directory": "<go-module-cache>/randutil@v0.1.0",
+      "root_license_detections": [
+        {
+          "path": "LICENSE",
+          "provisional_spdx": "MIT"
+        }
+      ],
+      "all_license_notice_candidates": [
+        "LICENSE"
+      ],
+      "review_flags": []
+    },
+    {
+      "module": "github.com/pion/rtcp",
+      "version": "v1.2.16",
+      "directory": "<go-module-cache>/rtcp@v1.2.16",
+      "root_license_detections": [
+        {
+          "path": "LICENSE",
+          "provisional_spdx": "MIT"
+        }
+      ],
+      "all_license_notice_candidates": [
+        "LICENSE"
+      ],
+      "review_flags": []
+    },
+    {
+      "module": "github.com/pion/rtp",
+      "version": "v1.10.1",
+      "directory": "<go-module-cache>/rtp@v1.10.1",
+      "root_license_detections": [
+        {
+          "path": "LICENSE",
+          "provisional_spdx": "MIT"
+        }
+      ],
+      "all_license_notice_candidates": [
+        "LICENSE"
+      ],
+      "review_flags": []
+    },
+    {
+      "module": "github.com/pion/srtp/v3",
+      "version": "v3.0.10",
+      "directory": "<go-module-cache>/v3@v3.0.10",
+      "root_license_detections": [
+        {
+          "path": "LICENSE",
+          "provisional_spdx": "MIT"
+        }
+      ],
+      "all_license_notice_candidates": [
+        "LICENSE"
+      ],
+      "review_flags": []
+    },
+    {
+      "module": "github.com/pion/stun/v3",
+      "version": "v3.1.1",
+      "directory": "<go-module-cache>/v3@v3.1.1",
+      "root_license_detections": [
+        {
+          "path": "LICENSE",
+          "provisional_spdx": "MIT"
+        }
+      ],
+      "all_license_notice_candidates": [
+        "LICENSE"
+      ],
+      "review_flags": []
+    },
+    {
+      "module": "github.com/pion/transport/v4",
+      "version": "v4.0.2",
+      "directory": "<go-module-cache>/v4@v4.0.2",
+      "root_license_detections": [
+        {
+          "path": "LICENSE",
+          "provisional_spdx": "MIT"
+        }
+      ],
+      "all_license_notice_candidates": [
+        "LICENSE"
+      ],
+      "review_flags": []
+    },
+    {
+      "module": "github.com/pion/turn/v5",
+      "version": "v5.0.2",
+      "directory": "<go-module-cache>/v5@v5.0.2",
+      "root_license_detections": [
+        {
+          "path": "LICENSE",
+          "provisional_spdx": "MIT"
+        }
+      ],
+      "all_license_notice_candidates": [
+        "LICENSE"
+      ],
+      "review_flags": []
+    },
+    {
+      "module": "github.com/pires/go-proxyproto",
+      "version": "v0.8.1",
+      "directory": "<go-module-cache>/go-proxyproto@v0.8.1",
+      "root_license_detections": [
+        {
+          "path": "LICENSE",
+          "provisional_spdx": "Apache-2.0-or-mixed-see-file"
+        }
+      ],
+      "all_license_notice_candidates": [
+        "LICENSE"
+      ],
+      "review_flags": []
+    },
+    {
+      "module": "github.com/pkg/sftp",
+      "version": "v1.13.10",
+      "directory": "<go-module-cache>/sftp@v1.13.10",
+      "root_license_detections": [
+        {
+          "path": "LICENSE",
+          "provisional_spdx": "BSD-verify-clauses"
+        }
+      ],
+      "all_license_notice_candidates": [
+        "LICENSE"
+      ],
+      "review_flags": []
+    },
+    {
+      "module": "github.com/quic-go/qpack",
+      "version": "v0.6.0",
+      "directory": "<go-module-cache>/qpack@v0.6.0",
+      "root_license_detections": [
+        {
+          "path": "LICENSE.md",
+          "provisional_spdx": "MIT"
+        }
+      ],
+      "all_license_notice_candidates": [
+        "LICENSE.md"
+      ],
+      "review_flags": []
+    },
+    {
+      "module": "github.com/refraction-networking/utls",
+      "version": "v1.8.2",
+      "directory": "<go-module-cache>/utls@v1.8.2",
+      "root_license_detections": [
+        {
+          "path": "LICENSE",
+          "provisional_spdx": "BSD-verify-clauses"
+        }
+      ],
+      "all_license_notice_candidates": [
+        "LICENSE",
+        "dicttls/LICENSE"
+      ],
+      "review_flags": []
+    },
+    {
+      "module": "github.com/sagernet/bbolt",
+      "version": "v0.0.0-20260915102804-500ee1e84832",
+      "directory": "<go-module-cache>/bbolt@v0.0.0-20260915102804-500ee1e84832",
+      "root_license_detections": [
+        {
+          "path": "LICENSE",
+          "provisional_spdx": "MIT"
+        }
+      ],
+      "all_license_notice_candidates": [
+        "LICENSE"
+      ],
+      "review_flags": []
+    },
+    {
+      "module": "github.com/sagernet/cors",
+      "version": "v1.2.1",
+      "directory": "<go-module-cache>/cors@v1.2.1",
+      "root_license_detections": [
+        {
+          "path": "LICENSE",
+          "provisional_spdx": "MIT"
+        }
+      ],
+      "all_license_notice_candidates": [
+        "LICENSE"
+      ],
+      "review_flags": []
+    },
+    {
+      "module": "github.com/sagernet/fswatch",
+      "version": "v0.1.2",
+      "directory": "<go-module-cache>/fswatch@v0.1.2",
+      "root_license_detections": [
+        {
+          "path": "LICENSE",
+          "provisional_spdx": "GPL-family-verify-version-from-grant-not-license-template"
+        }
+      ],
+      "all_license_notice_candidates": [
+        "LICENSE"
+      ],
+      "review_flags": []
+    },
+    {
+      "module": "github.com/sagernet/gliderssh",
+      "version": "v0.3.4-0.20260531100337-2194faca5648",
+      "directory": "<go-module-cache>/gliderssh@v0.3.4-0.20260531100337-2194faca5648",
+      "root_license_detections": [
+        {
+          "path": "LICENSE",
+          "provisional_spdx": "BSD-verify-clauses"
+        }
+      ],
+      "all_license_notice_candidates": [
+        "LICENSE"
+      ],
+      "review_flags": []
+    },
+    {
+      "module": "github.com/sagernet/gvisor",
+      "version": "v0.0.0-20260727.0-sing-box-mod.1",
+      "directory": "<go-module-cache>/gvisor@v0.0.0-20260727.0-sing-box-mod.1",
+      "root_license_detections": [
+        {
+          "path": "LICENSE",
+          "provisional_spdx": "Apache-2.0-or-mixed-see-file"
+        }
+      ],
+      "all_license_notice_candidates": [
+        "LICENSE"
+      ],
+      "review_flags": []
+    },
+    {
+      "module": "github.com/sagernet/sing-box",
+      "version": null,
+      "directory": "upstream/sing-box",
+      "root_license_detections": [
+        {
+          "path": "LICENSE",
+          "provisional_spdx": "GPL-family-verify-version-from-grant-not-license-template"
+        }
+      ],
+      "all_license_notice_candidates": [
+        "LICENSE",
+        "common/ja3/LICENSE",
+        "common/windivert/assets/LICENSE.txt"
+      ],
+      "review_flags": []
+    },
+    {
+      "module": "github.com/sagernet/sing-mux",
+      "version": "v0.3.8",
+      "directory": "<go-module-cache>/sing-mux@v0.3.8",
+      "root_license_detections": [
+        {
+          "path": "LICENSE",
+          "provisional_spdx": "GPL-family-verify-version-from-grant-not-license-template"
+        }
+      ],
+      "all_license_notice_candidates": [
+        "LICENSE"
+      ],
+      "review_flags": []
+    },
+    {
+      "module": "github.com/sagernet/sing-shadowsocks2",
+      "version": "v0.2.1",
+      "directory": "<go-module-cache>/sing-shadowsocks2@v0.2.1",
+      "root_license_detections": [
+        {
+          "path": "LICENSE",
+          "provisional_spdx": "GPL-family-verify-version-from-grant-not-license-template"
+        }
+      ],
+      "all_license_notice_candidates": [
+        "LICENSE"
+      ],
+      "review_flags": []
+    },
+    {
+      "module": "github.com/sagernet/sing-shadowsocks",
+      "version": "v0.2.8",
+      "directory": "<go-module-cache>/sing-shadowsocks@v0.2.8",
+      "root_license_detections": [
+        {
+          "path": "LICENSE",
+          "provisional_spdx": "GPL-family-verify-version-from-grant-not-license-template"
+        }
+      ],
+      "all_license_notice_candidates": [
+        "LICENSE"
+      ],
+      "review_flags": []
+    },
+    {
+      "module": "github.com/sagernet/sing-shadowtls",
+      "version": "v0.2.1",
+      "directory": "<go-module-cache>/sing-shadowtls@v0.2.1",
+      "root_license_detections": [
+        {
+          "path": "LICENSE",
+          "provisional_spdx": "GPL-family-verify-version-from-grant-not-license-template"
+        }
+      ],
+      "all_license_notice_candidates": [
+        "LICENSE"
+      ],
+      "review_flags": []
+    },
+    {
+      "module": "github.com/sagernet/sing-snell",
+      "version": "v0.0.0-20260829071736-20f2eaec77c3",
+      "directory": "<go-module-cache>/sing-snell@v0.0.0-20260829071736-20f2eaec77c3",
+      "root_license_detections": [
+        {
+          "path": "LICENSE",
+          "provisional_spdx": "GPL-family-verify-version-from-grant-not-license-template"
+        }
+      ],
+      "all_license_notice_candidates": [
+        "LICENSE"
+      ],
+      "review_flags": []
+    },
+    {
+      "module": "github.com/sagernet/sing-tun",
+      "version": "v0.9.6-0.20260924001923-ddaa4ca25e3b",
+      "directory": "<go-module-cache>/sing-tun@v0.9.6-0.20260924001923-ddaa4ca25e3b",
+      "root_license_detections": [
+        {
+          "path": "LICENSE",
+          "provisional_spdx": "GPL-family-verify-version-from-grant-not-license-template"
+        }
+      ],
+      "all_license_notice_candidates": [
+        "LICENSE"
+      ],
+      "review_flags": []
+    },
+    {
+      "module": "github.com/sagernet/sing-vmess",
+      "version": "v0.2.8",
+      "directory": "<go-module-cache>/sing-vmess@v0.2.8",
+      "root_license_detections": [
+        {
+          "path": "LICENSE",
+          "provisional_spdx": "GPL-family-verify-version-from-grant-not-license-template"
+        }
+      ],
+      "all_license_notice_candidates": [
+        "LICENSE"
+      ],
+      "review_flags": []
+    },
+    {
+      "module": "github.com/sagernet/sing",
+      "version": "v0.9.6-0.20260922013354-87c33f17688f",
+      "directory": "<go-module-cache>/sing@v0.9.6-0.20260922013354-87c33f17688f",
+      "root_license_detections": [
+        {
+          "path": "LICENSE",
+          "provisional_spdx": "GPL-family-verify-version-from-grant-not-license-template"
+        }
+      ],
+      "all_license_notice_candidates": [
+        "LICENSE",
+        "contrab/freelru/LICENSE",
+        "contrab/freelru/NOTICE"
+      ],
+      "review_flags": []
+    },
+    {
+      "module": "github.com/sagernet/smux",
+      "version": "v1.5.50-sing-box-mod.1",
+      "directory": "<go-module-cache>/smux@v1.5.50-sing-box-mod.1",
+      "root_license_detections": [
+        {
+          "path": "LICENSE",
+          "provisional_spdx": "MIT"
+        }
+      ],
+      "all_license_notice_candidates": [
+        "LICENSE"
+      ],
+      "review_flags": []
+    },
+    {
+      "module": "github.com/sagernet/tailscale",
+      "version": "v1.102.1-sing-box-1.14-mod.5",
+      "directory": "<go-module-cache>/tailscale@v1.102.1-sing-box-1.14-mod.5",
+      "root_license_detections": [
+        {
+          "path": "LICENSE",
+          "provisional_spdx": "BSD-verify-clauses"
+        }
+      ],
+      "all_license_notice_candidates": [
+        "LICENSE",
+        "PATENTS",
+        "derp/xdp/headers/LICENSE.BSD-2-Clause",
+        "internal/godown/github.com/go-json-experiment/json/LICENSE",
+        "tempfork/spf13/cobra/LICENSE.txt"
+      ],
+      "review_flags": []
+    },
+    {
+      "module": "github.com/sagernet/wireguard-go",
+      "version": "v0.0.7",
+      "directory": "<go-module-cache>/wireguard-go@v0.0.7",
+      "root_license_detections": [
+        {
+          "path": "LICENSE",
+          "provisional_spdx": "MIT"
+        }
+      ],
+      "all_license_notice_candidates": [
+        "LICENSE"
+      ],
+      "review_flags": []
+    },
+    {
+      "module": "github.com/sagernet/ws",
+      "version": "v0.0.0-20231204124109-acfe8907c854",
+      "directory": "<go-module-cache>/ws@v0.0.0-20231204124109-acfe8907c854",
+      "root_license_detections": [
+        {
+          "path": "LICENSE",
+          "provisional_spdx": "MIT"
+        }
+      ],
+      "all_license_notice_candidates": [
+        "LICENSE"
+      ],
+      "review_flags": []
+    },
+    {
+      "module": "github.com/tailscale/peercred",
+      "version": "v0.0.0-20250107143737-35a0c7bd7edc",
+      "directory": "<go-module-cache>/peercred@v0.0.0-20250107143737-35a0c7bd7edc",
+      "root_license_detections": [
+        {
+          "path": "LICENSE",
+          "provisional_spdx": "BSD-verify-clauses"
+        }
+      ],
+      "all_license_notice_candidates": [
+        "LICENSE"
+      ],
+      "review_flags": []
+    },
+    {
+      "module": "github.com/tailscale/web-client-prebuilt",
+      "version": "v0.0.0-20250124233751-d4cd19a26976",
+      "directory": "<go-module-cache>/web-client-prebuilt@v0.0.0-20250124233751-d4cd19a26976",
+      "root_license_detections": [
+        {
+          "path": "LICENSE",
+          "provisional_spdx": "BSD-verify-clauses"
+        }
+      ],
+      "all_license_notice_candidates": [
+        "LICENSE"
+      ],
+      "review_flags": []
+    },
+    {
+      "module": "github.com/tam7t/hpkp",
+      "version": "v0.0.0-20160821193359-2b70b4024ed5",
+      "directory": "<go-module-cache>/hpkp@v0.0.0-20160821193359-2b70b4024ed5",
+      "root_license_detections": [
+        {
+          "path": "LICENSE",
+          "provisional_spdx": "MIT"
+        }
+      ],
+      "all_license_notice_candidates": [
+        "LICENSE"
+      ],
+      "review_flags": []
+    },
+    {
+      "module": "github.com/vishvananda/netns",
+      "version": "v0.0.5",
+      "directory": "<go-module-cache>/netns@v0.0.5",
+      "root_license_detections": [
+        {
+          "path": "LICENSE",
+          "provisional_spdx": "Apache-2.0-or-mixed-see-file"
+        }
+      ],
+      "all_license_notice_candidates": [
+        "LICENSE"
+      ],
+      "review_flags": []
+    },
+    {
+      "module": "github.com/wlynxg/anet",
+      "version": "v0.0.5",
+      "directory": "<go-module-cache>/anet@v0.0.5",
+      "root_license_detections": [
+        {
+          "path": "LICENSE",
+          "provisional_spdx": "BSD-verify-clauses"
+        }
+      ],
+      "all_license_notice_candidates": [
+        "LICENSE"
+      ],
+      "review_flags": []
+    },
+    {
+      "module": "github.com/x448/float16",
+      "version": "v0.8.4",
+      "directory": "<go-module-cache>/float16@v0.8.4",
+      "root_license_detections": [
+        {
+          "path": "LICENSE",
+          "provisional_spdx": "MIT"
+        }
+      ],
+      "all_license_notice_candidates": [
+        "LICENSE"
+      ],
+      "review_flags": []
+    },
+    {
+      "module": "github.com/zeebo/blake3",
+      "version": "v0.2.4",
+      "directory": "<go-module-cache>/blake3@v0.2.4",
+      "root_license_detections": [
+        {
+          "path": "LICENSE",
+          "provisional_spdx": "CC0-1.0"
+        }
+      ],
+      "all_license_notice_candidates": [
+        "LICENSE"
+      ],
+      "review_flags": []
+    },
+    {
+      "module": "go.uber.org/multierr",
+      "version": "v1.11.0",
+      "directory": "<go-module-cache>/multierr@v1.11.0",
+      "root_license_detections": [
+        {
+          "path": "LICENSE.txt",
+          "provisional_spdx": "MIT"
+        }
+      ],
+      "all_license_notice_candidates": [
+        "LICENSE.txt"
+      ],
+      "review_flags": []
+    },
+    {
+      "module": "go.uber.org/zap/exp",
+      "version": "v0.3.0",
+      "directory": "<go-module-cache>/exp@v0.3.0",
+      "root_license_detections": [
+        {
+          "path": "LICENSE",
+          "provisional_spdx": "MIT"
+        }
+      ],
+      "all_license_notice_candidates": [
+        "LICENSE"
+      ],
+      "review_flags": []
+    },
+    {
+      "module": "go.uber.org/zap",
+      "version": "v1.27.1",
+      "directory": "<go-module-cache>/zap@v1.27.1",
+      "root_license_detections": [
+        {
+          "path": "LICENSE",
+          "provisional_spdx": "MIT"
+        }
+      ],
+      "all_license_notice_candidates": [
+        "LICENSE"
+      ],
+      "review_flags": []
+    },
+    {
+      "module": "go4.org/mem",
+      "version": "v0.0.0-20240501181205-ae6ca9944745",
+      "directory": "<go-module-cache>/mem@v0.0.0-20240501181205-ae6ca9944745",
+      "root_license_detections": [
+        {
+          "path": "LICENSE",
+          "provisional_spdx": "Apache-2.0-or-mixed-see-file"
+        }
+      ],
+      "all_license_notice_candidates": [
+        "LICENSE"
+      ],
+      "review_flags": []
+    },
+    {
+      "module": "go4.org/netipx",
+      "version": "v0.0.0-20231129151722-fdeea329fbba",
+      "directory": "<go-module-cache>/netipx@v0.0.0-20231129151722-fdeea329fbba",
+      "root_license_detections": [
+        {
+          "path": "LICENSE",
+          "provisional_spdx": "BSD-verify-clauses"
+        }
+      ],
+      "all_license_notice_candidates": [
+        "LICENSE"
+      ],
+      "review_flags": []
+    },
+    {
+      "module": "golang.org/x/crypto",
+      "version": "v0.54.0",
+      "directory": "<go-module-cache>/crypto@v0.54.0",
+      "root_license_detections": [
+        {
+          "path": "LICENSE",
+          "provisional_spdx": "BSD-verify-clauses"
+        }
+      ],
+      "all_license_notice_candidates": [
+        "LICENSE",
+        "PATENTS"
+      ],
+      "review_flags": []
+    },
+    {
+      "module": "golang.org/x/exp",
+      "version": "v0.0.0-20260410095643-746e56fc9e2f",
+      "directory": "<go-module-cache>/exp@v0.0.0-20260410095643-746e56fc9e2f",
+      "root_license_detections": [
+        {
+          "path": "LICENSE",
+          "provisional_spdx": "BSD-verify-clauses"
+        }
+      ],
+      "all_license_notice_candidates": [
+        "LICENSE",
+        "PATENTS"
+      ],
+      "review_flags": []
+    },
+    {
+      "module": "golang.org/x/mod",
+      "version": "v0.37.0",
+      "directory": "<go-module-cache>/mod@v0.37.0",
+      "root_license_detections": [
+        {
+          "path": "LICENSE",
+          "provisional_spdx": "BSD-verify-clauses"
+        }
+      ],
+      "all_license_notice_candidates": [
+        "LICENSE",
+        "PATENTS"
+      ],
+      "review_flags": []
+    },
+    {
+      "module": "golang.org/x/net",
+      "version": "v0.57.0",
+      "directory": "<go-module-cache>/net@v0.57.0",
+      "root_license_detections": [
+        {
+          "path": "LICENSE",
+          "provisional_spdx": "BSD-verify-clauses"
+        }
+      ],
+      "all_license_notice_candidates": [
+        "LICENSE",
+        "PATENTS"
+      ],
+      "review_flags": []
+    },
+    {
+      "module": "golang.org/x/oauth2",
+      "version": "v0.36.0",
+      "directory": "<go-module-cache>/oauth2@v0.36.0",
+      "root_license_detections": [
+        {
+          "path": "LICENSE",
+          "provisional_spdx": "BSD-verify-clauses"
+        }
+      ],
+      "all_license_notice_candidates": [
+        "LICENSE"
+      ],
+      "review_flags": []
+    },
+    {
+      "module": "golang.org/x/sync",
+      "version": "v0.22.0",
+      "directory": "<go-module-cache>/sync@v0.22.0",
+      "root_license_detections": [
+        {
+          "path": "LICENSE",
+          "provisional_spdx": "BSD-verify-clauses"
+        }
+      ],
+      "all_license_notice_candidates": [
+        "LICENSE",
+        "PATENTS"
+      ],
+      "review_flags": []
+    },
+    {
+      "module": "golang.org/x/sys",
+      "version": "v0.47.0",
+      "directory": "<go-module-cache>/sys@v0.47.0",
+      "root_license_detections": [
+        {
+          "path": "LICENSE",
+          "provisional_spdx": "BSD-verify-clauses"
+        }
+      ],
+      "all_license_notice_candidates": [
+        "LICENSE",
+        "PATENTS"
+      ],
+      "review_flags": []
+    },
+    {
+      "module": "golang.org/x/term",
+      "version": "v0.45.0",
+      "directory": "<go-module-cache>/term@v0.45.0",
+      "root_license_detections": [
+        {
+          "path": "LICENSE",
+          "provisional_spdx": "BSD-verify-clauses"
+        }
+      ],
+      "all_license_notice_candidates": [
+        "LICENSE",
+        "PATENTS"
+      ],
+      "review_flags": []
+    },
+    {
+      "module": "golang.org/x/text",
+      "version": "v0.40.0",
+      "directory": "<go-module-cache>/text@v0.40.0",
+      "root_license_detections": [
+        {
+          "path": "LICENSE",
+          "provisional_spdx": "BSD-verify-clauses"
+        }
+      ],
+      "all_license_notice_candidates": [
+        "LICENSE",
+        "PATENTS"
+      ],
+      "review_flags": []
+    },
+    {
+      "module": "golang.org/x/time",
+      "version": "v0.15.0",
+      "directory": "<go-module-cache>/time@v0.15.0",
+      "root_license_detections": [
+        {
+          "path": "LICENSE",
+          "provisional_spdx": "BSD-verify-clauses"
+        }
+      ],
+      "all_license_notice_candidates": [
+        "LICENSE",
+        "PATENTS"
+      ],
+      "review_flags": []
+    },
+    {
+      "module": "golang.zx2c4.com/wireguard",
+      "version": "v0.0.0-20250521234502-f333402bd9cb",
+      "directory": "<go-module-cache>/wireguard@v0.0.0-20250521234502-f333402bd9cb",
+      "root_license_detections": [
+        {
+          "path": "LICENSE",
+          "provisional_spdx": "MIT"
+        }
+      ],
+      "all_license_notice_candidates": [
+        "LICENSE"
+      ],
+      "review_flags": []
+    },
+    {
+      "module": "google.golang.org/genproto/googleapis/rpc",
+      "version": "v0.0.0-20251202230838-ff82c1b0f217",
+      "directory": "<go-module-cache>/rpc@v0.0.0-20251202230838-ff82c1b0f217",
+      "root_license_detections": [
+        {
+          "path": "LICENSE",
+          "provisional_spdx": "Apache-2.0-or-mixed-see-file"
+        }
+      ],
+      "all_license_notice_candidates": [
+        "LICENSE"
+      ],
+      "review_flags": []
+    },
+    {
+      "module": "google.golang.org/grpc",
+      "version": "v1.79.1",
+      "directory": "<go-module-cache>/grpc@v1.79.1",
+      "root_license_detections": [
+        {
+          "path": "LICENSE",
+          "provisional_spdx": "Apache-2.0-or-mixed-see-file"
+        },
+        {
+          "path": "NOTICE.txt",
+          "provisional_spdx": "Apache-2.0-or-mixed-see-file"
+        }
+      ],
+      "all_license_notice_candidates": [
+        "LICENSE",
+        "NOTICE.txt"
+      ],
+      "review_flags": []
+    },
+    {
+      "module": "google.golang.org/protobuf",
+      "version": "v1.36.11",
+      "directory": "<go-module-cache>/protobuf@v1.36.11",
+      "root_license_detections": [
+        {
+          "path": "LICENSE",
+          "provisional_spdx": "BSD-verify-clauses"
+        }
+      ],
+      "all_license_notice_candidates": [
+        "LICENSE",
+        "PATENTS"
+      ],
+      "review_flags": []
+    },
+    {
+      "module": "lukechampine.com/blake3",
+      "version": "v1.3.0",
+      "directory": "<go-module-cache>/blake3@v1.3.0",
+      "root_license_detections": [
+        {
+          "path": "LICENSE",
+          "provisional_spdx": "MIT"
+        }
+      ],
+      "all_license_notice_candidates": [
+        "LICENSE"
+      ],
+      "review_flags": []
+    }
+  ],
+  "checked_date": "2026-10-22",
+  "source_revisions": {
+    ".": "2a6a6dfe3a082af405a3105b12a41b366cb5e136",
+    "upstream/sing-box": "1c3c78d566f28a2df7c72bcf3e63099beea8493f",
+    "ThirdParty/VKTurnProxy": "bbab2a7c09b0894a120496b6d506db66eb998798"
+  },
+  "path_note": "License candidate paths are relative to each module directory. Module cache roots are symbolic."
+}

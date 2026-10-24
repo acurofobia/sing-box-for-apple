@@ -1,0 +1,25 @@
+{
+  "route": {
+    "final": "discard"
+  },
+  "dns": {
+    "final": "discard"
+  },
+  "inbounds": [
+    {
+      "type": "tun"
+    }
+  ],
+  "outbounds": [
+    {
+      "type": "vless",
+      "tag": "R3-N1",
+      "server": "example.org",
+      "server_port": 443,
+      "uuid": "bf000d23-0752-40b4-affe-68f7707a9661",
+      "tls": {
+        "enabled": true
+      }
+    }
+  ]
+}

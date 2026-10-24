@@ -1,0 +1,734 @@
+{
+  "evidence": {
+    "package_json_sha256": "f794683bd7abfced3443ea570798fca83232fc42359da75a3e5c7c690ca883b9",
+    "source_module": "github.com/sagernet/tailscale",
+    "source_version": "v1.102.1-sing-box-1.14-mod.5",
+    "yarn_lock_sha256": "e38bfc13b4d9cbb851c5841331efbba9513f01e0fe798fdbd71ed0f199cbde3a"
+  },
+  "font": {
+    "asset_sha256": "39e72c0794c12f2dbb14a0f61ca946b535f795b1478fcf795bd26e5cb52ded34",
+    "copyright": "Copyright 2020 The Inter Project Authors (https://github.com/rsms/inter)",
+    "name": "Inter",
+    "notices": [
+      {
+        "path": "Inter-0a5106e0b-LICENSE.txt",
+        "sha256": "4d7d9c95e7d7f2f0ebf76d5e0b344826b74e903a34028ee18ab54bb639e45906",
+        "upstream_path": "LICENSE.txt"
+      }
+    ],
+    "source": "https://raw.githubusercontent.com/rsms/inter/0a5106e0b/LICENSE.txt",
+    "version": "3.019;git-0a5106e0b"
+  },
+  "packages": [
+    {
+      "declared_license": "MIT",
+      "integrity": "sha512-KHp2IflsnGywDjBWDkR9iEqiWSpc8GIi0lgTT3mOElT0PP1tG26P4tmFI2YvAdzgq9RGyoHZQEIEdZy6Ec5xCA==",
+      "name": "@babel/runtime",
+      "notices": [
+        {
+          "path": "babel__runtime-7.28.2-package__LICENSE",
+          "sha256": "117da2af0d4ce0fe1c8e19b5cff9dcd806adf973d328d27b11d4448c4ff24f76",
+          "upstream_path": "package/LICENSE"
+        }
+      ],
+      "source": "https://registry.npmjs.org/@babel/runtime/-/runtime-7.28.2.tgz",
+      "version": "7.28.2"
+    },
+    {
+      "declared_license": "MIT",
+      "integrity": "sha512-kK1h4m36DQ0UHGj5Ah4db7R0rHemTqqO0QLvUqi1/mUUp3LuAWbWxdxSIf/XsnH9VS6rRVPLJCncjRzUvyCLXg==",
+      "name": "@floating-ui/core",
+      "notices": [
+        {
+          "path": "floating-ui__core-1.5.0-package__LICENSE",
+          "sha256": "0e4c9a9b6c71019cbbea3bdc20b01223110a9035700f9c960c8fcbf78c2325ce",
+          "upstream_path": "package/LICENSE"
+        }
+      ],
+      "source": "https://registry.npmjs.org/@floating-ui/core/-/core-1.5.0.tgz",
+      "version": "1.5.0"
+    },
+    {
+      "declared_license": "MIT",
+      "integrity": "sha512-ClAbQnEqJAKCJOEbbLo5IUlZHkNszqhuxS4fHAVxRPXPya6Ysf2G8KypnYcOTpx6I8xcgF9bbHb6g/2KpbV8qA==",
+      "name": "@floating-ui/dom",
+      "notices": [
+        {
+          "path": "floating-ui__dom-1.5.3-package__LICENSE",
+          "sha256": "0e4c9a9b6c71019cbbea3bdc20b01223110a9035700f9c960c8fcbf78c2325ce",
+          "upstream_path": "package/LICENSE"
+        }
+      ],
+      "source": "https://registry.npmjs.org/@floating-ui/dom/-/dom-1.5.3.tgz",
+      "version": "1.5.3"
+    },
+    {
+      "declared_license": "MIT",
+      "integrity": "sha512-CF8k2rgKeh/49UrnIBs4BdxPUV6vize/Db1d/YbCLyp9GiVZ0BEwf5AiDSxJRCr6yOkGqTFHtmrULxkEfYZ7dQ==",
+      "name": "@floating-ui/react-dom",
+      "notices": [
+        {
+          "path": "floating-ui__react-dom-2.0.4-package__LICENSE",
+          "sha256": "0e4c9a9b6c71019cbbea3bdc20b01223110a9035700f9c960c8fcbf78c2325ce",
+          "upstream_path": "package/LICENSE"
+        }
+      ],
+      "source": "https://registry.npmjs.org/@floating-ui/react-dom/-/react-dom-2.0.4.tgz",
+      "version": "2.0.4"
+    },
+    {
+      "declared_license": "MIT",
+      "integrity": "sha512-OfX7E2oUDYxtBvsuS4e/jSn4Q9Qb6DzgeYtsAdkPZ47znpoNsMgZw0+tVijiv3uGNR6dgNlty6r9rzIzHjtd/A==",
+      "name": "@floating-ui/utils",
+      "notices": [
+        {
+          "path": "floating-ui__utils-0.1.6-package__LICENSE",
+          "sha256": "0e4c9a9b6c71019cbbea3bdc20b01223110a9035700f9c960c8fcbf78c2325ce",
+          "upstream_path": "package/LICENSE"
+        }
+      ],
+      "source": "https://registry.npmjs.org/@floating-ui/utils/-/utils-0.1.6.tgz",
+      "version": "0.1.6"
+    },
+    {
+      "declared_license": "MIT",
+      "integrity": "sha512-yQ8oGX2GVsEYMWGxcovu1uGWPCxV5BFfeeYxqPmuAzUyLT9qmaMXSAhXpb0WrspIeqYzdJpkh2vHModJPgRIaw==",
+      "license_provenance": "Official repository root MIT notice at ee4e3197bffe7dde669d6bbf8c30fef97b65e49d (2022-06-01). These npm tarballs omit the notice and exact gitHead; the source-distribution notice is included conservatively.",
+      "name": "@radix-ui/primitive",
+      "notices": [
+        {
+          "path": "Radix-primitives-ee4e3197-LICENSE.txt",
+          "sha256": "0e80a2d229d2fd4fc7e8636142ec5d0ff0bc031f14c15b682e2ac01dfd5b5138",
+          "source": "https://raw.githubusercontent.com/radix-ui/primitives/ee4e3197bffe7dde669d6bbf8c30fef97b65e49d/LICENSE",
+          "upstream_path": "LICENSE"
+        }
+      ],
+      "source": "https://registry.npmjs.org/@radix-ui/primitive/-/primitive-1.0.1.tgz",
+      "version": "1.0.1"
+    },
+    {
+      "declared_license": "MIT",
+      "integrity": "sha512-wSP+pHsB/jQRaL6voubsQ/ZlrGBHHrOjmBnr19hxYgtS0WvAFwZhK2WP/YY5yF9uKECCEEDGxuLxq1NBK51wFA==",
+      "license_provenance": "Official repository root MIT notice at ee4e3197bffe7dde669d6bbf8c30fef97b65e49d (2022-06-01). These npm tarballs omit the notice and exact gitHead; the source-distribution notice is included conservatively.",
+      "name": "@radix-ui/react-arrow",
+      "notices": [
+        {
+          "path": "Radix-primitives-ee4e3197-LICENSE.txt",
+          "sha256": "0e80a2d229d2fd4fc7e8636142ec5d0ff0bc031f14c15b682e2ac01dfd5b5138",
+          "source": "https://raw.githubusercontent.com/radix-ui/primitives/ee4e3197bffe7dde669d6bbf8c30fef97b65e49d/LICENSE",
+          "upstream_path": "LICENSE"
+        }
+      ],
+      "source": "https://registry.npmjs.org/@radix-ui/react-arrow/-/react-arrow-1.0.3.tgz",
+      "version": "1.0.3"
+    },
+    {
+      "declared_license": "MIT",
+      "integrity": "sha512-UBmVDkmR6IvDsloHVN+3rtx4Mi5TFvylYXpluuv0f37dtaz3H99bp8No0LGXRigVpl3UAT4l9j6bIchh42S/Gg==",
+      "license_provenance": "Official repository root MIT notice at ee4e3197bffe7dde669d6bbf8c30fef97b65e49d (2022-06-01). These npm tarballs omit the notice and exact gitHead; the source-distribution notice is included conservatively.",
+      "name": "@radix-ui/react-collapsible",
+      "notices": [
+        {
+          "path": "Radix-primitives-ee4e3197-LICENSE.txt",
+          "sha256": "0e80a2d229d2fd4fc7e8636142ec5d0ff0bc031f14c15b682e2ac01dfd5b5138",
+          "source": "https://raw.githubusercontent.com/radix-ui/primitives/ee4e3197bffe7dde669d6bbf8c30fef97b65e49d/LICENSE",
+          "upstream_path": "LICENSE"
+        }
+      ],
+      "source": "https://registry.npmjs.org/@radix-ui/react-collapsible/-/react-collapsible-1.0.3.tgz",
+      "version": "1.0.3"
+    },
+    {
+      "declared_license": "MIT",
+      "integrity": "sha512-fDSBgd44FKHa1FRMU59qBMPFcl2PZE+2nmqunj+BWFyYYjnhIDWL2ItDs3rrbJDQOtzt5nIebLCQc4QRfz6LJw==",
+      "license_provenance": "Official repository root MIT notice at ee4e3197bffe7dde669d6bbf8c30fef97b65e49d (2022-06-01). These npm tarballs omit the notice and exact gitHead; the source-distribution notice is included conservatively.",
+      "name": "@radix-ui/react-compose-refs",
+      "notices": [
+        {
+          "path": "Radix-primitives-ee4e3197-LICENSE.txt",
+          "sha256": "0e80a2d229d2fd4fc7e8636142ec5d0ff0bc031f14c15b682e2ac01dfd5b5138",
+          "source": "https://raw.githubusercontent.com/radix-ui/primitives/ee4e3197bffe7dde669d6bbf8c30fef97b65e49d/LICENSE",
+          "upstream_path": "LICENSE"
+        }
+      ],
+      "source": "https://registry.npmjs.org/@radix-ui/react-compose-refs/-/react-compose-refs-1.0.1.tgz",
+      "version": "1.0.1"
+    },
+    {
+      "declared_license": "MIT",
+      "integrity": "sha512-ebbrdFoYTcuZ0v4wG5tedGnp9tzcV8awzsxYph7gXUyvnNLuTIcCk1q17JEbnVhXAKG9oX3KtchwiMIAYp9NLg==",
+      "license_provenance": "Official repository root MIT notice at ee4e3197bffe7dde669d6bbf8c30fef97b65e49d (2022-06-01). These npm tarballs omit the notice and exact gitHead; the source-distribution notice is included conservatively.",
+      "name": "@radix-ui/react-context",
+      "notices": [
+        {
+          "path": "Radix-primitives-ee4e3197-LICENSE.txt",
+          "sha256": "0e80a2d229d2fd4fc7e8636142ec5d0ff0bc031f14c15b682e2ac01dfd5b5138",
+          "source": "https://raw.githubusercontent.com/radix-ui/primitives/ee4e3197bffe7dde669d6bbf8c30fef97b65e49d/LICENSE",
+          "upstream_path": "LICENSE"
+        }
+      ],
+      "source": "https://registry.npmjs.org/@radix-ui/react-context/-/react-context-1.0.1.tgz",
+      "version": "1.0.1"
+    },
+    {
+      "declared_license": "MIT",
+      "integrity": "sha512-GjWJX/AUpB703eEBanuBnIWdIXg6NvJFCXcNlSZk4xdszCdhrJgBoUd1cGk67vFO+WdA2pfI/plOpqz/5GUP6Q==",
+      "license_provenance": "Official repository root MIT notice at ee4e3197bffe7dde669d6bbf8c30fef97b65e49d (2022-06-01). These npm tarballs omit the notice and exact gitHead; the source-distribution notice is included conservatively.",
+      "name": "@radix-ui/react-dialog",
+      "notices": [
+        {
+          "path": "Radix-primitives-ee4e3197-LICENSE.txt",
+          "sha256": "0e80a2d229d2fd4fc7e8636142ec5d0ff0bc031f14c15b682e2ac01dfd5b5138",
+          "source": "https://raw.githubusercontent.com/radix-ui/primitives/ee4e3197bffe7dde669d6bbf8c30fef97b65e49d/LICENSE",
+          "upstream_path": "LICENSE"
+        }
+      ],
+      "source": "https://registry.npmjs.org/@radix-ui/react-dialog/-/react-dialog-1.0.5.tgz",
+      "version": "1.0.5"
+    },
+    {
+      "declared_license": "MIT",
+      "integrity": "sha512-aJeDjQhywg9LBu2t/At58hCvr7pEm0o2Ke1x33B+MhjNmmZ17sy4KImo0KPLgsnc/zN7GPdce8Cnn0SWvwZO7g==",
+      "license_provenance": "Official repository root MIT notice at ee4e3197bffe7dde669d6bbf8c30fef97b65e49d (2022-06-01). These npm tarballs omit the notice and exact gitHead; the source-distribution notice is included conservatively.",
+      "name": "@radix-ui/react-dismissable-layer",
+      "notices": [
+        {
+          "path": "Radix-primitives-ee4e3197-LICENSE.txt",
+          "sha256": "0e80a2d229d2fd4fc7e8636142ec5d0ff0bc031f14c15b682e2ac01dfd5b5138",
+          "source": "https://raw.githubusercontent.com/radix-ui/primitives/ee4e3197bffe7dde669d6bbf8c30fef97b65e49d/LICENSE",
+          "upstream_path": "LICENSE"
+        }
+      ],
+      "source": "https://registry.npmjs.org/@radix-ui/react-dismissable-layer/-/react-dismissable-layer-1.0.5.tgz",
+      "version": "1.0.5"
+    },
+    {
+      "declared_license": "MIT",
+      "integrity": "sha512-Rect2dWbQ8waGzhMavsIbmSVCgYxkXLxxR3ZvCX79JOglzdEy4JXMb98lq4hPxUbLr77nP0UOGf4rcMU+s1pUA==",
+      "license_provenance": "Official repository root MIT notice at ee4e3197bffe7dde669d6bbf8c30fef97b65e49d (2022-06-01). These npm tarballs omit the notice and exact gitHead; the source-distribution notice is included conservatively.",
+      "name": "@radix-ui/react-focus-guards",
+      "notices": [
+        {
+          "path": "Radix-primitives-ee4e3197-LICENSE.txt",
+          "sha256": "0e80a2d229d2fd4fc7e8636142ec5d0ff0bc031f14c15b682e2ac01dfd5b5138",
+          "source": "https://raw.githubusercontent.com/radix-ui/primitives/ee4e3197bffe7dde669d6bbf8c30fef97b65e49d/LICENSE",
+          "upstream_path": "LICENSE"
+        }
+      ],
+      "source": "https://registry.npmjs.org/@radix-ui/react-focus-guards/-/react-focus-guards-1.0.1.tgz",
+      "version": "1.0.1"
+    },
+    {
+      "declared_license": "MIT",
+      "integrity": "sha512-sL04Mgvf+FmyvZeYfNu1EPAaaxD+aw7cYeIB9L9Fvq8+urhltTRaEo5ysKOpHuKPclsZcSUMKlN05x4u+CINpA==",
+      "license_provenance": "Official repository root MIT notice at ee4e3197bffe7dde669d6bbf8c30fef97b65e49d (2022-06-01). These npm tarballs omit the notice and exact gitHead; the source-distribution notice is included conservatively.",
+      "name": "@radix-ui/react-focus-scope",
+      "notices": [
+        {
+          "path": "Radix-primitives-ee4e3197-LICENSE.txt",
+          "sha256": "0e80a2d229d2fd4fc7e8636142ec5d0ff0bc031f14c15b682e2ac01dfd5b5138",
+          "source": "https://raw.githubusercontent.com/radix-ui/primitives/ee4e3197bffe7dde669d6bbf8c30fef97b65e49d/LICENSE",
+          "upstream_path": "LICENSE"
+        }
+      ],
+      "source": "https://registry.npmjs.org/@radix-ui/react-focus-scope/-/react-focus-scope-1.0.4.tgz",
+      "version": "1.0.4"
+    },
+    {
+      "declared_license": "MIT",
+      "integrity": "sha512-tI7sT/kqYp8p96yGWY1OAnLHrqDgzHefRBKQ2YAkBS5ja7QLcZ9Z/uY7bEjPUatf8RomoXM8/1sMj1IJaE5UzQ==",
+      "license_provenance": "Official repository root MIT notice at ee4e3197bffe7dde669d6bbf8c30fef97b65e49d (2022-06-01). These npm tarballs omit the notice and exact gitHead; the source-distribution notice is included conservatively.",
+      "name": "@radix-ui/react-id",
+      "notices": [
+        {
+          "path": "Radix-primitives-ee4e3197-LICENSE.txt",
+          "sha256": "0e80a2d229d2fd4fc7e8636142ec5d0ff0bc031f14c15b682e2ac01dfd5b5138",
+          "source": "https://raw.githubusercontent.com/radix-ui/primitives/ee4e3197bffe7dde669d6bbf8c30fef97b65e49d/LICENSE",
+          "upstream_path": "LICENSE"
+        }
+      ],
+      "source": "https://registry.npmjs.org/@radix-ui/react-id/-/react-id-1.0.1.tgz",
+      "version": "1.0.1"
+    },
+    {
+      "declared_license": "MIT",
+      "integrity": "sha512-shtvVnlsxT6faMnK/a7n0wptwBD23xc1Z5mdrtKLwVEfsEMXodS0r5s0/g5P0hX//EKYZS2sxUjqfzlg52ZSnQ==",
+      "license_provenance": "Official repository root MIT notice at ee4e3197bffe7dde669d6bbf8c30fef97b65e49d (2022-06-01). These npm tarballs omit the notice and exact gitHead; the source-distribution notice is included conservatively.",
+      "name": "@radix-ui/react-popover",
+      "notices": [
+        {
+          "path": "Radix-primitives-ee4e3197-LICENSE.txt",
+          "sha256": "0e80a2d229d2fd4fc7e8636142ec5d0ff0bc031f14c15b682e2ac01dfd5b5138",
+          "source": "https://raw.githubusercontent.com/radix-ui/primitives/ee4e3197bffe7dde669d6bbf8c30fef97b65e49d/LICENSE",
+          "upstream_path": "LICENSE"
+        }
+      ],
+      "source": "https://registry.npmjs.org/@radix-ui/react-popover/-/react-popover-1.0.7.tgz",
+      "version": "1.0.7"
+    },
+    {
+      "declared_license": "MIT",
+      "integrity": "sha512-cKpopj/5RHZWjrbF2846jBNacjQVwkP068DfmgrNJXpvVWrOvlAmE9xSiy5OqeE+Gi8D9fP+oDhUnPqNMY8/5w==",
+      "license_provenance": "Official repository root MIT notice at ee4e3197bffe7dde669d6bbf8c30fef97b65e49d (2022-06-01). These npm tarballs omit the notice and exact gitHead; the source-distribution notice is included conservatively.",
+      "name": "@radix-ui/react-popper",
+      "notices": [
+        {
+          "path": "Radix-primitives-ee4e3197-LICENSE.txt",
+          "sha256": "0e80a2d229d2fd4fc7e8636142ec5d0ff0bc031f14c15b682e2ac01dfd5b5138",
+          "source": "https://raw.githubusercontent.com/radix-ui/primitives/ee4e3197bffe7dde669d6bbf8c30fef97b65e49d/LICENSE",
+          "upstream_path": "LICENSE"
+        }
+      ],
+      "source": "https://registry.npmjs.org/@radix-ui/react-popper/-/react-popper-1.1.3.tgz",
+      "version": "1.1.3"
+    },
+    {
+      "declared_license": "MIT",
+      "integrity": "sha512-Qki+C/EuGUVCQTOTD5vzJzJuMUlewbzuKyUy+/iHM2uwGiru9gZeBJtHAPKAEkB5KWGi9mP/CHKcY0wt1aW45Q==",
+      "license_provenance": "Official repository root MIT notice at ee4e3197bffe7dde669d6bbf8c30fef97b65e49d (2022-06-01). These npm tarballs omit the notice and exact gitHead; the source-distribution notice is included conservatively.",
+      "name": "@radix-ui/react-portal",
+      "notices": [
+        {
+          "path": "Radix-primitives-ee4e3197-LICENSE.txt",
+          "sha256": "0e80a2d229d2fd4fc7e8636142ec5d0ff0bc031f14c15b682e2ac01dfd5b5138",
+          "source": "https://raw.githubusercontent.com/radix-ui/primitives/ee4e3197bffe7dde669d6bbf8c30fef97b65e49d/LICENSE",
+          "upstream_path": "LICENSE"
+        }
+      ],
+      "source": "https://registry.npmjs.org/@radix-ui/react-portal/-/react-portal-1.0.4.tgz",
+      "version": "1.0.4"
+    },
+    {
+      "declared_license": "MIT",
+      "integrity": "sha512-UXLW4UAbIY5ZjcvzjfRFo5gxva8QirC9hF7wRE4U5gz+TP0DbRk+//qyuAQ1McDxBt1xNMBTaciFGvEmJvAZCg==",
+      "license_provenance": "Official repository root MIT notice at ee4e3197bffe7dde669d6bbf8c30fef97b65e49d (2022-06-01). These npm tarballs omit the notice and exact gitHead; the source-distribution notice is included conservatively.",
+      "name": "@radix-ui/react-presence",
+      "notices": [
+        {
+          "path": "Radix-primitives-ee4e3197-LICENSE.txt",
+          "sha256": "0e80a2d229d2fd4fc7e8636142ec5d0ff0bc031f14c15b682e2ac01dfd5b5138",
+          "source": "https://raw.githubusercontent.com/radix-ui/primitives/ee4e3197bffe7dde669d6bbf8c30fef97b65e49d/LICENSE",
+          "upstream_path": "LICENSE"
+        }
+      ],
+      "source": "https://registry.npmjs.org/@radix-ui/react-presence/-/react-presence-1.0.1.tgz",
+      "version": "1.0.1"
+    },
+    {
+      "declared_license": "MIT",
+      "integrity": "sha512-yi58uVyoAcK/Nq1inRY56ZSjKypBNKTa/1mcL8qdl6oJeEaDbOldlzrGn7P6Q3Id5d+SYNGc5AJgc4vGhjs5+g==",
+      "license_provenance": "Official repository root MIT notice at ee4e3197bffe7dde669d6bbf8c30fef97b65e49d (2022-06-01). These npm tarballs omit the notice and exact gitHead; the source-distribution notice is included conservatively.",
+      "name": "@radix-ui/react-primitive",
+      "notices": [
+        {
+          "path": "Radix-primitives-ee4e3197-LICENSE.txt",
+          "sha256": "0e80a2d229d2fd4fc7e8636142ec5d0ff0bc031f14c15b682e2ac01dfd5b5138",
+          "source": "https://raw.githubusercontent.com/radix-ui/primitives/ee4e3197bffe7dde669d6bbf8c30fef97b65e49d/LICENSE",
+          "upstream_path": "LICENSE"
+        }
+      ],
+      "source": "https://registry.npmjs.org/@radix-ui/react-primitive/-/react-primitive-1.0.3.tgz",
+      "version": "1.0.3"
+    },
+    {
+      "declared_license": "MIT",
+      "integrity": "sha512-YeTpuq4deV+6DusvVUW4ivBgnkHwECUu0BiN43L5UCDFgdhsRUWAghhTF5MbvNTPzmiFOx90asDSUjWuCNapwg==",
+      "license_provenance": "Official repository root MIT notice at ee4e3197bffe7dde669d6bbf8c30fef97b65e49d (2022-06-01). These npm tarballs omit the notice and exact gitHead; the source-distribution notice is included conservatively.",
+      "name": "@radix-ui/react-slot",
+      "notices": [
+        {
+          "path": "Radix-primitives-ee4e3197-LICENSE.txt",
+          "sha256": "0e80a2d229d2fd4fc7e8636142ec5d0ff0bc031f14c15b682e2ac01dfd5b5138",
+          "source": "https://raw.githubusercontent.com/radix-ui/primitives/ee4e3197bffe7dde669d6bbf8c30fef97b65e49d/LICENSE",
+          "upstream_path": "LICENSE"
+        }
+      ],
+      "source": "https://registry.npmjs.org/@radix-ui/react-slot/-/react-slot-1.0.2.tgz",
+      "version": "1.0.2"
+    },
+    {
+      "declared_license": "MIT",
+      "integrity": "sha512-D94LjX4Sp0xJFVaoQOd3OO9k7tpBYNOXdVhkltUbGv2Qb9OXdrg/CpsjlZv7ia14Sylv398LswWBVVu5nqKzAQ==",
+      "license_provenance": "Official repository root MIT notice at ee4e3197bffe7dde669d6bbf8c30fef97b65e49d (2022-06-01). These npm tarballs omit the notice and exact gitHead; the source-distribution notice is included conservatively.",
+      "name": "@radix-ui/react-use-callback-ref",
+      "notices": [
+        {
+          "path": "Radix-primitives-ee4e3197-LICENSE.txt",
+          "sha256": "0e80a2d229d2fd4fc7e8636142ec5d0ff0bc031f14c15b682e2ac01dfd5b5138",
+          "source": "https://raw.githubusercontent.com/radix-ui/primitives/ee4e3197bffe7dde669d6bbf8c30fef97b65e49d/LICENSE",
+          "upstream_path": "LICENSE"
+        }
+      ],
+      "source": "https://registry.npmjs.org/@radix-ui/react-use-callback-ref/-/react-use-callback-ref-1.0.1.tgz",
+      "version": "1.0.1"
+    },
+    {
+      "declared_license": "MIT",
+      "integrity": "sha512-Svl5GY5FQeN758fWKrjM6Qb7asvXeiZltlT4U2gVfl8Gx5UAv2sMR0LWo8yhsIZh2oQ0eFdZ59aoOOMV7b47VA==",
+      "license_provenance": "Official repository root MIT notice at ee4e3197bffe7dde669d6bbf8c30fef97b65e49d (2022-06-01). These npm tarballs omit the notice and exact gitHead; the source-distribution notice is included conservatively.",
+      "name": "@radix-ui/react-use-controllable-state",
+      "notices": [
+        {
+          "path": "Radix-primitives-ee4e3197-LICENSE.txt",
+          "sha256": "0e80a2d229d2fd4fc7e8636142ec5d0ff0bc031f14c15b682e2ac01dfd5b5138",
+          "source": "https://raw.githubusercontent.com/radix-ui/primitives/ee4e3197bffe7dde669d6bbf8c30fef97b65e49d/LICENSE",
+          "upstream_path": "LICENSE"
+        }
+      ],
+      "source": "https://registry.npmjs.org/@radix-ui/react-use-controllable-state/-/react-use-controllable-state-1.0.1.tgz",
+      "version": "1.0.1"
+    },
+    {
+      "declared_license": "MIT",
+      "integrity": "sha512-vyL82j40hcFicA+M4Ex7hVkB9vHgSse1ZWomAqV2Je3RleKGO5iM8KMOEtfoSB0PnIelMd2lATjTGMYqN5ylTg==",
+      "license_provenance": "Official repository root MIT notice at ee4e3197bffe7dde669d6bbf8c30fef97b65e49d (2022-06-01). These npm tarballs omit the notice and exact gitHead; the source-distribution notice is included conservatively.",
+      "name": "@radix-ui/react-use-escape-keydown",
+      "notices": [
+        {
+          "path": "Radix-primitives-ee4e3197-LICENSE.txt",
+          "sha256": "0e80a2d229d2fd4fc7e8636142ec5d0ff0bc031f14c15b682e2ac01dfd5b5138",
+          "source": "https://raw.githubusercontent.com/radix-ui/primitives/ee4e3197bffe7dde669d6bbf8c30fef97b65e49d/LICENSE",
+          "upstream_path": "LICENSE"
+        }
+      ],
+      "source": "https://registry.npmjs.org/@radix-ui/react-use-escape-keydown/-/react-use-escape-keydown-1.0.3.tgz",
+      "version": "1.0.3"
+    },
+    {
+      "declared_license": "MIT",
+      "integrity": "sha512-v/5RegiJWYdoCvMnITBkNNx6bCj20fiaJnWtRkU18yITptraXjffz5Qbn05uOiQnOvi+dbkznkoaMltz1GnszQ==",
+      "license_provenance": "Official repository root MIT notice at ee4e3197bffe7dde669d6bbf8c30fef97b65e49d (2022-06-01). These npm tarballs omit the notice and exact gitHead; the source-distribution notice is included conservatively.",
+      "name": "@radix-ui/react-use-layout-effect",
+      "notices": [
+        {
+          "path": "Radix-primitives-ee4e3197-LICENSE.txt",
+          "sha256": "0e80a2d229d2fd4fc7e8636142ec5d0ff0bc031f14c15b682e2ac01dfd5b5138",
+          "source": "https://raw.githubusercontent.com/radix-ui/primitives/ee4e3197bffe7dde669d6bbf8c30fef97b65e49d/LICENSE",
+          "upstream_path": "LICENSE"
+        }
+      ],
+      "source": "https://registry.npmjs.org/@radix-ui/react-use-layout-effect/-/react-use-layout-effect-1.0.1.tgz",
+      "version": "1.0.1"
+    },
+    {
+      "declared_license": "MIT",
+      "integrity": "sha512-Cq5DLuSiuYVKNU8orzJMbl15TXilTnJKUCltMVQg53BQOF1/C5toAaGrowkgksdBQ9H+SRL23g0HDmg9tvmxXw==",
+      "license_provenance": "Official repository root MIT notice at ee4e3197bffe7dde669d6bbf8c30fef97b65e49d (2022-06-01). These npm tarballs omit the notice and exact gitHead; the source-distribution notice is included conservatively.",
+      "name": "@radix-ui/react-use-rect",
+      "notices": [
+        {
+          "path": "Radix-primitives-ee4e3197-LICENSE.txt",
+          "sha256": "0e80a2d229d2fd4fc7e8636142ec5d0ff0bc031f14c15b682e2ac01dfd5b5138",
+          "source": "https://raw.githubusercontent.com/radix-ui/primitives/ee4e3197bffe7dde669d6bbf8c30fef97b65e49d/LICENSE",
+          "upstream_path": "LICENSE"
+        }
+      ],
+      "source": "https://registry.npmjs.org/@radix-ui/react-use-rect/-/react-use-rect-1.0.1.tgz",
+      "version": "1.0.1"
+    },
+    {
+      "declared_license": "MIT",
+      "integrity": "sha512-ibay+VqrgcaI6veAojjofPATwledXiSmX+C0KrBk/xgpX9rBzPV3OsfwlhQdUOFbh+LKQorLYT+xTXW9V8yd0g==",
+      "license_provenance": "Official repository root MIT notice at ee4e3197bffe7dde669d6bbf8c30fef97b65e49d (2022-06-01). These npm tarballs omit the notice and exact gitHead; the source-distribution notice is included conservatively.",
+      "name": "@radix-ui/react-use-size",
+      "notices": [
+        {
+          "path": "Radix-primitives-ee4e3197-LICENSE.txt",
+          "sha256": "0e80a2d229d2fd4fc7e8636142ec5d0ff0bc031f14c15b682e2ac01dfd5b5138",
+          "source": "https://raw.githubusercontent.com/radix-ui/primitives/ee4e3197bffe7dde669d6bbf8c30fef97b65e49d/LICENSE",
+          "upstream_path": "LICENSE"
+        }
+      ],
+      "source": "https://registry.npmjs.org/@radix-ui/react-use-size/-/react-use-size-1.0.1.tgz",
+      "version": "1.0.1"
+    },
+    {
+      "declared_license": "MIT",
+      "integrity": "sha512-fyrgCaedtvMg9NK3en0pnOYJdtfwxUcNolezkNPUsoX57X8oQk+NkqcvzHXD2uKNij6GXmWU9NDru2IWjrO4BQ==",
+      "license_provenance": "Official repository root MIT notice at ee4e3197bffe7dde669d6bbf8c30fef97b65e49d (2022-06-01). These npm tarballs omit the notice and exact gitHead; the source-distribution notice is included conservatively.",
+      "name": "@radix-ui/rect",
+      "notices": [
+        {
+          "path": "Radix-primitives-ee4e3197-LICENSE.txt",
+          "sha256": "0e80a2d229d2fd4fc7e8636142ec5d0ff0bc031f14c15b682e2ac01dfd5b5138",
+          "source": "https://raw.githubusercontent.com/radix-ui/primitives/ee4e3197bffe7dde669d6bbf8c30fef97b65e49d/LICENSE",
+          "upstream_path": "LICENSE"
+        }
+      ],
+      "source": "https://registry.npmjs.org/@radix-ui/rect/-/rect-1.0.1.tgz",
+      "version": "1.0.1"
+    },
+    {
+      "declared_license": "MIT",
+      "integrity": "sha512-xcLxITLe2HYa1cnYnwCjkOO1PqUHQpozB8x9AR0OgWN2woOBi5kSDVxKfd0b7sb1hw5qFeJhXm9H1nu3xSfLeQ==",
+      "name": "aria-hidden",
+      "notices": [
+        {
+          "path": "aria-hidden-1.2.3-package__LICENSE",
+          "sha256": "30f0cfddf483d1128e3610205020f2041a6c5e837aa999e0aa82e5576187d4a9",
+          "upstream_path": "package/LICENSE"
+        }
+      ],
+      "source": "https://registry.npmjs.org/aria-hidden/-/aria-hidden-1.2.3.tgz",
+      "version": "1.2.3"
+    },
+    {
+      "declared_license": "MIT",
+      "integrity": "sha512-CSbhY4cFEJRe6/GQzIk5qXZ4Jeg5pcsP7b5peFSDpffpe1cqjASH/n9UTjBwOp6XpMSTwQ8Za2K5V02ueA7Tmw==",
+      "name": "classnames",
+      "notices": [
+        {
+          "path": "classnames-2.3.2-package__LICENSE",
+          "sha256": "0c1c24dcc129cb0c02ee9803cfa7a50061c236a3b59b36a714c27f3ade66d7be",
+          "upstream_path": "package/LICENSE"
+        }
+      ],
+      "source": "https://registry.npmjs.org/classnames/-/classnames-2.3.2.tgz",
+      "version": "2.3.2"
+    },
+    {
+      "declared_license": "MIT",
+      "integrity": "sha512-IV3Ou0jSMzZrd3pZ48nLkT9DA7Ag1pnPzaiQhpW7c3RbcqqzvzzVu+L8gfqMp/8IM2MQtSiqaCxrrcfu8I8rMA==",
+      "name": "client-only",
+      "notices": [],
+      "source": "https://registry.npmjs.org/client-only/-/client-only-0.0.1.tgz",
+      "version": "0.0.1"
+    },
+    {
+      "declared_license": "MIT",
+      "integrity": "sha512-ypdmJU/TbBby2Dxibuv7ZLW3Bs1QEmM7nHjEANfohJLvE0XVujisn1qPJcZxg+qDucsr+bP6fLD1rPS3AhJ7EQ==",
+      "name": "detect-node-es",
+      "notices": [
+        {
+          "path": "detect-node-es-1.1.0-package__LICENSE",
+          "sha256": "54b32293ea560d22cd9b62af9b2cda1a030d910a48c6601d227c5ff2338d95f8",
+          "upstream_path": "package/LICENSE"
+        }
+      ],
+      "source": "https://registry.npmjs.org/detect-node-es/-/detect-node-es-1.1.0.tgz",
+      "version": "1.1.0"
+    },
+    {
+      "declared_license": "MIT",
+      "integrity": "sha512-FJhYRoDaiatfEkUK8HKlicmu/3SGFD51q3itKDGoSTysQJBnfOcxU5GxnhE1E6soB76MbT0MBtnKJuXyAx+96Q==",
+      "name": "get-nonce",
+      "notices": [
+        {
+          "path": "get-nonce-1.0.1-package__LICENSE",
+          "sha256": "acf3b087b348d2f2e731b9d4131af185aad694c1204ce14a46909483fd42da05",
+          "upstream_path": "package/LICENSE"
+        }
+      ],
+      "source": "https://registry.npmjs.org/get-nonce/-/get-nonce-1.0.1.tgz",
+      "version": "1.0.1"
+    },
+    {
+      "declared_license": "MIT",
+      "integrity": "sha512-phJfQVBuaJM5raOpJjSfkiD6BpbCE4Ns//LaXl6wGYtUBY83nWS6Rf9tXm2e8VaK60JEjYldbPif/A2B1C2gNA==",
+      "name": "invariant",
+      "notices": [
+        {
+          "path": "invariant-2.2.4-package__LICENSE",
+          "sha256": "f657f99d3fb9647db92628e96007aabb46e5f04f33e49999075aab8e250ca7ce",
+          "upstream_path": "package/LICENSE"
+        }
+      ],
+      "source": "https://registry.npmjs.org/invariant/-/invariant-2.2.4.tgz",
+      "version": "2.2.4"
+    },
+    {
+      "declared_license": "MIT",
+      "integrity": "sha512-RdJUflcE3cUzKiMqQgsCu06FPu9UdIJO0beYbPhHN4k6apgJtifcoCtT9bcxOpYBtpD2kCM6Sbzg4CausW/PKQ==",
+      "name": "js-tokens",
+      "notices": [
+        {
+          "path": "js-tokens-4.0.0-package__LICENSE",
+          "sha256": "2213d91c606205c71eb051a199478cdc2adde945893404d7f1421436dd6d5cc1",
+          "upstream_path": "package/LICENSE"
+        }
+      ],
+      "source": "https://registry.npmjs.org/js-tokens/-/js-tokens-4.0.0.tgz",
+      "version": "4.0.0"
+    },
+    {
+      "declared_license": "MIT",
+      "integrity": "sha512-lyuxPGr/Wfhrlem2CL/UcnUc1zcqKAImBDzukY7Y5F/yQiNdko6+fRLevlw1HgMySw7f611UIY408EtxRSoK3Q==",
+      "name": "loose-envify",
+      "notices": [
+        {
+          "path": "loose-envify-1.4.0-package__LICENSE",
+          "sha256": "4eb7543b08d955a6d23fcc224601d43ff566e775be918805e26210d7f6eb4893",
+          "upstream_path": "package/LICENSE"
+        }
+      ],
+      "source": "https://registry.npmjs.org/loose-envify/-/loose-envify-1.4.0.tgz",
+      "version": "1.4.0"
+    },
+    {
+      "declared_license": "MIT",
+      "integrity": "sha512-/3IjMdb2L9QbBdWiW5e3P2/npwMBaU9mHCSCUzNln0ZCYbcfTsGbTJrU/kGemdH2IWmB2ioZ+zkxtmq6g09fGQ==",
+      "name": "react",
+      "notices": [
+        {
+          "path": "react-18.2.0-package__LICENSE",
+          "sha256": "52412d7bc7ce4157ea628bbaacb8829e0a9cb3c58f57f99176126bc8cf2bfc85",
+          "upstream_path": "package/LICENSE"
+        }
+      ],
+      "source": "https://registry.npmjs.org/react/-/react-18.2.0.tgz",
+      "version": "18.2.0"
+    },
+    {
+      "declared_license": "MIT",
+      "integrity": "sha512-6IMTriUmvsjHUjNtEDudZfuDQUoWXVxKHhlEGSk81n4YFS+r/Kl99wXiwlVXtPBtJenozv2P+hxDsw9eA7Xo6g==",
+      "name": "react-dom",
+      "notices": [
+        {
+          "path": "react-dom-18.2.0-package__LICENSE",
+          "sha256": "52412d7bc7ce4157ea628bbaacb8829e0a9cb3c58f57f99176126bc8cf2bfc85",
+          "upstream_path": "package/LICENSE"
+        }
+      ],
+      "source": "https://registry.npmjs.org/react-dom/-/react-dom-18.2.0.tgz",
+      "version": "18.2.0"
+    },
+    {
+      "declared_license": "MIT",
+      "integrity": "sha512-ImKhrzJJsyXJfBZ4bzu8Bwpka14c/fQt0k+cyFp/PBhTfyDnU5hjOtM4AG/0AMyy8oKzOTR0lDgJIM7pYXI0kw==",
+      "name": "react-remove-scroll",
+      "notices": [
+        {
+          "path": "react-remove-scroll-2.5.5-package__LICENSE",
+          "sha256": "30f0cfddf483d1128e3610205020f2041a6c5e837aa999e0aa82e5576187d4a9",
+          "upstream_path": "package/LICENSE"
+        }
+      ],
+      "source": "https://registry.npmjs.org/react-remove-scroll/-/react-remove-scroll-2.5.5.tgz",
+      "version": "2.5.5"
+    },
+    {
+      "declared_license": "MIT",
+      "integrity": "sha512-63C4YQBUt0m6ALadE9XV56hV8BgJWDmmTPY758iIJjfQKt2nYwoUrPk0LXRXcB/yIj82T1/Ixfdpdk68LwIB0A==",
+      "name": "react-remove-scroll-bar",
+      "notices": [],
+      "source": "https://registry.npmjs.org/react-remove-scroll-bar/-/react-remove-scroll-bar-2.3.4.tgz",
+      "version": "2.3.4"
+    },
+    {
+      "declared_license": "MIT",
+      "integrity": "sha512-ZWj0fHEMyWkHzKYUr2Bs/4zU6XLmq9HsgBURm7g5pAVfyn49DgUiNgY2d4lXRlYSiCif9YBGpQleewkcqddc7g==",
+      "name": "react-style-singleton",
+      "notices": [],
+      "source": "https://registry.npmjs.org/react-style-singleton/-/react-style-singleton-2.2.1.tgz",
+      "version": "2.2.1"
+    },
+    {
+      "declared_license": "MIT",
+      "integrity": "sha512-CtuThmgHNg7zIZWAXi3AsyIzA3n4xx7aNyjwC2VJldO2LMVDhFK+63xGqq6CsJH4rTAt6/M+N4GhZiDYPx9eUw==",
+      "name": "scheduler",
+      "notices": [
+        {
+          "path": "scheduler-0.23.0-package__LICENSE",
+          "sha256": "52412d7bc7ce4157ea628bbaacb8829e0a9cb3c58f57f99176126bc8cf2bfc85",
+          "upstream_path": "package/LICENSE"
+        }
+      ],
+      "source": "https://registry.npmjs.org/scheduler/-/scheduler-0.23.0.tgz",
+      "version": "0.23.0"
+    },
+    {
+      "declared_license": "MIT",
+      "integrity": "sha512-njiZ/4RiIhoOlAaLYDqwz5qH/KZXVilRLvomrx83HjzCWTfa+InyfAjv05PSFxnmLzZkNO9ZfvgoqzAaEI4sGQ==",
+      "name": "swr",
+      "notices": [
+        {
+          "path": "swr-2.2.4-package__LICENSE",
+          "sha256": "2eb01c9bb506815f353fc3053a396b0a4ec1b15255cdcf292a437ecc9f5e6ae2",
+          "upstream_path": "package/LICENSE"
+        }
+      ],
+      "source": "https://registry.npmjs.org/swr/-/swr-2.2.4.tgz",
+      "version": "2.2.4"
+    },
+    {
+      "declared_license": "0BSD",
+      "integrity": "sha512-AEYxH93jGFPn/a2iVAwW87VuUIkR1FVUKB77NwMF7nBTDkDrrT/Hpt/IrCJ0QXhW27jTBDcf5ZY7w6RiqTMw2Q==",
+      "name": "tslib",
+      "notices": [
+        {
+          "path": "tslib-2.6.2-package__LICENSE.txt",
+          "sha256": "210b19e543130388c68654b7497e967119ce17145f66ab7d85688fbd70f08751",
+          "upstream_path": "package/LICENSE.txt"
+        }
+      ],
+      "source": "https://registry.npmjs.org/tslib/-/tslib-2.6.2.tgz",
+      "version": "2.6.2"
+    },
+    {
+      "declared_license": "MIT",
+      "integrity": "sha512-3FT9PRuRdbB9HfXhEq35u4oZkvpJ5kuYbpqhCfmiZyReuRgpnhDlbr2ZEnnuS0RrJAPn6l23xjFg9kpDM+Ms7w==",
+      "name": "use-callback-ref",
+      "notices": [
+        {
+          "path": "use-callback-ref-1.3.0-package__LICENSE",
+          "sha256": "30f0cfddf483d1128e3610205020f2041a6c5e837aa999e0aa82e5576187d4a9",
+          "upstream_path": "package/LICENSE"
+        }
+      ],
+      "source": "https://registry.npmjs.org/use-callback-ref/-/use-callback-ref-1.3.0.tgz",
+      "version": "1.3.0"
+    },
+    {
+      "declared_license": "MIT",
+      "integrity": "sha512-epTbsLuzZ7lPClpz2TyryBfztm7m+28DlEv2ZCQ3MDr5ssiwyOwGH/e5F9CkfWjJ1t4clvI58yF822/GUkjjhw==",
+      "name": "use-sidecar",
+      "notices": [
+        {
+          "path": "use-sidecar-1.1.2-package__LICENSE",
+          "sha256": "30f0cfddf483d1128e3610205020f2041a6c5e837aa999e0aa82e5576187d4a9",
+          "upstream_path": "package/LICENSE"
+        }
+      ],
+      "source": "https://registry.npmjs.org/use-sidecar/-/use-sidecar-1.1.2.tgz",
+      "version": "1.1.2"
+    },
+    {
+      "declared_license": "MIT",
+      "integrity": "sha512-eEgnFxGQ1Ife9bzYs6VLi8/4X6CObHMw9Qr9tPY43iKwsPw8xE8+EFsf/2cFZ5S3esXgpWgtSCtLNS41F+sKPA==",
+      "name": "use-sync-external-store",
+      "notices": [
+        {
+          "path": "use-sync-external-store-1.2.0-package__LICENSE",
+          "sha256": "52412d7bc7ce4157ea628bbaacb8829e0a9cb3c58f57f99176126bc8cf2bfc85",
+          "upstream_path": "package/LICENSE"
+        }
+      ],
+      "source": "https://registry.npmjs.org/use-sync-external-store/-/use-sync-external-store-1.2.0.tgz",
+      "version": "1.2.0"
+    },
+    {
+      "declared_license": "ISC",
+      "integrity": "sha512-G7a6JMSLSNcu6o8gdOfIzqxuo8Qx1qs+9rpVnlurH69angsSFPZP5gESNuVNeJct/MGpQg191pDo4HUjTx7IIQ==",
+      "name": "wouter",
+      "notices": [],
+      "source": "https://registry.npmjs.org/wouter/-/wouter-2.12.1.tgz",
+      "version": "2.12.1"
+    },
+    {
+      "declared_license": "MIT",
+      "integrity": "sha512-QFJWJMdlETcI69paJwhSMJz7PPWjVP8Sjhclxmxmxv/RYI7ZOvR5BHX+ktH0we9gTWQMxcne8q1OY8xxz604gw==",
+      "name": "zustand",
+      "notices": [
+        {
+          "path": "zustand-4.4.7-package__LICENSE",
+          "sha256": "c1e6e266563517467b1bf874817d23e426f3149252bd7d42758cd697514b8417",
+          "upstream_path": "package/LICENSE"
+        }
+      ],
+      "source": "https://registry.npmjs.org/zustand/-/zustand-4.4.7.tgz",
+      "version": "4.4.7"
+    }
+  ],
+  "schema_version": 1,
+  "scope": "Additional source-distribution notices from the runtime dependency closure of the cached Tailscale client/web yarn.lock. The prebuilt asset module does not record the exact upstream source commit; these versions are not asserted as a verified complete inventory of that binary. React 18.2.0 is also identified in the embedded JavaScript. Inter font provenance is independently verified from its embedded name table and identical cached font bytes."
+}

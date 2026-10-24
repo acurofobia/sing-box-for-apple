@@ -5,6 +5,9 @@ import SwiftUI
 struct PrototypeVPNCard: View {
     @ObservedObject var model: PrototypeModel
     let maximumHeight: CGFloat
+    let showPrivacyPolicy: () -> Void
+    @AppStorage("prototype.privacy.reviewed.2026-10-22") private var privacyReviewed = false
+    @State private var showingPrivacyNotice = false
     @State private var headerContentHeight: CGFloat = 60
     @State private var footerContentHeight: CGFloat = 50
     @State private var metricsHeight: CGFloat = 88
@@ -153,7 +156,11 @@ struct PrototypeVPNCard: View {
                 if model.canStop {
                     model.stop()
                 } else {
-                    Task { await model.start() }
+                    if privacyReviewed {
+                        Task { await model.start() }
+                    } else {
+                        showingPrivacyNotice = true
+                    }
                 }
             } label: {
                 HStack(spacing: 4) {
@@ -180,6 +187,16 @@ struct PrototypeVPNCard: View {
             .disabled(model.canStop ? false : !model.canStart)
             .accessibilityLabel(model.canStop ? "Отключить" : "Подключить")
             .accessibilityIdentifier(model.canStop ? "prototype.stop" : "prototype.start")
+            .alert("Перед подключением", isPresented: $showingPrivacyNotice) {
+                Button("Подключить") {
+                    privacyReviewed = true
+                    Task { await model.start() }
+                }
+                Button("Политика конфиденциальности", action: showPrivacyPolicy)
+                Button("Отмена", role: .cancel) {}
+            } message: {
+                Text("Трафик передаётся выбранным вами серверам. Режим VK TURN также использует инфраструктуру VK. Клиент сохраняет настройки и локальные журналы; автоматически разработчику они не отправляются. Разработчик не продаёт ваши данные и не использует VPN-трафик для рекламы или отслеживания.")
+            }
             .overlay {
                 Text(verbatim: model.status).hidden()
                     .accessibilityHidden(false).accessibilityIdentifier("prototype.status").accessibilityValue(model.status)

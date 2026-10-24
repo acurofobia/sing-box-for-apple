@@ -362,10 +362,10 @@ final class PrototypeModel: ObservableObject {
             let manager = manager ?? NETunnelProviderManager()
             let configuration = NETunnelProviderProtocol()
             configuration.providerBundleIdentifier = AppConfiguration.extensionBundleID
-            configuration.serverAddress = "VK TURN routing prototype"
+            configuration.serverAddress = "vipin"
             configuration.providerConfiguration = ["connections": connections, "mode": connectionMode.rawValue]
             manager.protocolConfiguration = configuration
-            manager.localizedDescription = "VK TURN Prototype"
+            manager.localizedDescription = "vipin"
             manager.isEnabled = true
             try await manager.saveToPreferences()
             try await manager.loadFromPreferences()
@@ -386,7 +386,7 @@ final class PrototypeModel: ObservableObject {
         #if DEBUG && targetEnvironment(simulator)
             if ProcessInfo.processInfo.environment["PROTOTYPE_UI_CONNECTED"] == "1" {
                 vpnState = .connected
-                status = "Подключено"
+                status = ProcessInfo.processInfo.environment["PROTOTYPE_UI_STATUS"] ?? "Подключено"
                 return
             }
         #endif
@@ -394,7 +394,7 @@ final class PrototypeModel: ObservableObject {
         vpnState = manager.connection.status
         connectedAt = manager.connection.connectedDate
         switch manager.connection.status {
-        case .connected: status = "Подключено"
+        case .connected: status = String(localized: "Проверка соединения…")
         case .connecting: status = "Подключение…"
         case .disconnecting: status = "Отключение…"
         case .reasserting: status = "Восстановление…"
@@ -403,12 +403,29 @@ final class PrototypeModel: ObservableObject {
         let directory = FilePath.sharedDirectory
         if let data = try? Data(contentsOf: directory.appendingPathComponent("prototype-status.json")) {
             struct Failover: Decodable { let mode: String; let selected: String?; let primaryHealth: String?; let allDown: Bool }
-            struct CaptureStatus: Decodable { let footprintBytes: UInt64; let phase: String; let error: String?; let updatedAt: Date; let failover: Failover? }
+            struct CaptureStatus: Decodable {
+                let footprintBytes: UInt64
+                let phase: String
+                let error: String?
+                let updatedAt: Date
+                let failover: Failover?
+                let health: Bool?
+                let healthUpdatedAt: Date?
+            }
             if let capture = try? JSONDecoder().decode(CaptureStatus.self, from: data) {
                 if manager.connection.status != .disconnected, manager.connection.status != .invalid,
-                   Date().timeIntervalSince(capture.updatedAt) <= 5
+                   (0 ... 5).contains(Date().timeIntervalSince(capture.updatedAt)),
+                   connectedAt.map({ capture.updatedAt >= $0 }) ?? true
                 {
                     footprint = String(format: "%.1f МиБ", Double(capture.footprintBytes) / 1_048_576)
+                    if manager.connection.status == .connected,
+                       ["vless", "combined"].contains(capture.phase),
+                       let healthy = capture.health, let checkedAt = capture.healthUpdatedAt,
+                       (0 ... 20).contains(Date().timeIntervalSince(checkedAt)),
+                       connectedAt.map({ checkedAt >= $0 }) ?? true
+                    {
+                        status = healthy ? String(localized: "Подключено") : String(localized: "Сервер недоступен")
+                    }
                     if manager.connection.status == .connected, capture.phase == "vless", capture.failover?.allDown == true {
                         status = String(localized: "Туннель поднят · все выходы недоступны")
                     }

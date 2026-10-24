@@ -15,17 +15,17 @@ def document(variant):
          'state': 'available', 'buttons': [], 'detailsPageId': 'page01'},
         {'id': 'option02', 'title': 'Обход БС', 'text': 'Альтернативное подключение для сетей с белыми списками. Выберите этот режим, если обычный ВПН недоступен.',
          'state': 'restricted' if variant == 'restricted' else 'available',
-         'stateText': 'Нет в тарифе' if variant == 'restricted' else None,
-         'detailsPageId': 'page02', 'buttons': [button('button05', 'Сменить тариф', external('https://example.org/plans'))] if variant == 'restricted' else []},
+         'stateText': 'Временно недоступно' if variant == 'restricted' else None,
+         'detailsPageId': 'page02', 'buttons': [button('button05', 'Узнать больше', external('https://example.org/info'))] if variant == 'restricted' else []},
         {'id': 'option03', 'title': 'Авто', 'text': 'При запуске проверяет доступность обычного ВПН. Если он недоступен, выбирает обход БС. Повторяет проверку при новом подключении.', 'state': 'available', 'buttons': []}]
-    if variant == 'restricted': choices[1]['text'] = 'Для сетей с белыми списками.\nНедоступно на вашем тарифе.'
+    if variant == 'restricted': choices[1]['text'] = 'Для сетей с белыми списками.\nВременно недоступно.'
     if variant == 'ban-current': choices[0]['state'] = 'restricted'
     blocks = [
-        {'id': 'block01', 'type': 'card', 'title': 'Обновлённый тариф' if variant == 'changed' else 'Основной',
-         'subtitle': 'ID: 12345678', 'text': 'Осталось 24 дня',
-         'buttons': [button('button01', 'Изменить тариф', external('https://example.org/plans'))]},
-        {'id': 'block02', 'type': 'valueRow', 'title': '900 ₽', 'subtitle': 'Баланс',
-         'buttons': [button('button02', 'Пополнить', external('https://example.org/top-up'))]},
+        {'id': 'block01', 'type': 'card', 'title': 'Обновлённый обзор' if variant == 'changed' else 'Обзор',
+         'subtitle': 'ID: 12345678', 'text': 'Настройки подключения',
+         'buttons': [button('button01', 'Подробнее', external('https://example.org/info'))]},
+        {'id': 'block02', 'type': 'valueRow', 'title': '17', 'subtitle': 'Количество серверов',
+         'buttons': [button('button02', 'Список серверов', external('https://example.org/servers'))]},
         {'id': 'block03', 'type': 'actionSheet', 'title': 'Личный кабинет', 'text': 'Выберите, где открыть личный кабинет',
          'buttons': [button('button03', 'Открыть личный кабинет в Telegram', external('https://t.me/example')),
                      button('button04', 'Открыть личный кабинет на сайте', external('https://example.org/account'))]},

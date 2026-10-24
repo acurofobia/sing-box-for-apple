@@ -56,6 +56,7 @@ class PresentationTests(unittest.TestCase):
             executable = folder / 'checks'
             result = subprocess.run(['xcrun', 'swiftc', '-parse-as-library', '-module-cache-path', str(folder / 'modules'),
                                      str(ROOT / 'PrototypeApp/SubscriptionUIDocument.swift'),
+                                     str(ROOT / 'PrototypeApp/PrototypeLegalDocument.swift'),
                                      str(ROOT / 'PrototypeApp/PresentationCoordinator.swift'), str(harness),
                                      '-o', str(executable)], capture_output=True, text=True)
             self.assertEqual(result.returncode, 0, result.stdout + result.stderr)

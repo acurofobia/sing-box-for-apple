@@ -13,13 +13,16 @@ final class PrototypeSmokeTests: XCTestCase {
         XCTAssertEqual((response as? HTTPURLResponse)?.statusCode, 200)
     }
 
-    private func launch(reset: Bool = true, connected: Bool = false, largeText: Bool = false) -> XCUIApplication {
+    private func launch(reset: Bool = true, connected: Bool = false, largeText: Bool = false, connectionStatus: String? = nil) -> XCUIApplication {
         XCUIDevice.shared.orientation = .portrait
         let app = XCUIApplication()
         app.launchEnvironment["PROTOTYPE_UI_TESTING"] = "1"
         app.launchEnvironment["PROTOTYPE_UI_RESET"] = reset ? "1" : "0"
         if connected {
             app.launchEnvironment["PROTOTYPE_UI_CONNECTED"] = "1"
+        }
+        if let connectionStatus {
+            app.launchEnvironment["PROTOTYPE_UI_STATUS"] = connectionStatus
         }
         app.launchArguments += ["-AppleLanguages", "(ru)", "-AppleLocale", "ru_RU"]
         if largeText {
@@ -39,14 +42,14 @@ final class PrototypeSmokeTests: XCTestCase {
         app.buttons.matching(NSPredicate(format: "label == %@", title)).firstMatch
     }
 
-    private func addSubscription(_ app: XCUIApplication, name: String = "both") {
+    private func addSubscription(_ app: XCUIApplication, name: String = "both", server: String = "http://localhost:18081") {
         let input = app.textFields["prototype.subscription.url"]
         XCTAssertTrue(input.waitForExistence(timeout: 15))
         input.tap()
         if !app.keyboards.firstMatch.waitForExistence(timeout: 3) {
             input.tap()
         }
-        input.typeText("http://localhost:18081/subscription/" + name)
+        input.typeText(server + "/subscription/" + name)
         app.buttons["prototype.subscription.fetch"].tap()
         XCTAssertTrue(tabButton(app, "Профиль").waitForExistence(timeout: 20))
     }
@@ -62,6 +65,46 @@ final class PrototypeSmokeTests: XCTestCase {
         attachment.name = name
         attachment.lifetime = .keepAlways
         add(attachment)
+    }
+
+    func testConnectionHealthStatesKeepDisconnectAvailable() {
+        let setup = launch()
+        addSubscription(setup)
+        setup.terminate()
+        for value in ["Проверка соединения…", "Сервер недоступен", "Подключено"] {
+            let app = launch(reset: false, connected: true, connectionStatus: value)
+            let status = app.descendants(matching: .any).matching(identifier: "prototype.status").firstMatch
+            XCTAssertTrue(status.waitForExistence(timeout: 10))
+            XCTAssertEqual(status.value as? String, value)
+            XCTAssertTrue(app.buttons["prototype.stop"].isEnabled)
+            XCTAssertTrue(app.buttons["prototype.stop"].isHittable)
+            capture(app, "Connection health: " + value)
+            app.buttons["prototype.mode"].tap()
+            XCTAssertTrue(app.buttons["prototype.ui.option01"].waitForExistence(timeout: 5))
+            XCTAssertTrue(app.buttons["prototype.ui.option01"].isEnabled)
+            XCTAssertTrue(app.buttons["prototype.ui.option02"].isEnabled)
+            app.terminate()
+        }
+    }
+
+    func testCurrentStandaloneServerUsesNeutralContent() {
+        let app = launch()
+        addSubscription(app, name: "synthetic-e2e-subscription-token", server: "http://localhost:18082")
+        XCTAssertTrue(app.staticTexts["Подписка"].waitForExistence(timeout: 5))
+        XCTAssertTrue(app.staticTexts["Обзор"].exists)
+        tabButton(app, "Профиль").tap()
+        XCTAssertTrue(app.staticTexts["Количество серверов"].waitForExistence(timeout: 5))
+        XCTAssertTrue(app.staticTexts["17"].exists)
+        XCTAssertEqual(app.buttons["prototype.ui.button02"].label, "Открыть список")
+        capture(app, "standalone-server-neutral-profile")
+        app.buttons["prototype.ui.item02"].tap()
+        XCTAssertEqual(app.buttons["prototype.ui.button03"].label, "Документация")
+        app.buttons["Отмена"].tap()
+        tabButton(app, "Подключение").tap()
+        app.buttons["prototype.mode"].tap()
+        XCTAssertTrue(app.buttons["prototype.ui.option01"].waitForExistence(timeout: 5))
+        XCTAssertEqual(app.buttons["prototype.ui.option01"].label, "Вариант 1")
+        XCTAssertEqual(app.buttons["prototype.ui.option02"].label, "Вариант 2")
     }
 
     func testNativeTabBarSwitchesTabsAndRetainsRoutingChoice() {
@@ -472,15 +515,15 @@ final class PrototypeSmokeTests: XCTestCase {
         tabButton(app, "Профиль").tap()
         try await control("changed")
         app.buttons["prototype.subscription.refresh"].tap()
-        XCTAssertTrue(app.staticTexts["Обновлённый тариф"].waitForExistence(timeout: 10))
+        XCTAssertTrue(app.staticTexts["Обновлённый обзор"].waitForExistence(timeout: 10))
         try await control("invalid")
         app.buttons["prototype.subscription.refresh"].tap()
         XCTAssertTrue(app.staticTexts["Сервер вернул некорректное оформление подписки."].waitForExistence(timeout: 10))
-        XCTAssertTrue(app.staticTexts["Обновлённый тариф"].exists)
+        XCTAssertTrue(app.staticTexts["Обновлённый обзор"].exists)
         try await control("normal")
         XCUIDevice.shared.press(.home)
         app.activate()
-        XCTAssertTrue(app.staticTexts["Основной"].waitForExistence(timeout: 10))
+        XCTAssertTrue(app.staticTexts["Обзор"].waitForExistence(timeout: 10))
     }
 
     func testErrorBannerPreservesLayoutAndSupportsDismissalAndTimeout() async throws {
