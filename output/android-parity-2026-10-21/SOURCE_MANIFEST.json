@@ -1,0 +1,750 @@
+{
+  "createdDate": "2026-10-21",
+  "timezone": "Asia/Yekaterinburg",
+  "iosHead": "2a6a6dfe3a082af405a3105b12a41b366cb5e136",
+  "coreHead": "1c3c78d566f28a2df7c72bcf3e63099beea8493f",
+  "turnHead": "bbab2a7c09b0894a120496b6d506db66eb998798",
+  "originalHandoffSha256": "197cd66cf96e870f78f4000e48116ab9ad33968d77e40b276cc9175a3947d1c5",
+  "originalSpecificationSha256": "e0fa89e8e96094b289db6c02078bf20e63213d4b336d5bf62beab056b445f753",
+  "androidVersion": "0.1.0-test",
+  "androidApplicationId": "io.whitelink.android",
+  "androidSourceMatchesBuildManifest": true,
+  "trackedUncommittedInputFiles": [
+    "Extension/PacketTunnelProvider.swift",
+    "Library/Network/PrototypeRouting.swift",
+    "output/design/sing-vpn-interface.sketch",
+    "scripts/tests/test_prototype_routing.py"
+  ],
+  "files": [
+    {
+      "sourceRoot": "/Users/acurofobia/Downloads/android-client",
+      "path": "app/src/debug/AndroidManifest.xml",
+      "snapshot": "reference/android-baseline/app/src/debug/AndroidManifest.xml",
+      "bytes": 269,
+      "sha256": "c5e796f73ccc0ed5588b08afb25d5b796b0f14779c9fd8edf67048594ca53a37"
+    },
+    {
+      "sourceRoot": "/Users/acurofobia/Downloads/android-client",
+      "path": "app/src/main/AndroidManifest.xml",
+      "snapshot": "reference/android-baseline/app/src/main/AndroidManifest.xml",
+      "bytes": 2162,
+      "sha256": "69ee409613e58f1a6e34de5e71058355dba341fc44b7731fe6b625d8dc18266d"
+    },
+    {
+      "sourceRoot": "/Users/acurofobia/Downloads/android-client",
+      "path": "app/src/main/assets/licenses/LICENSE",
+      "snapshot": "reference/android-baseline/app/src/main/assets/licenses/LICENSE",
+      "bytes": 35823,
+      "sha256": "230184f60bae2feaf244f10a8bac053c8ff33a183bcc365b4d8b876d2b7f4809"
+    },
+    {
+      "sourceRoot": "/Users/acurofobia/Downloads/android-client",
+      "path": "app/src/main/assets/licenses/THIRD_PARTY_NOTICES.md",
+      "snapshot": "reference/android-baseline/app/src/main/assets/licenses/THIRD_PARTY_NOTICES.md",
+      "bytes": 1869,
+      "sha256": "d1eb1ddfc25ecd506ebe90826438610df2a5f44ba3442019edc673cec98d036b"
+    },
+    {
+      "sourceRoot": "/Users/acurofobia/Downloads/android-client",
+      "path": "app/src/main/assets/routing.json",
+      "snapshot": "reference/android-baseline/app/src/main/assets/routing.json",
+      "bytes": 4514,
+      "sha256": "10d5599520b07f1861e0b712ac3d4ef3e583a9b51bbc5a9174fb0a6fb5779c79"
+    },
+    {
+      "sourceRoot": "/Users/acurofobia/Downloads/android-client",
+      "path": "app/src/main/assets/rulesets/geoip-direct.srs",
+      "snapshot": "reference/android-baseline/app/src/main/assets/rulesets/geoip-direct.srs",
+      "bytes": 74199,
+      "sha256": "7e2589128de083abd3984f45686d231d878e80ca508b4a224943f2a32688a779"
+    },
+    {
+      "sourceRoot": "/Users/acurofobia/Downloads/android-client",
+      "path": "app/src/main/assets/rulesets/geosite-apple.srs",
+      "snapshot": "reference/android-baseline/app/src/main/assets/rulesets/geosite-apple.srs",
+      "bytes": 780,
+      "sha256": "54ab9fb19ea02cfed47abc4dbed229c41647f654512724cc65fdc0b0ce80d23c"
+    },
+    {
+      "sourceRoot": "/Users/acurofobia/Downloads/android-client",
+      "path": "app/src/main/assets/rulesets/geosite-category-ads.srs",
+      "snapshot": "reference/android-baseline/app/src/main/assets/rulesets/geosite-category-ads.srs",
+      "bytes": 52,
+      "sha256": "dd6a4e90947dee59e8004e0261d6866f07df4f6813ab52649084944477e037cf"
+    },
+    {
+      "sourceRoot": "/Users/acurofobia/Downloads/android-client",
+      "path": "app/src/main/assets/rulesets/geosite-category-ru.srs",
+      "snapshot": "reference/android-baseline/app/src/main/assets/rulesets/geosite-category-ru.srs",
+      "bytes": 594,
+      "sha256": "8a2ba056d0a53da9b1e69b42ac3d389be497dc1601163853cee3cf9ec9a715d2"
+    },
+    {
+      "sourceRoot": "/Users/acurofobia/Downloads/android-client",
+      "path": "app/src/main/assets/rulesets/geosite-epicgames.srs",
+      "snapshot": "reference/android-baseline/app/src/main/assets/rulesets/geosite-epicgames.srs",
+      "bytes": 325,
+      "sha256": "e065046f906117bb2281ff7c4a59e382ad542f1dda29b5d18ee33cc388367ad9"
+    },
+    {
+      "sourceRoot": "/Users/acurofobia/Downloads/android-client",
+      "path": "app/src/main/assets/rulesets/geosite-escapefromtarkov.srs",
+      "snapshot": "reference/android-baseline/app/src/main/assets/rulesets/geosite-escapefromtarkov.srs",
+      "bytes": 90,
+      "sha256": "986dc235907095187b7532fbee1935ce52bc4bbd048b3fbd478ac7f231e00a1a"
+    },
+    {
+      "sourceRoot": "/Users/acurofobia/Downloads/android-client",
+      "path": "app/src/main/assets/rulesets/geosite-faceit.srs",
+      "snapshot": "reference/android-baseline/app/src/main/assets/rulesets/geosite-faceit.srs",
+      "bytes": 67,
+      "sha256": "c4d64ba670e1bb4e6d0feb351001182d4a2b59b561e5fb170781a4612b06b5da"
+    },
+    {
+      "sourceRoot": "/Users/acurofobia/Downloads/android-client",
+      "path": "app/src/main/assets/rulesets/geosite-github.srs",
+      "snapshot": "reference/android-baseline/app/src/main/assets/rulesets/geosite-github.srs",
+      "bytes": 418,
+      "sha256": "cc925296ae8b318181f94e3c531c25d2d8b507e092293d9d12c78551a0680f41"
+    },
+    {
+      "sourceRoot": "/Users/acurofobia/Downloads/android-client",
+      "path": "app/src/main/assets/rulesets/geosite-google-play.srs",
+      "snapshot": "reference/android-baseline/app/src/main/assets/rulesets/geosite-google-play.srs",
+      "bytes": 479,
+      "sha256": "094bc4c176dac3465565a2e6d90cce526c779e108ddf574ad1c98727fb2f245e"
+    },
+    {
+      "sourceRoot": "/Users/acurofobia/Downloads/android-client",
+      "path": "app/src/main/assets/rulesets/geosite-microsoft.srs",
+      "snapshot": "reference/android-baseline/app/src/main/assets/rulesets/geosite-microsoft.srs",
+      "bytes": 698,
+      "sha256": "177e06718d7de536cdfb029207be046244b2e1b3393e971918ddf0c2ca00a7b2"
+    },
+    {
+      "sourceRoot": "/Users/acurofobia/Downloads/android-client",
+      "path": "app/src/main/assets/rulesets/geosite-pinterest.srs",
+      "snapshot": "reference/android-baseline/app/src/main/assets/rulesets/geosite-pinterest.srs",
+      "bytes": 458,
+      "sha256": "522032639746cd248c9e74bece1ca7710064c06d182cd3bd4f6507dcdd770f27"
+    },
+    {
+      "sourceRoot": "/Users/acurofobia/Downloads/android-client",
+      "path": "app/src/main/assets/rulesets/geosite-private.srs",
+      "snapshot": "reference/android-baseline/app/src/main/assets/rulesets/geosite-private.srs",
+      "bytes": 671,
+      "sha256": "cec6020ca1643dde6cc1cc1564eaaedfa3bc22ccc9a5860c6d74b19dc93908d3"
+    },
+    {
+      "sourceRoot": "/Users/acurofobia/Downloads/android-client",
+      "path": "app/src/main/assets/rulesets/geosite-riot.srs",
+      "snapshot": "reference/android-baseline/app/src/main/assets/rulesets/geosite-riot.srs",
+      "bytes": 604,
+      "sha256": "cdf8e0f8a94740945443f5556e7dd0a144845a3a11cd4e34d6041e8c87fb147b"
+    },
+    {
+      "sourceRoot": "/Users/acurofobia/Downloads/android-client",
+      "path": "app/src/main/assets/rulesets/geosite-steam.srs",
+      "snapshot": "reference/android-baseline/app/src/main/assets/rulesets/geosite-steam.srs",
+      "bytes": 589,
+      "sha256": "7633bcf8d0fe974deecade7d5dfa43e072a3a3e7b38386a5d4d961768469e5e1"
+    },
+    {
+      "sourceRoot": "/Users/acurofobia/Downloads/android-client",
+      "path": "app/src/main/assets/rulesets/geosite-telegram.srs",
+      "snapshot": "reference/android-baseline/app/src/main/assets/rulesets/geosite-telegram.srs",
+      "bytes": 287,
+      "sha256": "83f8b1e271b4c78e3d8fb1ce6cee70e21b0ea5cd6c7bbc020a7ab6f3fd8f37f3"
+    },
+    {
+      "sourceRoot": "/Users/acurofobia/Downloads/android-client",
+      "path": "app/src/main/assets/rulesets/geosite-torrent.srs",
+      "snapshot": "reference/android-baseline/app/src/main/assets/rulesets/geosite-torrent.srs",
+      "bytes": 4891,
+      "sha256": "e9f7d7b618041780c488fd6a0d9f3a3dc1a7f4fe5f91a7bad0f9806da51e39af"
+    },
+    {
+      "sourceRoot": "/Users/acurofobia/Downloads/android-client",
+      "path": "app/src/main/assets/rulesets/geosite-twitch-ads.srs",
+      "snapshot": "reference/android-baseline/app/src/main/assets/rulesets/geosite-twitch-ads.srs",
+      "bytes": 104,
+      "sha256": "d7e632adeb6622360c4eb90176877c583d5ee9a0362c8407cde3b088dd47b492"
+    },
+    {
+      "sourceRoot": "/Users/acurofobia/Downloads/android-client",
+      "path": "app/src/main/assets/rulesets/geosite-twitch.srs",
+      "snapshot": "reference/android-baseline/app/src/main/assets/rulesets/geosite-twitch.srs",
+      "bytes": 527,
+      "sha256": "12c41a520bf50f58b634ce13e8282ecd866761025ada6ae648b47bc3643b2164"
+    },
+    {
+      "sourceRoot": "/Users/acurofobia/Downloads/android-client",
+      "path": "app/src/main/assets/rulesets/geosite-whitelist.srs",
+      "snapshot": "reference/android-baseline/app/src/main/assets/rulesets/geosite-whitelist.srs",
+      "bytes": 3210,
+      "sha256": "6e77a9baec718977e46006cbbf1cc6aac5148339123dd0bb834e9c54731d1fc3"
+    },
+    {
+      "sourceRoot": "/Users/acurofobia/Downloads/android-client",
+      "path": "app/src/main/assets/rulesets/geosite-win-spy.srs",
+      "snapshot": "reference/android-baseline/app/src/main/assets/rulesets/geosite-win-spy.srs",
+      "bytes": 2494,
+      "sha256": "f862f9f0191065f28261bf399f85b9cf58d7c6f409626083ffd43c6f914cf52b"
+    },
+    {
+      "sourceRoot": "/Users/acurofobia/Downloads/android-client",
+      "path": "app/src/main/assets/rulesets/geosite-youtube.srs",
+      "snapshot": "reference/android-baseline/app/src/main/assets/rulesets/geosite-youtube.srs",
+      "bytes": 1149,
+      "sha256": "cdbda19162a99a50e639a9e50efcbac8a6f4b08d3d1cc61f68ff229246dd5f6e"
+    },
+    {
+      "sourceRoot": "/Users/acurofobia/Downloads/android-client",
+      "path": "app/src/main/java/io/whitelink/android/data/BinaryEncoding.kt",
+      "snapshot": "reference/android-baseline/app/src/main/java/io/whitelink/android/data/BinaryEncoding.kt",
+      "bytes": 1323,
+      "sha256": "6f6354cf4eef0ab5af81a7ad1ae36bc3eeb26e3409e591668b093e9f5a5fcd41"
+    },
+    {
+      "sourceRoot": "/Users/acurofobia/Downloads/android-client",
+      "path": "app/src/main/java/io/whitelink/android/data/ConfigurationParser.kt",
+      "snapshot": "reference/android-baseline/app/src/main/java/io/whitelink/android/data/ConfigurationParser.kt",
+      "bytes": 13385,
+      "sha256": "639ac6a47f2454e59feeee859f8015bb8a6f7980dc0f5151b33eb9b981dbdecc"
+    },
+    {
+      "sourceRoot": "/Users/acurofobia/Downloads/android-client",
+      "path": "app/src/main/java/io/whitelink/android/data/Models.kt",
+      "snapshot": "reference/android-baseline/app/src/main/java/io/whitelink/android/data/Models.kt",
+      "bytes": 1627,
+      "sha256": "0aa2832bff74adc8d15e8e88841444242200e0c9d2e692ab70c37e2ccd6a71d7"
+    },
+    {
+      "sourceRoot": "/Users/acurofobia/Downloads/android-client",
+      "path": "app/src/main/java/io/whitelink/android/data/ProfileStore.kt",
+      "snapshot": "reference/android-baseline/app/src/main/java/io/whitelink/android/data/ProfileStore.kt",
+      "bytes": 9139,
+      "sha256": "6769d237f3afcda2a05fe370e1cc061784b4fd213175ed52b2977052a11c7f33"
+    },
+    {
+      "sourceRoot": "/Users/acurofobia/Downloads/android-client",
+      "path": "app/src/main/java/io/whitelink/android/data/StrictJson.kt",
+      "snapshot": "reference/android-baseline/app/src/main/java/io/whitelink/android/data/StrictJson.kt",
+      "bytes": 4995,
+      "sha256": "098ebb45a0091a3d17d540daeea84665ee2250ede25403877f76647cd1ce55bb"
+    },
+    {
+      "sourceRoot": "/Users/acurofobia/Downloads/android-client",
+      "path": "app/src/main/java/io/whitelink/android/data/SubscriptionRepository.kt",
+      "snapshot": "reference/android-baseline/app/src/main/java/io/whitelink/android/data/SubscriptionRepository.kt",
+      "bytes": 13400,
+      "sha256": "2d575b6063de97ad079336cc1a13ff22fe1094e2f2a9258fa97ce34c9ee988ea"
+    },
+    {
+      "sourceRoot": "/Users/acurofobia/Downloads/android-client",
+      "path": "app/src/main/java/io/whitelink/android/MainActivity.kt",
+      "snapshot": "reference/android-baseline/app/src/main/java/io/whitelink/android/MainActivity.kt",
+      "bytes": 22926,
+      "sha256": "7b9ab95312eef8a468b8915730b07a1b9b1c203257e4dad0305a5e20bfa6461d"
+    },
+    {
+      "sourceRoot": "/Users/acurofobia/Downloads/android-client",
+      "path": "app/src/main/java/io/whitelink/android/vpn/Diagnostics.kt",
+      "snapshot": "reference/android-baseline/app/src/main/java/io/whitelink/android/vpn/Diagnostics.kt",
+      "bytes": 6194,
+      "sha256": "4e3735d867a1db539e059426d8a1e06c192e9aec81a21052f162a9c6bf4ca06e"
+    },
+    {
+      "sourceRoot": "/Users/acurofobia/Downloads/android-client",
+      "path": "app/src/main/java/io/whitelink/android/vpn/PhysicalResolver.kt",
+      "snapshot": "reference/android-baseline/app/src/main/java/io/whitelink/android/vpn/PhysicalResolver.kt",
+      "bytes": 6362,
+      "sha256": "eebc3db3f5989673dd16190bbe7356c8ecf658808fd8f0446700549dfefe62f9"
+    },
+    {
+      "sourceRoot": "/Users/acurofobia/Downloads/android-client",
+      "path": "app/src/main/java/io/whitelink/android/vpn/VpnController.kt",
+      "snapshot": "reference/android-baseline/app/src/main/java/io/whitelink/android/vpn/VpnController.kt",
+      "bytes": 3747,
+      "sha256": "69c89768ccf1f500fda04987047e500cf494a3ce3be9f408bf4b70ab535da160"
+    },
+    {
+      "sourceRoot": "/Users/acurofobia/Downloads/android-client",
+      "path": "app/src/main/java/io/whitelink/android/vpn/WhiteLinkVpnService.kt",
+      "snapshot": "reference/android-baseline/app/src/main/java/io/whitelink/android/vpn/WhiteLinkVpnService.kt",
+      "bytes": 41405,
+      "sha256": "da793041d9fd7dfce2b79f9351123f8b1b3ea0e32e0173b385b79397d519a00a"
+    },
+    {
+      "sourceRoot": "/Users/acurofobia/Downloads/android-client",
+      "path": "app/src/main/res/drawable/ic_whitelink.xml",
+      "snapshot": "reference/android-baseline/app/src/main/res/drawable/ic_whitelink.xml",
+      "bytes": 482,
+      "sha256": "220b691df9f06c01e2fdea075395a66c8e03606591f12846f7466a4dcacfa3d9"
+    },
+    {
+      "sourceRoot": "/Users/acurofobia/Downloads/android-client",
+      "path": "app/src/main/res/values/styles.xml",
+      "snapshot": "reference/android-baseline/app/src/main/res/values/styles.xml",
+      "bytes": 424,
+      "sha256": "5a69f6778414c5fcfcf9ccb9dff199f1cefc1a6fcc7550f40c1011a2073bb8ea"
+    },
+    {
+      "sourceRoot": "/Users/acurofobia/Downloads/android-client",
+      "path": "app/src/main/res/xml/backup_rules.xml",
+      "snapshot": "reference/android-baseline/app/src/main/res/xml/backup_rules.xml",
+      "bytes": 630,
+      "sha256": "eda9dddce1e895de1efd716fe75e244187bf8f91a3bb7444c6ea1731e51c74a8"
+    },
+    {
+      "sourceRoot": "/Users/acurofobia/Downloads/android-client",
+      "path": "app/src/test/java/io/whitelink/android/data/ConfigurationParserTest.kt",
+      "snapshot": "reference/android-baseline/app/src/test/java/io/whitelink/android/data/ConfigurationParserTest.kt",
+      "bytes": 9186,
+      "sha256": "28182cd56cb4afd8b7f30f119f4b0db4e641ce0b097c1d3300faa19a473e8a19"
+    },
+    {
+      "sourceRoot": "/Users/acurofobia/Downloads/android-client",
+      "path": "app/src/test/java/io/whitelink/android/data/StrictJsonTest.kt",
+      "snapshot": "reference/android-baseline/app/src/test/java/io/whitelink/android/data/StrictJsonTest.kt",
+      "bytes": 1902,
+      "sha256": "d5c47cb1b8dc6f15586dc0acfa01d94aef91e2ad6a2b566568f05d9d68fb0c8b"
+    },
+    {
+      "sourceRoot": "/Users/acurofobia/Downloads/android-client",
+      "path": "app/src/test/java/io/whitelink/android/data/SubscriptionRepositoryTest.kt",
+      "snapshot": "reference/android-baseline/app/src/test/java/io/whitelink/android/data/SubscriptionRepositoryTest.kt",
+      "bytes": 13380,
+      "sha256": "837ce79962bb35a79f5e72dce8053565e403e17aefc09cbdc444bf8dddffdf63"
+    },
+    {
+      "sourceRoot": "/Users/acurofobia/Downloads/android-client",
+      "path": "app/src/test/README.md",
+      "snapshot": "reference/android-baseline/app/src/test/README.md",
+      "bytes": 2152,
+      "sha256": "4a23e42f5a4b3309f92c8e2f3f2d1d2b5f8e7ec77b7fe324d8ec39e2d6265c42"
+    },
+    {
+      "sourceRoot": "/Users/acurofobia/Downloads/android-client",
+      "path": "LICENSE",
+      "snapshot": "reference/android-baseline/LICENSE",
+      "bytes": 35823,
+      "sha256": "230184f60bae2feaf244f10a8bac053c8ff33a183bcc365b4d8b876d2b7f4809"
+    },
+    {
+      "sourceRoot": "/Users/acurofobia/Downloads/android-client",
+      "path": "THIRD_PARTY_NOTICES.md",
+      "snapshot": "reference/android-baseline/THIRD_PARTY_NOTICES.md",
+      "bytes": 1869,
+      "sha256": "d1eb1ddfc25ecd506ebe90826438610df2a5f44ba3442019edc673cec98d036b"
+    },
+    {
+      "sourceRoot": "/Users/acurofobia/Downloads/android-client",
+      "path": "README.md",
+      "snapshot": "reference/android-baseline/README.md",
+      "bytes": 7366,
+      "sha256": "36b49a17f1ddcfc3e1d470e3e3fbdb052d25ea202020d692f3bd0443542510b5"
+    },
+    {
+      "sourceRoot": "/Users/acurofobia/Downloads/android-client",
+      "path": "app/build.gradle.kts",
+      "snapshot": "reference/android-baseline/app/build.gradle.kts",
+      "bytes": 1775,
+      "sha256": "3abbe851ee1f4ca43e09f570c63785eccd7279017272df341993d52805e6e464"
+    },
+    {
+      "sourceRoot": "/Users/acurofobia/Downloads/android-client",
+      "path": "build.gradle.kts",
+      "snapshot": "reference/android-baseline/build.gradle.kts",
+      "bytes": 218,
+      "sha256": "52f9b95bdc89db4b3641d7c0684e8d92f62cbfdd5c83168a9eead5ff041b4c95"
+    },
+    {
+      "sourceRoot": "/Users/acurofobia/Downloads/android-client",
+      "path": "settings.gradle.kts",
+      "snapshot": "reference/android-baseline/settings.gradle.kts",
+      "bytes": 278,
+      "sha256": "98eb1b34d236cc71b3a64eb06232f1eb343809ed76d8b81486cc2c3bdd377b27"
+    },
+    {
+      "sourceRoot": "/Users/acurofobia/Downloads/android-client",
+      "path": "gradle/wrapper/gradle-wrapper.properties",
+      "snapshot": "reference/android-baseline/gradle/wrapper/gradle-wrapper.properties",
+      "bytes": 253,
+      "sha256": "cb9fe49a4e4a6fe61b7f110a1c5ae18e79e1bbe6c4b9d86b5e4fa17d3173a036"
+    },
+    {
+      "sourceRoot": "/Users/acurofobia/Downloads/android-client",
+      "path": "dist/build-manifest.json",
+      "snapshot": "reference/android-baseline/dist/build-manifest.json",
+      "bytes": 12449,
+      "sha256": "44219065c99ae8f6c606a227f4dd18835f678353d3df391c5e87809998ce8cfc"
+    },
+    {
+      "sourceRoot": "/Users/acurofobia/Downloads/android-client",
+      "path": "dist/TESTING.md",
+      "snapshot": "reference/android-baseline/dist/TESTING.md",
+      "bytes": 6298,
+      "sha256": "ec984cfa3a814d65ca651e25a53937b1c244c97e6d93a26b89e6354ff67b314c"
+    },
+    {
+      "sourceRoot": "/Users/acurofobia/Downloads/android-client",
+      "path": "scripts/build-core.ps1",
+      "snapshot": "reference/android-baseline/scripts/build-core.ps1",
+      "bytes": 2984,
+      "sha256": "71557ea899f4c8a34e7a7e6cc5b14a839924d9f89f0029150e0e8dec14732516"
+    },
+    {
+      "sourceRoot": "/Users/acurofobia/Downloads/android-client",
+      "path": "scripts/build-apk.ps1",
+      "snapshot": "reference/android-baseline/scripts/build-apk.ps1",
+      "bytes": 2797,
+      "sha256": "674292e27407807b178a9473d28f00b203b4ca15158fda22bfd0faf49eaf2e6a"
+    },
+    {
+      "sourceRoot": "/Users/acurofobia/Downloads/android-client",
+      "path": "scripts/write-manifest.ps1",
+      "snapshot": "reference/android-baseline/scripts/write-manifest.ps1",
+      "bytes": 2586,
+      "sha256": "77fd1a4c394568b74848d27e0a2a97f2b00f81fb79ee7748d9842d0e5de74668"
+    },
+    {
+      "sourceRoot": "/Users/acurofobia/code/sing-prototype",
+      "path": "Extension/PacketTunnelProvider.swift",
+      "snapshot": "reference/ios-runtime/Extension/PacketTunnelProvider.swift",
+      "bytes": 15134,
+      "sha256": "e2c2b9af4984788d23e1c2100fa91588337ce55963ec3066d51d8111ed330c3f"
+    },
+    {
+      "sourceRoot": "/Users/acurofobia/code/sing-prototype",
+      "path": "Library/Network/ExtensionProvider.swift",
+      "snapshot": "reference/ios-runtime/Library/Network/ExtensionProvider.swift",
+      "bytes": 13409,
+      "sha256": "ca28b3f80e374815375b9e05f4949614f74cb40c7949821e944e2b98c4ab6214"
+    },
+    {
+      "sourceRoot": "/Users/acurofobia/code/sing-prototype",
+      "path": "Library/Network/PrototypeRouting.swift",
+      "snapshot": "reference/ios-runtime/Library/Network/PrototypeRouting.swift",
+      "bytes": 6896,
+      "sha256": "057a3671a8e8643ae09b6d676d8522ecf6d26cef11000c7c4ba55365348cfab7"
+    },
+    {
+      "sourceRoot": "/Users/acurofobia/code/sing-prototype",
+      "path": "Library/Network/VKTurnConfiguration.swift",
+      "snapshot": "reference/ios-runtime/Library/Network/VKTurnConfiguration.swift",
+      "bytes": 12649,
+      "sha256": "d1ffcb19b88789fbdccac1f2f9cbcebf5fbf564b9505dd44c5344d830e63d69d"
+    },
+    {
+      "sourceRoot": "/Users/acurofobia/code/sing-prototype",
+      "path": "Library/Shared/FilePath.swift",
+      "snapshot": "reference/ios-runtime/Library/Shared/FilePath.swift",
+      "bytes": 2154,
+      "sha256": "cd3c4b1e5577756b28f37f77faa82d04d4ed93d8863e847b07262edbc94434f8"
+    },
+    {
+      "sourceRoot": "/Users/acurofobia/code/sing-prototype",
+      "path": "SFIUITests/PrototypeDeviceRoutingTests.swift",
+      "snapshot": "reference/ios-runtime/SFIUITests/PrototypeDeviceRoutingTests.swift",
+      "bytes": 8105,
+      "sha256": "907f669151cfa31c40d44f913c406fcecd368680e68e1e7ce5de8c06b93866b4"
+    },
+    {
+      "sourceRoot": "/Users/acurofobia/code/sing-prototype",
+      "path": "scripts/tests/prototype_ui_fixture.py",
+      "snapshot": "reference/ios-runtime/scripts/tests/prototype_ui_fixture.py",
+      "bytes": 6183,
+      "sha256": "8d9118c5c3374f1bb773af7143f24131fada62e27b7e126be36351e21bc6630c"
+    },
+    {
+      "sourceRoot": "/Users/acurofobia/code/sing-prototype",
+      "path": "scripts/tests/test_prototype_presentations.py",
+      "snapshot": "reference/ios-runtime/scripts/tests/test_prototype_presentations.py",
+      "bytes": 3039,
+      "sha256": "477f25ba9a6eb553b001ebe449f5b164a2b1dfca241d5e0b5300032b32866da9"
+    },
+    {
+      "sourceRoot": "/Users/acurofobia/code/sing-prototype",
+      "path": "scripts/tests/test_prototype_routing.py",
+      "snapshot": "reference/ios-runtime/scripts/tests/test_prototype_routing.py",
+      "bytes": 21848,
+      "sha256": "6b6606fa7c24660eaf8f3847f16cca20b20fb46f9006b8885295010a21bd1699"
+    },
+    {
+      "sourceRoot": "/Users/acurofobia/code/sing-prototype",
+      "path": "scripts/tests/test_prototype_rule_set_cache.py",
+      "snapshot": "reference/ios-runtime/scripts/tests/test_prototype_rule_set_cache.py",
+      "bytes": 5628,
+      "sha256": "cb7b2ad7669a633fccd144fb4879104c3c9072aef509ee70a0181c33e3418b8a"
+    },
+    {
+      "sourceRoot": "/Users/acurofobia/code/sing-prototype",
+      "path": "scripts/tests/test_prototype_startup_cancellation.py",
+      "snapshot": "reference/ios-runtime/scripts/tests/test_prototype_startup_cancellation.py",
+      "bytes": 3804,
+      "sha256": "de4fe4c46fc9abd366905aa503d424666496fb15cbab6de09f420c1fc565540f"
+    },
+    {
+      "sourceRoot": "/Users/acurofobia/code/sing-prototype",
+      "path": "scripts/tests/test_prototype_subscription.py",
+      "snapshot": "reference/ios-runtime/scripts/tests/test_prototype_subscription.py",
+      "bytes": 28017,
+      "sha256": "10041bd6a7e20576841f6059e1c384ef9f1e08a029173547216828e0eac76a27"
+    },
+    {
+      "sourceRoot": "/Users/acurofobia/code/sing-prototype",
+      "path": "scripts/tests/test_prototype_subscription_lifecycle.py",
+      "snapshot": "reference/ios-runtime/scripts/tests/test_prototype_subscription_lifecycle.py",
+      "bytes": 5511,
+      "sha256": "d033eb40cbeff795a882763afae3b634d30f6cb8994cc021209801606cc23615"
+    },
+    {
+      "sourceRoot": "/Users/acurofobia/code/sing-prototype",
+      "path": "scripts/tests/test_prototype_subscription_ui.py",
+      "snapshot": "reference/ios-runtime/scripts/tests/test_prototype_subscription_ui.py",
+      "bytes": 6013,
+      "sha256": "7d0bca924a0465b87077d17e74d37cc52e2330e10a7400eda94c94b87f8a4ff4"
+    },
+    {
+      "sourceRoot": "/Users/acurofobia/code/sing-prototype",
+      "path": "scripts/tests/test_vk_turn_capture.py",
+      "snapshot": "reference/ios-runtime/scripts/tests/test_vk_turn_capture.py",
+      "bytes": 8288,
+      "sha256": "97d53ec333d13b50238c2e098afdab289619056ba65893afbe7fa9536756659a"
+    },
+    {
+      "sourceRoot": "/Users/acurofobia/code/sing-prototype",
+      "path": "scripts/tests/test_vk_turn_memory.py",
+      "snapshot": "reference/ios-runtime/scripts/tests/test_vk_turn_memory.py",
+      "bytes": 3325,
+      "sha256": "6a11b254a4a3c3d6d1ac5e139515532acbbb0afd6858069831c79e61d01d5864"
+    },
+    {
+      "sourceRoot": "/Users/acurofobia/code/sing-prototype",
+      "path": "scripts/tests/test_vk_turn_switching.py",
+      "snapshot": "reference/ios-runtime/scripts/tests/test_vk_turn_switching.py",
+      "bytes": 12399,
+      "sha256": "9a8b0bb2724a3c2a9bd776d43982f50e73a6c56b79f365146e7ced0ad95d53a0"
+    },
+    {
+      "sourceRoot": "/Users/acurofobia/code/sing-prototype/upstream/sing-box",
+      "path": "LICENSE",
+      "snapshot": "reference/current-core/LICENSE",
+      "bytes": 791,
+      "sha256": "650d5e3b99a446fb38e820fa87a49562e0c79eab868fff58618ac487a58e554c"
+    },
+    {
+      "sourceRoot": "/Users/acurofobia/code/sing-prototype/upstream/sing-box",
+      "path": "box.go",
+      "snapshot": "reference/current-core/box.go",
+      "bytes": 24112,
+      "sha256": "07e7c1af7d5ac53502dc4efaef92f6269495ccc0417753f3b434aad12dea790a"
+    },
+    {
+      "sourceRoot": "/Users/acurofobia/code/sing-prototype/upstream/sing-box",
+      "path": "daemon/instance.go",
+      "snapshot": "reference/current-core/daemon/instance.go",
+      "bytes": 8065,
+      "sha256": "2ff68878448e79cffd501c1c183a24ecf23878d8409e7c4747293ae8cdd024b9"
+    },
+    {
+      "sourceRoot": "/Users/acurofobia/code/sing-prototype/upstream/sing-box",
+      "path": "daemon/priority_failover.go",
+      "snapshot": "reference/current-core/daemon/priority_failover.go",
+      "bytes": 7488,
+      "sha256": "d444438ccfe0706eb734689810451a52fa42ba2eaae2724e9c158da778f5054c"
+    },
+    {
+      "sourceRoot": "/Users/acurofobia/code/sing-prototype/upstream/sing-box",
+      "path": "daemon/priority_failover_config.go",
+      "snapshot": "reference/current-core/daemon/priority_failover_config.go",
+      "bytes": 3003,
+      "sha256": "e662cda2299197c576fd04e3f7afab8d186d6e0eccf578c48fb2edc4f45197a5"
+    },
+    {
+      "sourceRoot": "/Users/acurofobia/code/sing-prototype/upstream/sing-box",
+      "path": "daemon/priority_failover_integration_test.go",
+      "snapshot": "reference/current-core/daemon/priority_failover_integration_test.go",
+      "bytes": 13032,
+      "sha256": "92a070f80981cc6be7d080cb455a2555433409b32ab9b51359ba847259b9e108"
+    },
+    {
+      "sourceRoot": "/Users/acurofobia/code/sing-prototype/upstream/sing-box",
+      "path": "daemon/priority_failover_probe.go",
+      "snapshot": "reference/current-core/daemon/priority_failover_probe.go",
+      "bytes": 3876,
+      "sha256": "f5b5665313c196143798ccdd067f2bdb37b99bf59ac9f9a715937c846daba257"
+    },
+    {
+      "sourceRoot": "/Users/acurofobia/code/sing-prototype/upstream/sing-box",
+      "path": "daemon/priority_failover_test.go",
+      "snapshot": "reference/current-core/daemon/priority_failover_test.go",
+      "bytes": 7456,
+      "sha256": "01b2068b117e2a8ad6b44e7db692ec9e885896245b11dda9177d5e2335f73935"
+    },
+    {
+      "sourceRoot": "/Users/acurofobia/code/sing-prototype/upstream/sing-box",
+      "path": "experimental/libbox/command_server.go",
+      "snapshot": "reference/current-core/experimental/libbox/command_server.go",
+      "bytes": 10915,
+      "sha256": "3d123b85d3d11cd827b7810c4bb46f59b9c44e43cba12dde63b157dc639ffdb8"
+    },
+    {
+      "sourceRoot": "/Users/acurofobia/code/sing-prototype/upstream/sing-box",
+      "path": "experimental/libbox/priority_failover.go",
+      "snapshot": "reference/current-core/experimental/libbox/priority_failover.go",
+      "bytes": 1531,
+      "sha256": "9a57c54ba10ef0af2306258a28cbefaaaba584c7b380cea020ef7e8b0f5fce90"
+    },
+    {
+      "sourceRoot": "/Users/acurofobia/code/sing-prototype/upstream/sing-box",
+      "path": "experimental/libbox/priority_failover_test.go",
+      "snapshot": "reference/current-core/experimental/libbox/priority_failover_test.go",
+      "bytes": 2683,
+      "sha256": "a91d4488a52ac823cf57d3f54a038142a3bf407885520d73268ad3b17f3fc5f0"
+    },
+    {
+      "sourceRoot": "/Users/acurofobia/code/sing-prototype/upstream/sing-box",
+      "path": "experimental/libbox/priority_start_cancellation_test.go",
+      "snapshot": "reference/current-core/experimental/libbox/priority_start_cancellation_test.go",
+      "bytes": 2477,
+      "sha256": "5b7201844ca146826f311f63af72856eb1533e708188ce0d423557c434a4fdbf"
+    },
+    {
+      "sourceRoot": "/Users/acurofobia/code/sing-prototype/upstream/sing-box",
+      "path": "experimental/libbox/vk_turn_prototype.go",
+      "snapshot": "reference/current-core/experimental/libbox/vk_turn_prototype.go",
+      "bytes": 5874,
+      "sha256": "5d3e57f9db760f5b4f63275977e24c276d71c383ec6d446e9d613f157a71efd1"
+    },
+    {
+      "sourceRoot": "/Users/acurofobia/code/sing-prototype/upstream/sing-box",
+      "path": "experimental/libbox/vk_turn_prototype_log.go",
+      "snapshot": "reference/current-core/experimental/libbox/vk_turn_prototype_log.go",
+      "bytes": 1919,
+      "sha256": "9584be2c5e777da644333e0dd757fd83eda7c91d4116846ce894e110e6dd4625"
+    },
+    {
+      "sourceRoot": "/Users/acurofobia/code/sing-prototype/upstream/sing-box",
+      "path": "experimental/libbox/vk_turn_prototype_log_test.go",
+      "snapshot": "reference/current-core/experimental/libbox/vk_turn_prototype_log_test.go",
+      "bytes": 1588,
+      "sha256": "877928bd2f3d7d97fabc3cc265b8d35f49479b0adf628f38fee329f48b8d8d07"
+    },
+    {
+      "sourceRoot": "/Users/acurofobia/code/sing-prototype/upstream/sing-box",
+      "path": "experimental/libbox/vk_turn_prototype_test.go",
+      "snapshot": "reference/current-core/experimental/libbox/vk_turn_prototype_test.go",
+      "bytes": 2516,
+      "sha256": "d08555b8bae1a8c3b016dee4aa2019bbc450afa27658e56ba9bcc793a6b477a8"
+    },
+    {
+      "sourceRoot": "/Users/acurofobia/code/sing-prototype/upstream/sing-box",
+      "path": "go.mod",
+      "snapshot": "reference/current-core/go.mod",
+      "bytes": 12004,
+      "sha256": "f8a60f9f85f4530cea4d8a682a62bc8f7a4bdc3fc093a22fa8acaf23ab922035"
+    },
+    {
+      "sourceRoot": "/Users/acurofobia/code/sing-prototype/upstream/sing-box",
+      "path": "go.sum",
+      "snapshot": "reference/current-core/go.sum",
+      "bytes": 62816,
+      "sha256": "fed34cef47d12a6141a8f58ee374bb9c7a9f4768bb4c7ea67873a3a6a0f89b4b"
+    },
+    {
+      "sourceRoot": "/Users/acurofobia/code/sing-prototype/upstream/sing-box",
+      "path": "protocol/group/selector.go",
+      "snapshot": "reference/current-core/protocol/group/selector.go",
+      "bytes": 6539,
+      "sha256": "d85b2e2b015aed669eaf88e51f127f0ea9226c8d4c4990fd5448b077f99fb906"
+    },
+    {
+      "sourceRoot": "/Users/acurofobia/code/sing-prototype/upstream/sing-box",
+      "path": "protocol/vkturn/config.go",
+      "snapshot": "reference/current-core/protocol/vkturn/config.go",
+      "bytes": 9009,
+      "sha256": "fc3941e4cf1047bc646ceea305243d69f9bf0262cceae1fc8c6387cfd6226bcb"
+    },
+    {
+      "sourceRoot": "/Users/acurofobia/code/sing-prototype/upstream/sing-box",
+      "path": "protocol/vkturn/config_startup_test.go",
+      "snapshot": "reference/current-core/protocol/vkturn/config_startup_test.go",
+      "bytes": 1764,
+      "sha256": "0b7317fa2851c13bb06f27bfe3d9c6b424aa9116304a708e39fb32c286e8214e"
+    },
+    {
+      "sourceRoot": "/Users/acurofobia/code/sing-prototype/upstream/sing-box",
+      "path": "protocol/vkturn/config_test.go",
+      "snapshot": "reference/current-core/protocol/vkturn/config_test.go",
+      "bytes": 1850,
+      "sha256": "fb89c981a5b2f35d5a46ee8f376237188c6b197c89a85f4de64a0eaad45f915e"
+    },
+    {
+      "sourceRoot": "/Users/acurofobia/code/sing-prototype/upstream/sing-box",
+      "path": "protocol/vkturn/outbound.go",
+      "snapshot": "reference/current-core/protocol/vkturn/outbound.go",
+      "bytes": 2539,
+      "sha256": "dac0b7aa3f2672935cbeb638de95ad918d083b9dab39b26c3bd88855102c8eec"
+    },
+    {
+      "sourceRoot": "/Users/acurofobia/code/sing-prototype/upstream/sing-box",
+      "path": "protocol/vkturn/packet.go",
+      "snapshot": "reference/current-core/protocol/vkturn/packet.go",
+      "bytes": 3402,
+      "sha256": "5670298abcaadeb1085547b8c62083ecfe012278c150e63fa69d814d47721ee3"
+    },
+    {
+      "sourceRoot": "/Users/acurofobia/code/sing-prototype/upstream/sing-box",
+      "path": "protocol/vkturn/packet_test.go",
+      "snapshot": "reference/current-core/protocol/vkturn/packet_test.go",
+      "bytes": 1606,
+      "sha256": "322db6020ce5f971f5d0e52d1055820ebd5f126be46b082d9eaf0e7528cb62b5"
+    },
+    {
+      "sourceRoot": "/Users/acurofobia/code/sing-prototype/upstream/sing-box",
+      "path": "protocol/vkturn/session_test.go",
+      "snapshot": "reference/current-core/protocol/vkturn/session_test.go",
+      "bytes": 366,
+      "sha256": "afd697b271155fd33c6229aca9710d8c2045d3dce73ae57e7292cc4da6d7d95e"
+    },
+    {
+      "sourceRoot": "/Users/acurofobia/code/sing-prototype/upstream/sing-box",
+      "path": "protocol/vkturn/vless_test.go",
+      "snapshot": "reference/current-core/protocol/vkturn/vless_test.go",
+      "bytes": 4198,
+      "sha256": "5a7ace2152498c6a474b8f6377d4d441bae8a0ed49dbe65b000a2c54ff1450b4"
+    },
+    {
+      "sourceRoot": "/Users/acurofobia/code/sing-prototype/upstream/sing-box",
+      "path": "protocol/vkturn/vless_transport_test.go",
+      "snapshot": "reference/current-core/protocol/vkturn/vless_transport_test.go",
+      "bytes": 2975,
+      "sha256": "662acb18aa2b2dc9cebbaccafe3a65fbaab5146fa3f97439bb7826f06e36fe99"
+    }
+  ],
+  "uncommittedInputs": [
+    {
+      "path": "Extension/PacketTunnelProvider.swift",
+      "bytes": 15134,
+      "sha256": "e2c2b9af4984788d23e1c2100fa91588337ce55963ec3066d51d8111ed330c3f"
+    },
+    {
+      "path": "Library/Network/PrototypeRouting.swift",
+      "bytes": 6896,
+      "sha256": "057a3671a8e8643ae09b6d676d8522ecf6d26cef11000c7c4ba55365348cfab7"
+    },
+    {
+      "path": "output/design/sing-vpn-interface.sketch",
+      "bytes": 24694228,
+      "sha256": "bf59f35b8080d43467e42f4bfbebaad56305022e0f0fa04a4de5b3c1b4a338a4"
+    },
+    {
+      "path": "scripts/tests/test_prototype_routing.py",
+      "bytes": 21848,
+      "sha256": "6b6606fa7c24660eaf8f3847f16cca20b20fb46f9006b8885295010a21bd1699"
+    }
+  ],
+  "canonicalSpecificationSha256": "14058cbb9acf3621f8b6926eb0cc92aa2918314490e345ea760793c42aec7654"
+}

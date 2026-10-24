@@ -193,7 +193,7 @@ struct PrototypeModeDrawer: View {
                     Text(verbatim: item.title).font(.system(size: 17)).frame(maxWidth: .infinity, minHeight: 44, alignment: .leading).contentShape(Rectangle())
                 }
                 .buttonStyle(PrototypeFlatStyle())
-                .disabled(!available || model.busy || model.replacingSubscription || (model.canStop && model.status != "Подключено"))
+                .disabled(!available || model.busy || model.replacingSubscription || (model.canStop && model.vpnState != .connected))
                 .accessibilityIdentifier("prototype.ui." + item.id)
                 .accessibilityValue(selected ? String(localized: "Выбрано") : availability(item, mode: mode, available: available))
                 .padding(.vertical, -8)
@@ -221,7 +221,7 @@ struct PrototypeModeDrawer: View {
                         Image(selected ? "ModeSelected" : "ModeUnselected").resizable().frame(width: 28, height: 28)
                             .frame(width: 44, height: 44).contentShape(Rectangle())
                     }
-                    .buttonStyle(PrototypeFlatStyle()).disabled(!available || model.busy || model.replacingSubscription || (model.canStop && model.status != "Подключено"))
+                    .buttonStyle(PrototypeFlatStyle()).disabled(!available || model.busy || model.replacingSubscription || (model.canStop && model.vpnState != .connected))
                     .padding(-8)
                     .accessibilityLabel(Text(verbatim: item.title))
                 }

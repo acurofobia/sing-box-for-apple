@@ -1,0 +1,22 @@
+{
+  "date": "2026-10-20",
+  "timezone": "Asia/Yekaterinburg",
+  "checks": {
+    "fresh_sketch_png_exports": 22,
+    "resolved_layouts": 11,
+    "decoded_png_files": 40,
+    "local_html_references": 76,
+    "svg_xml_valid": true,
+    "python_syntax": true,
+    "fixture_http_auth_and_errors": "passed",
+    "production_swift_ui_validator": "8 accepted; invalid schema rejected",
+    "video_decode": "5.44 seconds; 592x1280; sampled successfully",
+    "source_sketch_sha256_matches": true
+  },
+  "not_run": [
+    "Android build or emulator tests",
+    "Fresh iOS UI tests during packaging",
+    "Interactive browser test of the local HTML gallery",
+    "Independent third-party JSON Schema engine"
+  ]
+}

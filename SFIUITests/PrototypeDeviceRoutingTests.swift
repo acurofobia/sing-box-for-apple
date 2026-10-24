@@ -145,6 +145,10 @@ final class PrototypeDeviceRoutingTests: XCTestCase {
         let start = reveal("prototype.start")
         XCTAssertTrue(start.isEnabled)
         start.tap()
+        let disclosure = app.alerts["Перед подключением"]
+        if disclosure.waitForExistence(timeout: 2) {
+            disclosure.buttons["Подключить"].tap()
+        }
         waitForStatus("Подключено", timeout: 120)
     }
 

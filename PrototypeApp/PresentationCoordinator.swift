@@ -3,7 +3,7 @@ import SwiftUI
 @MainActor
 final class PrototypePresentationCoordinator: ObservableObject {
     enum Destination: Equatable, Identifiable {
-        case modes, subscription, page(String), dialog(String), external(URL)
+        case modes, subscription, page(String), dialog(String), external(URL), legal(PrototypeLegalDocument)
         var id: String {
             switch self {
             case .modes: return "modes"
@@ -11,6 +11,7 @@ final class PrototypePresentationCoordinator: ObservableObject {
             case let .page(id): return "page:" + id
             case let .dialog(id): return "dialog:" + id
             case let .external(url): return "external:" + url.absoluteString
+            case let .legal(document): return "legal:" + document.rawValue
             }
         }
     }

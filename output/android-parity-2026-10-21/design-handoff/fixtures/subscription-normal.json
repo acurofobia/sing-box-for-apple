@@ -1,0 +1,6 @@
+{
+  "sing_box_url": "http://localhost:18081/config-vless.json",
+  "vk_turn_link": "wdtt://example.org:443:a:b:password:call",
+  "ui_url": "http://localhost:18081/ui-normal.json",
+  "ui_token": "synthetic_ui_token_123"
+}

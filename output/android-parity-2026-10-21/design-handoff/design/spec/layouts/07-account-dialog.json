@@ -1,0 +1,2586 @@
+{
+  "ok": true,
+  "screen": "07-account-dialog",
+  "sketchFrameId": "912B71F5-988F-4FFF-BA7B-E96265974D49",
+  "title": "07 · Личный кабинет — выбор открытия",
+  "coordinateSpace": "screen-relative Sketch points; canvas origin removed",
+  "canvas": {
+    "width": 390,
+    "height": 844
+  },
+  "includesResolvedSymbolInstances": true,
+  "nodes": [
+    {
+      "id": "6EE4B54C-B4C7-4405-A522-6A8608C6CE78",
+      "type": "Text",
+      "name": "Заголовок / Профиль",
+      "path": "07 · Личный кабинет — выбор открытия/Заголовок / Профиль",
+      "frame": {
+        "x": 22,
+        "y": 48,
+        "width": 153,
+        "height": 40
+      },
+      "screenFrame": {
+        "x": 22,
+        "y": 48,
+        "width": 153,
+        "height": 40
+      },
+      "text": "Профиль",
+      "style": {
+        "fontFamily": "SF Pro",
+        "fontSize": null,
+        "fontWeight": null,
+        "textColor": "#000000ff",
+        "alignment": "left",
+        "lineHeight": null
+      }
+    },
+    {
+      "id": "3AECBD7C-4CB9-450C-A69D-B97510520D2E",
+      "type": "Group",
+      "name": "Баланс / Сумма и пополнение",
+      "path": "07 · Личный кабинет — выбор открытия/Баланс / Сумма и пополнение",
+      "frame": {
+        "x": 22,
+        "y": 339,
+        "width": 346,
+        "height": 66
+      },
+      "screenFrame": {
+        "x": 22,
+        "y": 339,
+        "width": 346,
+        "height": 66
+      },
+      "style": {
+        "corners": {
+          "radii": [],
+          "style": 0,
+          "smoothing": 0.6
+        }
+      }
+    },
+    {
+      "id": "B3C49AA4-206A-4EF5-B928-0FFEC7280B56",
+      "type": "SymbolInstance",
+      "name": "Apple iOS / Пополнить баланс",
+      "path": "07 · Личный кабинет — выбор открытия/Баланс / Сумма и пополнение/Apple iOS / Пополнить баланс",
+      "frame": {
+        "x": 219,
+        "y": 8,
+        "width": 127,
+        "height": 50
+      },
+      "screenFrame": {
+        "x": 241,
+        "y": 347,
+        "width": 127,
+        "height": 50
+      },
+      "style": {}
+    },
+    {
+      "id": "3B10D9D8-452D-4D93-A7B2-E9BAFDFA01B9",
+      "type": "Text",
+      "name": "Label",
+      "path": "07 · Личный кабинет — выбор открытия/Баланс / Сумма и пополнение/Apple iOS / Пополнить баланс/Label",
+      "frame": {
+        "x": 20,
+        "y": 16,
+        "width": 87,
+        "height": 18
+      },
+      "screenFrame": {
+        "x": 261,
+        "y": 363,
+        "width": 87,
+        "height": 18
+      },
+      "text": "Пополнить",
+      "style": {
+        "fontFamily": "SF Pro",
+        "fontSize": null,
+        "fontWeight": null,
+        "textColor": "#ffffffff",
+        "alignment": "left",
+        "lineHeight": 18
+      }
+    },
+    {
+      "id": "892CCF04-1F61-4144-B27C-044E1D8DE86F",
+      "type": "Group",
+      "name": "Баланс / Значение",
+      "path": "07 · Личный кабинет — выбор открытия/Баланс / Сумма и пополнение/Баланс / Значение",
+      "frame": {
+        "x": 0,
+        "y": 4,
+        "width": 190,
+        "height": 58
+      },
+      "screenFrame": {
+        "x": 22,
+        "y": 343,
+        "width": 190,
+        "height": 58
+      },
+      "style": {
+        "corners": {
+          "radii": [],
+          "style": 0,
+          "smoothing": 0.6
+        }
+      }
+    },
+    {
+      "id": "ACDCB0D8-B6F0-40E4-B4A6-F1C67CF9CBA6",
+      "type": "Text",
+      "name": "Баланс / Пример суммы",
+      "path": "07 · Личный кабинет — выбор открытия/Баланс / Сумма и пополнение/Баланс / Значение/Баланс / Пример суммы",
+      "frame": {
+        "x": 0,
+        "y": 24,
+        "width": 81,
+        "height": 34
+      },
+      "screenFrame": {
+        "x": 22,
+        "y": 367,
+        "width": 81,
+        "height": 34
+      },
+      "text": "900 ₽",
+      "style": {
+        "fontFamily": "SF Pro",
+        "fontSize": null,
+        "fontWeight": null,
+        "textColor": "#1a1a1aff",
+        "alignment": "left",
+        "lineHeight": null
+      }
+    },
+    {
+      "id": "89948E49-D2F5-41CB-9E71-4B7FE74568B8",
+      "type": "Text",
+      "name": "Баланс / Заголовок",
+      "path": "07 · Личный кабинет — выбор открытия/Баланс / Сумма и пополнение/Баланс / Значение/Баланс / Заголовок",
+      "frame": {
+        "x": 0,
+        "y": 0,
+        "width": 49,
+        "height": 16
+      },
+      "screenFrame": {
+        "x": 22,
+        "y": 343,
+        "width": 49,
+        "height": 16
+      },
+      "text": "Баланс",
+      "style": {
+        "fontFamily": "SF Pro",
+        "fontSize": null,
+        "fontWeight": null,
+        "textColor": "#77737aff",
+        "alignment": "left",
+        "lineHeight": null
+      }
+    },
+    {
+      "id": "683EA0DF-296D-4FC5-9309-B1A287693DDC",
+      "type": "SymbolInstance",
+      "name": "Навигация / Профиль",
+      "path": "07 · Личный кабинет — выбор открытия/Навигация / Профиль",
+      "frame": {
+        "x": 13,
+        "y": 745,
+        "width": 364,
+        "height": 99
+      },
+      "screenFrame": {
+        "x": 13,
+        "y": 745,
+        "width": 364,
+        "height": 99
+      },
+      "style": {}
+    },
+    {
+      "id": "2397F84E-A6E7-409B-9CFD-14F55DE9B924",
+      "type": "Group",
+      "name": "Tabs",
+      "path": "07 · Личный кабинет — выбор открытия/Навигация / Профиль/Tabs",
+      "frame": {
+        "x": 21,
+        "y": 16,
+        "width": 322,
+        "height": 62
+      },
+      "screenFrame": {
+        "x": 34,
+        "y": 761,
+        "width": 322,
+        "height": 62
+      },
+      "style": {
+        "corners": {
+          "radii": [],
+          "style": 0,
+          "smoothing": 0.6
+        }
+      }
+    },
+    {
+      "id": "886EDD98-1EF2-480A-8F1C-921F6FFDA991",
+      "type": "Group",
+      "name": "Stack",
+      "path": "07 · Личный кабинет — выбор открытия/Навигация / Профиль/Tabs/Stack",
+      "frame": {
+        "x": 0,
+        "y": 0,
+        "width": 322,
+        "height": 62
+      },
+      "screenFrame": {
+        "x": 34,
+        "y": 761,
+        "width": 322,
+        "height": 62
+      },
+      "style": {
+        "fills": [
+          {
+            "type": "Color",
+            "color": "#f8f8f833"
+          },
+          {
+            "type": "Color",
+            "color": "#00000040"
+          },
+          {
+            "type": "Color",
+            "color": "#ffffff40"
+          },
+          {
+            "type": "Color",
+            "color": "#44444499"
+          }
+        ],
+        "corners": {
+          "radii": [
+            3.402823466385289e+38
+          ],
+          "style": 1,
+          "smoothing": 0.6
+        },
+        "shadows": [
+          {
+            "color": "#00000005",
+            "x": 0,
+            "y": 8,
+            "blur": 15,
+            "spread": 0
+          },
+          {
+            "color": "#dbdbdbff",
+            "x": 0,
+            "y": 0,
+            "blur": 0,
+            "spread": 0.5
+          },
+          {
+            "color": "#dbdbdbff",
+            "x": -1.25,
+            "y": 0,
+            "blur": 0,
+            "spread": -0.75
+          },
+          {
+            "color": "#dbdbdbff",
+            "x": 1.25,
+            "y": 0,
+            "blur": 0,
+            "spread": -0.75
+          }
+        ]
+      }
+    },
+    {
+      "id": "83BC57B8-98C0-498D-AA28-CE2A4147AE26",
+      "type": "Group",
+      "name": "Tab 3",
+      "path": "07 · Личный кабинет — выбор открытия/Навигация / Профиль/Tabs/Stack/Tab 3",
+      "frame": {
+        "x": 237.33334350585938,
+        "y": 4,
+        "width": 114.667,
+        "height": 54
+      },
+      "screenFrame": {
+        "x": 271.3333435058594,
+        "y": 765,
+        "width": 114.667,
+        "height": 54
+      },
+      "style": {
+        "corners": {
+          "radii": [],
+          "style": 0,
+          "smoothing": 0.6
+        }
+      }
+    },
+    {
+      "id": "2CAD4618-C664-476C-AE8F-C98C99802ADF",
+      "type": "Text",
+      "name": "Label",
+      "path": "07 · Личный кабинет — выбор открытия/Навигация / Профиль/Tabs/Stack/Tab 3/Label",
+      "frame": {
+        "x": 9,
+        "y": 35.9990303955078,
+        "width": 96.667,
+        "height": 12
+      },
+      "screenFrame": {
+        "x": 280.3333435058594,
+        "y": 800.9990303955078,
+        "width": 96.667,
+        "height": 12
+      },
+      "text": "Профиль",
+      "style": {
+        "fontFamily": "SF Pro",
+        "fontSize": null,
+        "fontWeight": null,
+        "textColor": "#a61643ff",
+        "alignment": "center",
+        "lineHeight": null
+      }
+    },
+    {
+      "id": "5E941A80-10DF-4419-96A4-1C2B16E880C7",
+      "type": "Text",
+      "name": "Symbol",
+      "path": "07 · Личный кабинет — выбор открытия/Навигация / Профиль/Tabs/Stack/Tab 3/Symbol",
+      "frame": {
+        "x": 9,
+        "y": 7,
+        "width": 96.667,
+        "height": 28
+      },
+      "screenFrame": {
+        "x": 280.3333435058594,
+        "y": 772,
+        "width": 96.667,
+        "height": 28
+      },
+      "text": "􀉪",
+      "style": {
+        "fontFamily": "SF Pro",
+        "fontSize": null,
+        "fontWeight": null,
+        "textColor": "#a61643ff",
+        "alignment": "center",
+        "lineHeight": 22
+      }
+    },
+    {
+      "id": "8B604245-1FE2-4CB2-80F3-7D017BC6A8AD",
+      "type": "Group",
+      "name": "Tab 2",
+      "path": "07 · Личный кабинет — выбор открытия/Навигация / Профиль/Tabs/Stack/Tab 2",
+      "frame": {
+        "x": 122.66667175292969,
+        "y": 4,
+        "width": 114.667,
+        "height": 54
+      },
+      "screenFrame": {
+        "x": 156.6666717529297,
+        "y": 765,
+        "width": 114.667,
+        "height": 54
+      },
+      "style": {
+        "corners": {
+          "radii": [],
+          "style": 0,
+          "smoothing": 0.6
+        }
+      }
+    },
+    {
+      "id": "2CAD4618-C664-476C-AE8F-C98C99802ADF",
+      "type": "Text",
+      "name": "Label",
+      "path": "07 · Личный кабинет — выбор открытия/Навигация / Профиль/Tabs/Stack/Tab 2/Label",
+      "frame": {
+        "x": 9,
+        "y": 35.9990303955078,
+        "width": 96.667,
+        "height": 12
+      },
+      "screenFrame": {
+        "x": 165.6666717529297,
+        "y": 800.9990303955078,
+        "width": 96.667,
+        "height": 12
+      },
+      "text": "Роутинг",
+      "style": {
+        "fontFamily": "SF Pro",
+        "fontSize": null,
+        "fontWeight": null,
+        "textColor": "#1a1a1aff",
+        "alignment": "center",
+        "lineHeight": null
+      }
+    },
+    {
+      "id": "5E941A80-10DF-4419-96A4-1C2B16E880C7",
+      "type": "Text",
+      "name": "Symbol",
+      "path": "07 · Личный кабинет — выбор открытия/Навигация / Профиль/Tabs/Stack/Tab 2/Symbol",
+      "frame": {
+        "x": 9,
+        "y": 7,
+        "width": 96.667,
+        "height": 28
+      },
+      "screenFrame": {
+        "x": 165.6666717529297,
+        "y": 772,
+        "width": 96.667,
+        "height": 28
+      },
+      "text": "􀙠",
+      "style": {
+        "fontFamily": "SF Pro",
+        "fontSize": null,
+        "fontWeight": null,
+        "textColor": "#1a1a1aff",
+        "alignment": "center",
+        "lineHeight": 22
+      }
+    },
+    {
+      "id": "783D2CB3-4026-4364-B1BB-28D36A94EC3C",
+      "type": "Group",
+      "name": "Tab 1",
+      "path": "07 · Личный кабинет — выбор открытия/Навигация / Профиль/Tabs/Stack/Tab 1",
+      "frame": {
+        "x": 8,
+        "y": 4,
+        "width": 114.667,
+        "height": 54
+      },
+      "screenFrame": {
+        "x": 42,
+        "y": 765,
+        "width": 114.667,
+        "height": 54
+      },
+      "style": {
+        "corners": {
+          "radii": [],
+          "style": 0,
+          "smoothing": 0.6
+        }
+      }
+    },
+    {
+      "id": "2CAD4618-C664-476C-AE8F-C98C99802ADF",
+      "type": "Text",
+      "name": "Label",
+      "path": "07 · Личный кабинет — выбор открытия/Навигация / Профиль/Tabs/Stack/Tab 1/Label",
+      "frame": {
+        "x": 9,
+        "y": 35.999030395507816,
+        "width": 96.667,
+        "height": 12
+      },
+      "screenFrame": {
+        "x": 51,
+        "y": 800.9990303955078,
+        "width": 96.667,
+        "height": 12
+      },
+      "text": "Подключение",
+      "style": {
+        "fontFamily": "SF Pro",
+        "fontSize": null,
+        "fontWeight": null,
+        "textColor": "#1a1a1aff",
+        "alignment": "center",
+        "lineHeight": null
+      }
+    },
+    {
+      "id": "5E941A80-10DF-4419-96A4-1C2B16E880C7",
+      "type": "Text",
+      "name": "Symbol",
+      "path": "07 · Личный кабинет — выбор открытия/Навигация / Профиль/Tabs/Stack/Tab 1/Symbol",
+      "frame": {
+        "x": 9,
+        "y": 7,
+        "width": 96.667,
+        "height": 28
+      },
+      "screenFrame": {
+        "x": 51,
+        "y": 772,
+        "width": 96.667,
+        "height": 28
+      },
+      "text": "􀆨",
+      "style": {
+        "fontFamily": "SF Pro",
+        "fontSize": null,
+        "fontWeight": null,
+        "textColor": "#1a1a1aff",
+        "alignment": "center",
+        "lineHeight": 22
+      }
+    },
+    {
+      "id": "9925737D-6FE4-4676-A67A-44F5B4DF8908",
+      "type": "SymbolInstance",
+      "name": "Навигация / Активный профиль",
+      "path": "07 · Личный кабинет — выбор открытия/Навигация / Активный профиль",
+      "frame": {
+        "x": 247,
+        "y": 765,
+        "width": 102,
+        "height": 54
+      },
+      "screenFrame": {
+        "x": 247,
+        "y": 765,
+        "width": 102,
+        "height": 54
+      },
+      "style": {}
+    },
+    {
+      "id": "24635C9D-9954-4CAD-8CA9-23931AF826FF",
+      "type": "ShapePath",
+      "name": "Selection",
+      "path": "07 · Личный кабинет — выбор открытия/Навигация / Активный профиль/Selection",
+      "frame": {
+        "x": -4,
+        "y": 0,
+        "width": 110,
+        "height": 54
+      },
+      "screenFrame": {
+        "x": 243,
+        "y": 765,
+        "width": 110,
+        "height": 54
+      },
+      "style": {
+        "fills": [
+          {
+            "type": "Color",
+            "color": "#78788029"
+          }
+        ],
+        "corners": {
+          "radii": [
+            3.402823466385289e+38
+          ],
+          "style": 0,
+          "smoothing": 0.6
+        }
+      }
+    },
+    {
+      "id": "94E48C2A-B289-4B3A-9679-83EBD195EC19",
+      "type": "HotSpot",
+      "name": "Открыть подключение",
+      "path": "07 · Личный кабинет — выбор открытия/Открыть подключение",
+      "frame": {
+        "x": 33,
+        "y": 765,
+        "width": 102,
+        "height": 54
+      },
+      "screenFrame": {
+        "x": 33,
+        "y": 765,
+        "width": 102,
+        "height": 54
+      },
+      "flow": {
+        "targetId": "1F1BCC60-7F60-4353-82E0-24CBA52DEECE",
+        "animationType": "none"
+      }
+    },
+    {
+      "id": "36AE5B90-C886-4C77-9BE6-F674D4D5968B",
+      "type": "Group",
+      "name": "Подписка / Карточка профиля",
+      "path": "07 · Личный кабинет — выбор открытия/Подписка / Карточка профиля",
+      "frame": {
+        "x": 17,
+        "y": 112,
+        "width": 356,
+        "height": 203
+      },
+      "screenFrame": {
+        "x": 17,
+        "y": 112,
+        "width": 356,
+        "height": 203
+      },
+      "style": {
+        "fills": [
+          {
+            "type": "Color",
+            "color": "#70102dff"
+          }
+        ],
+        "corners": {
+          "radii": [
+            24,
+            24,
+            24,
+            24
+          ],
+          "style": 0,
+          "smoothing": 0.6
+        }
+      }
+    },
+    {
+      "id": "B61E018E-BA14-4BD2-B2E8-9026EBA96746",
+      "type": "Group",
+      "name": "Фактура",
+      "path": "07 · Личный кабинет — выбор открытия/Подписка / Карточка профиля/Фактура",
+      "frame": {
+        "x": 0,
+        "y": 0,
+        "width": 356,
+        "height": 203
+      },
+      "screenFrame": {
+        "x": 17,
+        "y": 112,
+        "width": 356,
+        "height": 203
+      },
+      "style": {}
+    },
+    {
+      "id": "39A88285-A29C-4CE0-B6BC-79495B265BC8",
+      "type": "ShapePath",
+      "name": "Маска",
+      "path": "07 · Личный кабинет — выбор открытия/Подписка / Карточка профиля/Фактура/Маска",
+      "frame": {
+        "x": 0,
+        "y": 0,
+        "width": 356,
+        "height": 203
+      },
+      "screenFrame": {
+        "x": 17,
+        "y": 112,
+        "width": 356,
+        "height": 203
+      },
+      "style": {
+        "fills": [
+          {
+            "type": "Color",
+            "color": "#70102dff"
+          }
+        ],
+        "corners": {
+          "radii": [
+            24,
+            24,
+            24,
+            24
+          ],
+          "style": 0,
+          "smoothing": 0.6
+        }
+      }
+    },
+    {
+      "id": "50D6DECC-27AE-4692-A04F-8A2C800CA6AA",
+      "type": "Image",
+      "name": "Бордовые волны",
+      "path": "07 · Личный кабинет — выбор открытия/Подписка / Карточка профиля/Фактура/Бордовые волны",
+      "frame": {
+        "x": 0,
+        "y": 0,
+        "width": 356,
+        "height": 203
+      },
+      "screenFrame": {
+        "x": 17,
+        "y": 112,
+        "width": 356,
+        "height": 203
+      },
+      "style": {}
+    },
+    {
+      "id": "E9E51F8B-C436-4402-B9E3-F8C41A334767",
+      "type": "Text",
+      "name": "Заголовок",
+      "path": "07 · Личный кабинет — выбор открытия/Подписка / Карточка профиля/Заголовок",
+      "frame": {
+        "x": 18,
+        "y": 17,
+        "width": 180,
+        "height": 22
+      },
+      "screenFrame": {
+        "x": 35,
+        "y": 129,
+        "width": 180,
+        "height": 22
+      },
+      "text": "Подписка",
+      "style": {
+        "fontFamily": "Helvetica",
+        "fontSize": null,
+        "fontWeight": null,
+        "textColor": "#ffffffff",
+        "alignment": "left",
+        "lineHeight": 22
+      }
+    },
+    {
+      "id": "DCA9411C-5EE6-445C-9EBE-DA9BB067DB47",
+      "type": "Text",
+      "name": "Тариф",
+      "path": "07 · Личный кабинет — выбор открытия/Подписка / Карточка профиля/Тариф",
+      "frame": {
+        "x": 18,
+        "y": 58,
+        "width": 260,
+        "height": 38
+      },
+      "screenFrame": {
+        "x": 35,
+        "y": 170,
+        "width": 260,
+        "height": 38
+      },
+      "text": "Основной",
+      "style": {
+        "fontFamily": "Helvetica",
+        "fontSize": null,
+        "fontWeight": null,
+        "textColor": "#ffffffff",
+        "alignment": "left",
+        "lineHeight": 38
+      }
+    },
+    {
+      "id": "56E182A9-297E-4549-8DEE-BE4F75ED8C43",
+      "type": "Text",
+      "name": "Остаток срока",
+      "path": "07 · Личный кабинет — выбор открытия/Подписка / Карточка профиля/Остаток срока",
+      "frame": {
+        "x": 18,
+        "y": 128,
+        "width": 190,
+        "height": 23
+      },
+      "screenFrame": {
+        "x": 35,
+        "y": 240,
+        "width": 190,
+        "height": 23
+      },
+      "text": "Осталось 24 дня",
+      "style": {
+        "fontFamily": "Helvetica",
+        "fontSize": null,
+        "fontWeight": null,
+        "textColor": "#ffffffff",
+        "alignment": "left",
+        "lineHeight": 23
+      }
+    },
+    {
+      "id": "411008A1-D755-4332-9E7A-D8409F1375E7",
+      "type": "Text",
+      "name": "Последнее обновление",
+      "path": "07 · Личный кабинет — выбор открытия/Подписка / Карточка профиля/Последнее обновление",
+      "frame": {
+        "x": 18,
+        "y": 155,
+        "width": 150,
+        "height": 36
+      },
+      "screenFrame": {
+        "x": 35,
+        "y": 267,
+        "width": 150,
+        "height": 36
+      },
+      "text": "Обновлено сегодня, 22:04",
+      "style": {
+        "fontFamily": "Helvetica",
+        "fontSize": null,
+        "fontWeight": null,
+        "textColor": "#edd3ddff",
+        "alignment": "left",
+        "lineHeight": 18
+      }
+    },
+    {
+      "id": "C2CA5553-E936-4C12-9D71-781106ACEE8A",
+      "type": "Text",
+      "name": "ID пользователя",
+      "path": "07 · Личный кабинет — выбор открытия/Подписка / Карточка профиля/ID пользователя",
+      "frame": {
+        "x": 18,
+        "y": 100,
+        "width": 190,
+        "height": 18
+      },
+      "screenFrame": {
+        "x": 35,
+        "y": 212,
+        "width": 190,
+        "height": 18
+      },
+      "text": "ID: 12345678",
+      "style": {
+        "fontFamily": "Helvetica",
+        "fontSize": null,
+        "fontWeight": null,
+        "textColor": "#edd3ddff",
+        "alignment": "left",
+        "lineHeight": 18
+      }
+    },
+    {
+      "id": "8B3F37CB-6652-439A-A153-1FBF2F185AD0",
+      "type": "SymbolInstance",
+      "name": "Apple / Обновить",
+      "path": "07 · Личный кабинет — выбор открытия/Подписка / Карточка профиля/Apple / Обновить",
+      "frame": {
+        "x": 218,
+        "y": 17,
+        "width": 120,
+        "height": 28
+      },
+      "screenFrame": {
+        "x": 235,
+        "y": 129,
+        "width": 120,
+        "height": 28
+      },
+      "style": {}
+    },
+    {
+      "id": "017A568D-16EC-4CBA-AFAF-91C814A5BF3A",
+      "type": "Text",
+      "name": "Label",
+      "path": "07 · Личный кабинет — выбор открытия/Подписка / Карточка профиля/Apple / Обновить/Label",
+      "frame": {
+        "x": 15.5,
+        "y": 5,
+        "width": 89,
+        "height": 18
+      },
+      "screenFrame": {
+        "x": 250.5,
+        "y": 134,
+        "width": 89,
+        "height": 18
+      },
+      "text": "􀅈 Обновить",
+      "style": {
+        "fontFamily": "SF Pro",
+        "fontSize": null,
+        "fontWeight": null,
+        "textColor": "#ffffffff",
+        "alignment": "left",
+        "lineHeight": 18
+      }
+    },
+    {
+      "id": "E489A7F7-76F7-42DF-BE3F-16C6A133D552",
+      "type": "SymbolInstance",
+      "name": "Apple / Изменить подписку",
+      "path": "07 · Личный кабинет — выбор открытия/Подписка / Карточка профиля/Apple / Изменить подписку",
+      "frame": {
+        "x": 180,
+        "y": 160,
+        "width": 158,
+        "height": 28
+      },
+      "screenFrame": {
+        "x": 197,
+        "y": 272,
+        "width": 158,
+        "height": 28
+      },
+      "style": {}
+    },
+    {
+      "id": "017A568D-16EC-4CBA-AFAF-91C814A5BF3A",
+      "type": "Text",
+      "name": "Label",
+      "path": "07 · Личный кабинет — выбор открытия/Подписка / Карточка профиля/Apple / Изменить подписку/Label",
+      "frame": {
+        "x": 10,
+        "y": 5,
+        "width": 138,
+        "height": 18
+      },
+      "screenFrame": {
+        "x": 207,
+        "y": 277,
+        "width": 138,
+        "height": 18
+      },
+      "text": "􀈊 Изменить тариф",
+      "style": {
+        "fontFamily": "SF Pro",
+        "fontSize": null,
+        "fontWeight": null,
+        "textColor": "#ffffffff",
+        "alignment": "left",
+        "lineHeight": 18
+      }
+    },
+    {
+      "id": "884DF6E6-B350-4AF6-BDB2-6FA24377794D",
+      "type": "Group",
+      "name": "Настройки / iOS Inset Grouped",
+      "path": "07 · Личный кабинет — выбор открытия/Настройки / iOS Inset Grouped",
+      "frame": {
+        "x": 17,
+        "y": 429,
+        "width": 356,
+        "height": 260
+      },
+      "screenFrame": {
+        "x": 17,
+        "y": 429,
+        "width": 356,
+        "height": 260
+      },
+      "style": {
+        "fills": [
+          {
+            "type": "Color",
+            "color": "#f2f2f7ff"
+          }
+        ],
+        "corners": {
+          "radii": [
+            20,
+            20,
+            20,
+            20
+          ],
+          "style": 1,
+          "smoothing": 0.6
+        }
+      }
+    },
+    {
+      "id": "83E523B0-BCD2-4790-B61E-0A31B90CD53D",
+      "type": "SymbolInstance",
+      "name": "Apple iOS / Настройки приложения Copy",
+      "path": "07 · Личный кабинет — выбор открытия/Настройки / iOS Inset Grouped/Apple iOS / Настройки приложения Copy",
+      "frame": {
+        "x": 0,
+        "y": 208,
+        "width": 356,
+        "height": 52
+      },
+      "screenFrame": {
+        "x": 17,
+        "y": 637,
+        "width": 356,
+        "height": 52
+      },
+      "style": {}
+    },
+    {
+      "id": "90F3A3A0-F647-486D-B41C-B3A02C089F51",
+      "type": "Group",
+      "name": "Stack",
+      "path": "07 · Личный кабинет — выбор открытия/Настройки / iOS Inset Grouped/Apple iOS / Настройки приложения Copy/Stack",
+      "frame": {
+        "x": 16,
+        "y": 0,
+        "width": 324,
+        "height": 52
+      },
+      "screenFrame": {
+        "x": 33,
+        "y": 637,
+        "width": 324,
+        "height": 52
+      },
+      "style": {
+        "borders": [
+          {
+            "color": "#0000001f",
+            "thickness": 1,
+            "position": "Outside"
+          }
+        ],
+        "corners": {
+          "radii": [
+            0
+          ],
+          "style": 0,
+          "smoothing": 0.6
+        }
+      }
+    },
+    {
+      "id": "E542C57C-584A-488A-BD8A-09C8BF596693",
+      "type": "Group",
+      "name": "Trailing",
+      "path": "07 · Личный кабинет — выбор открытия/Настройки / iOS Inset Grouped/Apple iOS / Настройки приложения Copy/Stack/Trailing",
+      "frame": {
+        "x": 314,
+        "y": 0,
+        "width": 10,
+        "height": 52
+      },
+      "screenFrame": {
+        "x": 347,
+        "y": 637,
+        "width": 10,
+        "height": 52
+      },
+      "style": {
+        "corners": {
+          "radii": [],
+          "style": 0,
+          "smoothing": 0.6
+        }
+      }
+    },
+    {
+      "id": "34155462-FBE1-475C-A5D3-F2C9FB64E9BE",
+      "type": "Text",
+      "name": "Chevron",
+      "path": "07 · Личный кабинет — выбор открытия/Настройки / iOS Inset Grouped/Apple iOS / Настройки приложения Copy/Stack/Trailing/Chevron",
+      "frame": {
+        "x": 0,
+        "y": 15,
+        "width": 10,
+        "height": 22
+      },
+      "screenFrame": {
+        "x": 347,
+        "y": 652,
+        "width": 10,
+        "height": 22
+      },
+      "text": "􀆊",
+      "style": {
+        "fontFamily": "SF Pro",
+        "fontSize": null,
+        "fontWeight": null,
+        "textColor": "#3c3c434d",
+        "alignment": "right",
+        "lineHeight": 22
+      }
+    },
+    {
+      "id": "94786D60-6912-4218-BF59-C0C269FE069D",
+      "type": "Text",
+      "name": "Title",
+      "path": "07 · Личный кабинет — выбор открытия/Настройки / iOS Inset Grouped/Apple iOS / Настройки приложения Copy/Stack/Title",
+      "frame": {
+        "x": 0,
+        "y": 15,
+        "width": 314,
+        "height": 22
+      },
+      "screenFrame": {
+        "x": 33,
+        "y": 652,
+        "width": 314,
+        "height": 22
+      },
+      "text": "Поддержка",
+      "style": {
+        "fontFamily": "SF Pro",
+        "fontSize": null,
+        "fontWeight": null,
+        "textColor": "#000000ff",
+        "alignment": "left",
+        "lineHeight": 22
+      }
+    },
+    {
+      "id": "19AFA5A2-F174-42E7-A994-E3706AE7B70B",
+      "type": "SymbolInstance",
+      "name": "Apple iOS / Настройки приложения",
+      "path": "07 · Личный кабинет — выбор открытия/Настройки / iOS Inset Grouped/Apple iOS / Настройки приложения",
+      "frame": {
+        "x": 0,
+        "y": 156,
+        "width": 356,
+        "height": 52
+      },
+      "screenFrame": {
+        "x": 17,
+        "y": 585,
+        "width": 356,
+        "height": 52
+      },
+      "style": {}
+    },
+    {
+      "id": "90F3A3A0-F647-486D-B41C-B3A02C089F51",
+      "type": "Group",
+      "name": "Stack",
+      "path": "07 · Личный кабинет — выбор открытия/Настройки / iOS Inset Grouped/Apple iOS / Настройки приложения/Stack",
+      "frame": {
+        "x": 16,
+        "y": 0,
+        "width": 324,
+        "height": 52
+      },
+      "screenFrame": {
+        "x": 33,
+        "y": 585,
+        "width": 324,
+        "height": 52
+      },
+      "style": {
+        "borders": [
+          {
+            "color": "#0000001f",
+            "thickness": 1,
+            "position": "Outside"
+          }
+        ],
+        "corners": {
+          "radii": [
+            0
+          ],
+          "style": 0,
+          "smoothing": 0.6
+        }
+      }
+    },
+    {
+      "id": "E542C57C-584A-488A-BD8A-09C8BF596693",
+      "type": "Group",
+      "name": "Trailing",
+      "path": "07 · Личный кабинет — выбор открытия/Настройки / iOS Inset Grouped/Apple iOS / Настройки приложения/Stack/Trailing",
+      "frame": {
+        "x": 314,
+        "y": 0,
+        "width": 10,
+        "height": 52
+      },
+      "screenFrame": {
+        "x": 347,
+        "y": 585,
+        "width": 10,
+        "height": 52
+      },
+      "style": {
+        "corners": {
+          "radii": [],
+          "style": 0,
+          "smoothing": 0.6
+        }
+      }
+    },
+    {
+      "id": "34155462-FBE1-475C-A5D3-F2C9FB64E9BE",
+      "type": "Text",
+      "name": "Chevron",
+      "path": "07 · Личный кабинет — выбор открытия/Настройки / iOS Inset Grouped/Apple iOS / Настройки приложения/Stack/Trailing/Chevron",
+      "frame": {
+        "x": 0,
+        "y": 15,
+        "width": 10,
+        "height": 22
+      },
+      "screenFrame": {
+        "x": 347,
+        "y": 600,
+        "width": 10,
+        "height": 22
+      },
+      "text": "􀆊",
+      "style": {
+        "fontFamily": "SF Pro",
+        "fontSize": null,
+        "fontWeight": null,
+        "textColor": "#3c3c434d",
+        "alignment": "right",
+        "lineHeight": 22
+      }
+    },
+    {
+      "id": "94786D60-6912-4218-BF59-C0C269FE069D",
+      "type": "Text",
+      "name": "Title",
+      "path": "07 · Личный кабинет — выбор открытия/Настройки / iOS Inset Grouped/Apple iOS / Настройки приложения/Stack/Title",
+      "frame": {
+        "x": 0,
+        "y": 15,
+        "width": 314,
+        "height": 22
+      },
+      "screenFrame": {
+        "x": 33,
+        "y": 600,
+        "width": 314,
+        "height": 22
+      },
+      "text": "Настройки приложения",
+      "style": {
+        "fontFamily": "SF Pro",
+        "fontSize": null,
+        "fontWeight": null,
+        "textColor": "#000000ff",
+        "alignment": "left",
+        "lineHeight": 22
+      }
+    },
+    {
+      "id": "FCF0267A-B288-4839-A481-F393EEBDDCC4",
+      "type": "SymbolInstance",
+      "name": "Apple iOS / Изменить ссылку подписки Copy 2",
+      "path": "07 · Личный кабинет — выбор открытия/Настройки / iOS Inset Grouped/Apple iOS / Изменить ссылку подписки Copy 2",
+      "frame": {
+        "x": 0,
+        "y": 104,
+        "width": 356,
+        "height": 52
+      },
+      "screenFrame": {
+        "x": 17,
+        "y": 533,
+        "width": 356,
+        "height": 52
+      },
+      "style": {}
+    },
+    {
+      "id": "90F3A3A0-F647-486D-B41C-B3A02C089F51",
+      "type": "Group",
+      "name": "Stack",
+      "path": "07 · Личный кабинет — выбор открытия/Настройки / iOS Inset Grouped/Apple iOS / Изменить ссылку подписки Copy 2/Stack",
+      "frame": {
+        "x": 16,
+        "y": 0,
+        "width": 324,
+        "height": 52
+      },
+      "screenFrame": {
+        "x": 33,
+        "y": 533,
+        "width": 324,
+        "height": 52
+      },
+      "style": {
+        "borders": [
+          {
+            "color": "#0000001f",
+            "thickness": 1,
+            "position": "Outside"
+          }
+        ],
+        "corners": {
+          "radii": [
+            0
+          ],
+          "style": 0,
+          "smoothing": 0.6
+        }
+      }
+    },
+    {
+      "id": "E542C57C-584A-488A-BD8A-09C8BF596693",
+      "type": "Group",
+      "name": "Trailing",
+      "path": "07 · Личный кабинет — выбор открытия/Настройки / iOS Inset Grouped/Apple iOS / Изменить ссылку подписки Copy 2/Stack/Trailing",
+      "frame": {
+        "x": 314,
+        "y": 0,
+        "width": 10,
+        "height": 52
+      },
+      "screenFrame": {
+        "x": 347,
+        "y": 533,
+        "width": 10,
+        "height": 52
+      },
+      "style": {
+        "corners": {
+          "radii": [],
+          "style": 0,
+          "smoothing": 0.6
+        }
+      }
+    },
+    {
+      "id": "34155462-FBE1-475C-A5D3-F2C9FB64E9BE",
+      "type": "Text",
+      "name": "Chevron",
+      "path": "07 · Личный кабинет — выбор открытия/Настройки / iOS Inset Grouped/Apple iOS / Изменить ссылку подписки Copy 2/Stack/Trailing/Chevron",
+      "frame": {
+        "x": 0,
+        "y": 15,
+        "width": 10,
+        "height": 22
+      },
+      "screenFrame": {
+        "x": 347,
+        "y": 548,
+        "width": 10,
+        "height": 22
+      },
+      "text": "􀆊",
+      "style": {
+        "fontFamily": "SF Pro",
+        "fontSize": null,
+        "fontWeight": null,
+        "textColor": "#3c3c434d",
+        "alignment": "right",
+        "lineHeight": 22
+      }
+    },
+    {
+      "id": "94786D60-6912-4218-BF59-C0C269FE069D",
+      "type": "Text",
+      "name": "Title",
+      "path": "07 · Личный кабинет — выбор открытия/Настройки / iOS Inset Grouped/Apple iOS / Изменить ссылку подписки Copy 2/Stack/Title",
+      "frame": {
+        "x": 0,
+        "y": 15,
+        "width": 314,
+        "height": 22
+      },
+      "screenFrame": {
+        "x": 33,
+        "y": 548,
+        "width": 314,
+        "height": 22
+      },
+      "text": "Логи",
+      "style": {
+        "fontFamily": "SF Pro",
+        "fontSize": null,
+        "fontWeight": null,
+        "textColor": "#000000ff",
+        "alignment": "left",
+        "lineHeight": 22
+      }
+    },
+    {
+      "id": "B7843A3F-D03E-4F50-BA09-BD508524F989",
+      "type": "SymbolInstance",
+      "name": "Apple iOS / Изменить ссылку подписки Copy",
+      "path": "07 · Личный кабинет — выбор открытия/Настройки / iOS Inset Grouped/Apple iOS / Изменить ссылку подписки Copy",
+      "frame": {
+        "x": 0,
+        "y": 52,
+        "width": 356,
+        "height": 52
+      },
+      "screenFrame": {
+        "x": 17,
+        "y": 481,
+        "width": 356,
+        "height": 52
+      },
+      "style": {}
+    },
+    {
+      "id": "90F3A3A0-F647-486D-B41C-B3A02C089F51",
+      "type": "Group",
+      "name": "Stack",
+      "path": "07 · Личный кабинет — выбор открытия/Настройки / iOS Inset Grouped/Apple iOS / Изменить ссылку подписки Copy/Stack",
+      "frame": {
+        "x": 16,
+        "y": 0,
+        "width": 324,
+        "height": 52
+      },
+      "screenFrame": {
+        "x": 33,
+        "y": 481,
+        "width": 324,
+        "height": 52
+      },
+      "style": {
+        "borders": [
+          {
+            "color": "#0000001f",
+            "thickness": 1,
+            "position": "Outside"
+          }
+        ],
+        "corners": {
+          "radii": [
+            0
+          ],
+          "style": 0,
+          "smoothing": 0.6
+        }
+      }
+    },
+    {
+      "id": "E542C57C-584A-488A-BD8A-09C8BF596693",
+      "type": "Group",
+      "name": "Trailing",
+      "path": "07 · Личный кабинет — выбор открытия/Настройки / iOS Inset Grouped/Apple iOS / Изменить ссылку подписки Copy/Stack/Trailing",
+      "frame": {
+        "x": 314,
+        "y": 0,
+        "width": 10,
+        "height": 52
+      },
+      "screenFrame": {
+        "x": 347,
+        "y": 481,
+        "width": 10,
+        "height": 52
+      },
+      "style": {
+        "corners": {
+          "radii": [],
+          "style": 0,
+          "smoothing": 0.6
+        }
+      }
+    },
+    {
+      "id": "34155462-FBE1-475C-A5D3-F2C9FB64E9BE",
+      "type": "Text",
+      "name": "Chevron",
+      "path": "07 · Личный кабинет — выбор открытия/Настройки / iOS Inset Grouped/Apple iOS / Изменить ссылку подписки Copy/Stack/Trailing/Chevron",
+      "frame": {
+        "x": 0,
+        "y": 15,
+        "width": 10,
+        "height": 22
+      },
+      "screenFrame": {
+        "x": 347,
+        "y": 496,
+        "width": 10,
+        "height": 22
+      },
+      "text": "􀆊",
+      "style": {
+        "fontFamily": "SF Pro",
+        "fontSize": null,
+        "fontWeight": null,
+        "textColor": "#3c3c434d",
+        "alignment": "right",
+        "lineHeight": 22
+      }
+    },
+    {
+      "id": "94786D60-6912-4218-BF59-C0C269FE069D",
+      "type": "Text",
+      "name": "Title",
+      "path": "07 · Личный кабинет — выбор открытия/Настройки / iOS Inset Grouped/Apple iOS / Изменить ссылку подписки Copy/Stack/Title",
+      "frame": {
+        "x": 0,
+        "y": 15,
+        "width": 314,
+        "height": 22
+      },
+      "screenFrame": {
+        "x": 33,
+        "y": 496,
+        "width": 314,
+        "height": 22
+      },
+      "text": "Перейти в личный кабинет",
+      "style": {
+        "fontFamily": "SF Pro",
+        "fontSize": null,
+        "fontWeight": null,
+        "textColor": "#000000ff",
+        "alignment": "left",
+        "lineHeight": 22
+      }
+    },
+    {
+      "id": "11EC83DE-F437-4BEC-8D66-0DE955267DE0",
+      "type": "SymbolInstance",
+      "name": "Apple iOS / Изменить ссылку подписки",
+      "path": "07 · Личный кабинет — выбор открытия/Настройки / iOS Inset Grouped/Apple iOS / Изменить ссылку подписки",
+      "frame": {
+        "x": 0,
+        "y": 0,
+        "width": 356,
+        "height": 52
+      },
+      "screenFrame": {
+        "x": 17,
+        "y": 429,
+        "width": 356,
+        "height": 52
+      },
+      "style": {}
+    },
+    {
+      "id": "90F3A3A0-F647-486D-B41C-B3A02C089F51",
+      "type": "Group",
+      "name": "Stack",
+      "path": "07 · Личный кабинет — выбор открытия/Настройки / iOS Inset Grouped/Apple iOS / Изменить ссылку подписки/Stack",
+      "frame": {
+        "x": 16,
+        "y": 0,
+        "width": 324,
+        "height": 52
+      },
+      "screenFrame": {
+        "x": 33,
+        "y": 429,
+        "width": 324,
+        "height": 52
+      },
+      "style": {
+        "borders": [
+          {
+            "color": "#0000001f",
+            "thickness": 1,
+            "position": "Outside"
+          }
+        ],
+        "corners": {
+          "radii": [
+            0
+          ],
+          "style": 0,
+          "smoothing": 0.6
+        }
+      }
+    },
+    {
+      "id": "E542C57C-584A-488A-BD8A-09C8BF596693",
+      "type": "Group",
+      "name": "Trailing",
+      "path": "07 · Личный кабинет — выбор открытия/Настройки / iOS Inset Grouped/Apple iOS / Изменить ссылку подписки/Stack/Trailing",
+      "frame": {
+        "x": 314,
+        "y": 0,
+        "width": 10,
+        "height": 52
+      },
+      "screenFrame": {
+        "x": 347,
+        "y": 429,
+        "width": 10,
+        "height": 52
+      },
+      "style": {
+        "corners": {
+          "radii": [],
+          "style": 0,
+          "smoothing": 0.6
+        }
+      }
+    },
+    {
+      "id": "34155462-FBE1-475C-A5D3-F2C9FB64E9BE",
+      "type": "Text",
+      "name": "Chevron",
+      "path": "07 · Личный кабинет — выбор открытия/Настройки / iOS Inset Grouped/Apple iOS / Изменить ссылку подписки/Stack/Trailing/Chevron",
+      "frame": {
+        "x": 0,
+        "y": 15,
+        "width": 10,
+        "height": 22
+      },
+      "screenFrame": {
+        "x": 347,
+        "y": 444,
+        "width": 10,
+        "height": 22
+      },
+      "text": "􀆊",
+      "style": {
+        "fontFamily": "SF Pro",
+        "fontSize": null,
+        "fontWeight": null,
+        "textColor": "#3c3c434d",
+        "alignment": "right",
+        "lineHeight": 22
+      }
+    },
+    {
+      "id": "94786D60-6912-4218-BF59-C0C269FE069D",
+      "type": "Text",
+      "name": "Title",
+      "path": "07 · Личный кабинет — выбор открытия/Настройки / iOS Inset Grouped/Apple iOS / Изменить ссылку подписки/Stack/Title",
+      "frame": {
+        "x": 0,
+        "y": 15,
+        "width": 314,
+        "height": 22
+      },
+      "screenFrame": {
+        "x": 33,
+        "y": 444,
+        "width": 314,
+        "height": 22
+      },
+      "text": "Изменить ссылку подписки",
+      "style": {
+        "fontFamily": "SF Pro",
+        "fontSize": null,
+        "fontWeight": null,
+        "textColor": "#000000ff",
+        "alignment": "left",
+        "lineHeight": 22
+      }
+    },
+    {
+      "id": "51F66C05-6CA7-46DE-BDA6-B200C4E0970D",
+      "type": "SymbolInstance",
+      "name": "iOS / Строка состояния / Светлая",
+      "path": "07 · Личный кабинет — выбор открытия/iOS / Строка состояния / Светлая",
+      "frame": {
+        "x": 0,
+        "y": 0,
+        "width": 390,
+        "height": 47
+      },
+      "screenFrame": {
+        "x": 0,
+        "y": 0,
+        "width": 390,
+        "height": 47
+      },
+      "style": {}
+    },
+    {
+      "id": "F0B80F6B-95A7-4734-A618-61934E036E70",
+      "type": "Text",
+      "name": "Время",
+      "path": "07 · Личный кабинет — выбор открытия/iOS / Строка состояния / Светлая/Время",
+      "frame": {
+        "x": 40,
+        "y": 16,
+        "width": 47,
+        "height": 20
+      },
+      "screenFrame": {
+        "x": 40,
+        "y": 16,
+        "width": 47,
+        "height": 20
+      },
+      "text": "22:04",
+      "style": {
+        "fontFamily": "SF Pro",
+        "fontSize": null,
+        "fontWeight": null,
+        "textColor": "#000000ff",
+        "alignment": "left",
+        "lineHeight": null
+      }
+    },
+    {
+      "id": "5D793788-9C03-408C-A342-277B94507298",
+      "type": "Group",
+      "name": "Сотовая сеть / Wi-Fi / Аккумулятор",
+      "path": "07 · Личный кабинет — выбор открытия/iOS / Строка состояния / Светлая/Сотовая сеть / Wi-Fi / Аккумулятор",
+      "frame": {
+        "x": 284,
+        "y": 16,
+        "width": 78,
+        "height": 18
+      },
+      "screenFrame": {
+        "x": 284,
+        "y": 16,
+        "width": 78,
+        "height": 18
+      },
+      "style": {
+        "corners": {
+          "radii": [],
+          "style": 0,
+          "smoothing": 0.6
+        }
+      }
+    },
+    {
+      "id": "9254D002-4BAE-46A6-9632-3AC5DC169607",
+      "type": "Group",
+      "name": "Group",
+      "path": "07 · Личный кабинет — выбор открытия/iOS / Строка состояния / Светлая/Сотовая сеть / Wi-Fi / Аккумулятор/Group",
+      "frame": {
+        "x": 0,
+        "y": 3.5,
+        "width": 77.5,
+        "height": 12
+      },
+      "screenFrame": {
+        "x": 284,
+        "y": 19.5,
+        "width": 77.5,
+        "height": 12
+      },
+      "style": {}
+    },
+    {
+      "id": "CB719377-7105-402A-93A2-47405A553264",
+      "type": "Group",
+      "name": "Group",
+      "path": "07 · Личный кабинет — выбор открытия/iOS / Строка состояния / Светлая/Сотовая сеть / Wi-Fi / Аккумулятор/Group/Group",
+      "frame": {
+        "x": 0,
+        "y": 5.5,
+        "width": 20.5,
+        "height": 4
+      },
+      "screenFrame": {
+        "x": 284,
+        "y": 25,
+        "width": 20.5,
+        "height": 4
+      },
+      "style": {}
+    },
+    {
+      "id": "841B6A47-E7F7-485B-B27B-DE4E636A5D43",
+      "type": "ShapePath",
+      "name": "Oval",
+      "path": "07 · Личный кабинет — выбор открытия/iOS / Строка состояния / Светлая/Сотовая сеть / Wi-Fi / Аккумулятор/Group/Group/Oval",
+      "frame": {
+        "x": 0,
+        "y": 0,
+        "width": 4,
+        "height": 4
+      },
+      "screenFrame": {
+        "x": 284,
+        "y": 25,
+        "width": 4,
+        "height": 4
+      },
+      "style": {
+        "fills": [
+          {
+            "type": "Color",
+            "color": "#000000ff"
+          }
+        ],
+        "corners": {
+          "radii": [],
+          "style": 0,
+          "smoothing": 0.6
+        }
+      }
+    },
+    {
+      "id": "52D8A041-0009-43E5-B311-9D3574EA1165",
+      "type": "ShapePath",
+      "name": "Oval",
+      "path": "07 · Личный кабинет — выбор открытия/iOS / Строка состояния / Светлая/Сотовая сеть / Wi-Fi / Аккумулятор/Group/Group/Oval",
+      "frame": {
+        "x": 5.5,
+        "y": 0,
+        "width": 4,
+        "height": 4
+      },
+      "screenFrame": {
+        "x": 289.5,
+        "y": 25,
+        "width": 4,
+        "height": 4
+      },
+      "style": {
+        "fills": [
+          {
+            "type": "Color",
+            "color": "#000000ff"
+          }
+        ],
+        "corners": {
+          "radii": [],
+          "style": 0,
+          "smoothing": 0.6
+        }
+      }
+    },
+    {
+      "id": "82D5B2AD-3BA7-41DA-8A25-3F02F58CEDEF",
+      "type": "ShapePath",
+      "name": "Oval",
+      "path": "07 · Личный кабинет — выбор открытия/iOS / Строка состояния / Светлая/Сотовая сеть / Wi-Fi / Аккумулятор/Group/Group/Oval",
+      "frame": {
+        "x": 11,
+        "y": 0,
+        "width": 4,
+        "height": 4
+      },
+      "screenFrame": {
+        "x": 295,
+        "y": 25,
+        "width": 4,
+        "height": 4
+      },
+      "style": {
+        "fills": [
+          {
+            "type": "Color",
+            "color": "#000000ff"
+          }
+        ],
+        "corners": {
+          "radii": [],
+          "style": 0,
+          "smoothing": 0.6
+        }
+      }
+    },
+    {
+      "id": "7765952F-7EAE-4C6B-A56F-7E0DA4413813",
+      "type": "ShapePath",
+      "name": "Oval",
+      "path": "07 · Личный кабинет — выбор открытия/iOS / Строка состояния / Светлая/Сотовая сеть / Wi-Fi / Аккумулятор/Group/Group/Oval",
+      "frame": {
+        "x": 16.5,
+        "y": 0,
+        "width": 4,
+        "height": 4
+      },
+      "screenFrame": {
+        "x": 300.5,
+        "y": 25,
+        "width": 4,
+        "height": 4
+      },
+      "style": {
+        "fills": [
+          {
+            "type": "Color",
+            "color": "#000000ff"
+          }
+        ],
+        "corners": {
+          "radii": [],
+          "style": 0,
+          "smoothing": 0.6
+        }
+      }
+    },
+    {
+      "id": "79A94951-0905-48B0-BE6E-B6B1BC1EE525",
+      "type": "Group",
+      "name": "Group",
+      "path": "07 · Личный кабинет — выбор открытия/iOS / Строка состояния / Светлая/Сотовая сеть / Wi-Fi / Аккумулятор/Group/Group",
+      "frame": {
+        "x": 28,
+        "y": 0.14999999999999947,
+        "width": 15,
+        "height": 9.749999999999998
+      },
+      "screenFrame": {
+        "x": 312,
+        "y": 19.65,
+        "width": 15,
+        "height": 9.749999999999998
+      },
+      "style": {}
+    },
+    {
+      "id": "DCDFE6A7-E9D4-4451-8092-E60B0D798AA6",
+      "type": "ShapePath",
+      "name": "Path",
+      "path": "07 · Личный кабинет — выбор открытия/iOS / Строка состояния / Светлая/Сотовая сеть / Wi-Fi / Аккумулятор/Group/Group/Path",
+      "frame": {
+        "x": 0,
+        "y": 8.881784197001252e-16,
+        "width": 15,
+        "height": 2.8499999999999996
+      },
+      "screenFrame": {
+        "x": 312,
+        "y": 19.65,
+        "width": 15,
+        "height": 2.8499999999999996
+      },
+      "style": {
+        "borders": [
+          {
+            "color": "#000000ff",
+            "thickness": 2.4,
+            "position": "Center"
+          }
+        ],
+        "corners": {
+          "radii": [],
+          "style": 0,
+          "smoothing": 0.6
+        }
+      }
+    },
+    {
+      "id": "424B293E-8CB7-46FB-ADBE-A5E53099CFC4",
+      "type": "ShapePath",
+      "name": "Path",
+      "path": "07 · Личный кабинет — выбор открытия/iOS / Строка состояния / Светлая/Сотовая сеть / Wi-Fi / Аккумулятор/Group/Group/Path",
+      "frame": {
+        "x": 2.8000000000000007,
+        "y": 4.6000000000000005,
+        "width": 9.400000000000002,
+        "height": 1.75
+      },
+      "screenFrame": {
+        "x": 314.8,
+        "y": 24.25,
+        "width": 9.400000000000002,
+        "height": 1.75
+      },
+      "style": {
+        "borders": [
+          {
+            "color": "#000000ff",
+            "thickness": 2.4,
+            "position": "Center"
+          }
+        ],
+        "corners": {
+          "radii": [],
+          "style": 0,
+          "smoothing": 0.6
+        }
+      }
+    },
+    {
+      "id": "A25B1898-26DF-4302-9887-3EC00C210A62",
+      "type": "ShapePath",
+      "name": "Path",
+      "path": "07 · Личный кабинет — выбор открытия/iOS / Строка состояния / Светлая/Сотовая сеть / Wi-Fi / Аккумулятор/Group/Group/Path",
+      "frame": {
+        "x": 5.799999999999997,
+        "y": 8.75,
+        "width": 3.4000000000000057,
+        "height": 1
+      },
+      "screenFrame": {
+        "x": 317.8,
+        "y": 28.4,
+        "width": 3.4000000000000057,
+        "height": 1
+      },
+      "style": {
+        "borders": [
+          {
+            "color": "#000000ff",
+            "thickness": 2.4,
+            "position": "Center"
+          }
+        ],
+        "corners": {
+          "radii": [],
+          "style": 0,
+          "smoothing": 0.6
+        }
+      }
+    },
+    {
+      "id": "BE7188C8-5AEE-4AE2-8640-168247DDA608",
+      "type": "ShapePath",
+      "name": "Rectangle",
+      "path": "07 · Личный кабинет — выбор открытия/iOS / Строка состояния / Светлая/Сотовая сеть / Wi-Fi / Аккумулятор/Group/Rectangle",
+      "frame": {
+        "x": 51.5,
+        "y": 0,
+        "width": 24,
+        "height": 12
+      },
+      "screenFrame": {
+        "x": 335.5,
+        "y": 19.5,
+        "width": 24,
+        "height": 12
+      },
+      "style": {
+        "borders": [
+          {
+            "color": "#000000ff",
+            "thickness": 1,
+            "position": "Center"
+          }
+        ],
+        "corners": {
+          "radii": [
+            3.2
+          ],
+          "style": 0,
+          "smoothing": 0.6
+        }
+      }
+    },
+    {
+      "id": "344323E7-1DC7-40A8-BC91-3F7ADDB29130",
+      "type": "ShapePath",
+      "name": "Rectangle",
+      "path": "07 · Личный кабинет — выбор открытия/iOS / Строка состояния / Светлая/Сотовая сеть / Wi-Fi / Аккумулятор/Group/Rectangle",
+      "frame": {
+        "x": 52.8,
+        "y": 1.2999999999999998,
+        "width": 21.4,
+        "height": 9.4
+      },
+      "screenFrame": {
+        "x": 336.8,
+        "y": 20.8,
+        "width": 21.4,
+        "height": 9.4
+      },
+      "style": {
+        "fills": [
+          {
+            "type": "Color",
+            "color": "#000000ff"
+          }
+        ],
+        "corners": {
+          "radii": [
+            2
+          ],
+          "style": 0,
+          "smoothing": 0.6
+        }
+      }
+    },
+    {
+      "id": "08BA625B-3CDF-400A-9946-6F3C052001BA",
+      "type": "ShapePath",
+      "name": "Path",
+      "path": "07 · Личный кабинет — выбор открытия/iOS / Строка состояния / Светлая/Сотовая сеть / Wi-Fi / Аккумулятор/Group/Path",
+      "frame": {
+        "x": 76.5,
+        "y": 3.5,
+        "width": 1,
+        "height": 5
+      },
+      "screenFrame": {
+        "x": 360.5,
+        "y": 23,
+        "width": 1,
+        "height": 5
+      },
+      "style": {
+        "fills": [
+          {
+            "type": "Color",
+            "color": "#000000ff"
+          }
+        ],
+        "borders": [
+          {
+            "color": "#000000ff",
+            "thickness": 1.5,
+            "position": "Center"
+          }
+        ],
+        "corners": {
+          "radii": [],
+          "style": 0,
+          "smoothing": 0.6
+        }
+      }
+    },
+    {
+      "id": "BE3190B9-A228-4827-AD9C-40918EB1B6A1",
+      "type": "SymbolInstance",
+      "name": "Затемнение / Модальный выбор",
+      "path": "07 · Личный кабинет — выбор открытия/Затемнение / Модальный выбор",
+      "frame": {
+        "x": 0,
+        "y": 0,
+        "width": 390,
+        "height": 844
+      },
+      "screenFrame": {
+        "x": 0,
+        "y": 0,
+        "width": 390,
+        "height": 844
+      },
+      "style": {},
+      "flow": {
+        "targetId": "B6354B48-201B-4D50-AB61-11092BB596D3",
+        "animationType": "slideFromRight"
+      }
+    },
+    {
+      "id": "320F989C-3131-4F03-8561-9438DC049A74",
+      "type": "SymbolInstance",
+      "name": "Попап / Открыть личный кабинет",
+      "path": "07 · Личный кабинет — выбор открытия/Попап / Открыть личный кабинет",
+      "frame": {
+        "x": 16,
+        "y": 561,
+        "width": 358,
+        "height": 249
+      },
+      "screenFrame": {
+        "x": 16,
+        "y": 561,
+        "width": 358,
+        "height": 249
+      },
+      "style": {}
+    },
+    {
+      "id": "7AB1BFDB-9781-49FF-8877-7CE2BDB41C13",
+      "type": "Group",
+      "name": "Отмена / Отдельное действие iOS",
+      "path": "07 · Личный кабинет — выбор открытия/Попап / Открыть личный кабинет/Отмена / Отдельное действие iOS",
+      "frame": {
+        "x": 0,
+        "y": 193,
+        "width": 358,
+        "height": 56
+      },
+      "screenFrame": {
+        "x": 16,
+        "y": 754,
+        "width": 358,
+        "height": 56
+      },
+      "style": {
+        "fills": [
+          {
+            "type": "Color",
+            "color": "#f9f9f9ff"
+          }
+        ],
+        "corners": {
+          "radii": [
+            24,
+            24,
+            24,
+            24
+          ],
+          "style": 1,
+          "smoothing": 0.6
+        }
+      },
+      "flow": {
+        "targetId": "B6354B48-201B-4D50-AB61-11092BB596D3",
+        "animationType": "slideFromRight"
+      }
+    },
+    {
+      "id": "F6B6666C-BF43-47F7-B83B-525DC1103E49",
+      "type": "Group",
+      "name": "Действие / Отмена",
+      "path": "07 · Личный кабинет — выбор открытия/Попап / Открыть личный кабинет/Отмена / Отдельное действие iOS/Действие / Отмена",
+      "frame": {
+        "x": 0,
+        "y": 0,
+        "width": 358,
+        "height": 56
+      },
+      "screenFrame": {
+        "x": 16,
+        "y": 754,
+        "width": 358,
+        "height": 56
+      },
+      "style": {
+        "fills": [
+          {
+            "type": "Color",
+            "color": "#ffffff00"
+          }
+        ],
+        "corners": {
+          "radii": [
+            0
+          ],
+          "style": 0,
+          "smoothing": 0.6
+        }
+      }
+    },
+    {
+      "id": "90F3A3A0-F647-486D-B41C-B3A02C089F51",
+      "type": "Group",
+      "name": "Stack",
+      "path": "07 · Личный кабинет — выбор открытия/Попап / Открыть личный кабинет/Отмена / Отдельное действие iOS/Действие / Отмена/Stack",
+      "frame": {
+        "x": 16,
+        "y": 0,
+        "width": 326,
+        "height": 56
+      },
+      "screenFrame": {
+        "x": 32,
+        "y": 754,
+        "width": 326,
+        "height": 56
+      },
+      "style": {
+        "borders": [
+          {
+            "color": "#0000001f",
+            "thickness": 1,
+            "position": "Outside"
+          }
+        ],
+        "corners": {
+          "radii": [
+            0
+          ],
+          "style": 0,
+          "smoothing": 0.6
+        }
+      }
+    },
+    {
+      "id": "94786D60-6912-4218-BF59-C0C269FE069D",
+      "type": "Text",
+      "name": "Title",
+      "path": "07 · Личный кабинет — выбор открытия/Попап / Открыть личный кабинет/Отмена / Отдельное действие iOS/Действие / Отмена/Stack/Title",
+      "frame": {
+        "x": 0,
+        "y": 17,
+        "width": 326,
+        "height": 22
+      },
+      "screenFrame": {
+        "x": 32,
+        "y": 771,
+        "width": 326,
+        "height": 22
+      },
+      "text": "Отмена",
+      "style": {
+        "fontFamily": "SF Pro",
+        "fontSize": null,
+        "fontWeight": null,
+        "textColor": "#a61643ff",
+        "alignment": "center",
+        "lineHeight": 22
+      }
+    },
+    {
+      "id": "54E017F2-9AA2-449C-B922-1E5308729FFD",
+      "type": "Group",
+      "name": "Выбор / Telegram или сайт",
+      "path": "07 · Личный кабинет — выбор открытия/Попап / Открыть личный кабинет/Выбор / Telegram или сайт",
+      "frame": {
+        "x": 0,
+        "y": 0,
+        "width": 358,
+        "height": 185
+      },
+      "screenFrame": {
+        "x": 16,
+        "y": 561,
+        "width": 358,
+        "height": 185
+      },
+      "style": {
+        "fills": [
+          {
+            "type": "Color",
+            "color": "#f9f9f9ff"
+          }
+        ],
+        "corners": {
+          "radii": [
+            24,
+            24,
+            24,
+            24
+          ],
+          "style": 1,
+          "smoothing": 0.6
+        }
+      }
+    },
+    {
+      "id": "9548158D-1443-45EE-8952-C5516D08141F",
+      "type": "Group",
+      "name": "Действие / Открыть личный кабинет на сайте",
+      "path": "07 · Личный кабинет — выбор открытия/Попап / Открыть личный кабинет/Выбор / Telegram или сайт/Действие / Открыть личный кабинет на сайте",
+      "frame": {
+        "x": 0,
+        "y": 129,
+        "width": 358,
+        "height": 56
+      },
+      "screenFrame": {
+        "x": 16,
+        "y": 690,
+        "width": 358,
+        "height": 56
+      },
+      "style": {
+        "fills": [
+          {
+            "type": "Color",
+            "color": "#ffffff00"
+          }
+        ],
+        "corners": {
+          "radii": [
+            0
+          ],
+          "style": 0,
+          "smoothing": 0.6
+        }
+      }
+    },
+    {
+      "id": "90F3A3A0-F647-486D-B41C-B3A02C089F51",
+      "type": "Group",
+      "name": "Stack",
+      "path": "07 · Личный кабинет — выбор открытия/Попап / Открыть личный кабинет/Выбор / Telegram или сайт/Действие / Открыть личный кабинет на сайте/Stack",
+      "frame": {
+        "x": 16,
+        "y": 0,
+        "width": 326,
+        "height": 56
+      },
+      "screenFrame": {
+        "x": 32,
+        "y": 690,
+        "width": 326,
+        "height": 56
+      },
+      "style": {
+        "borders": [
+          {
+            "color": "#0000001f",
+            "thickness": 1,
+            "position": "Outside"
+          }
+        ],
+        "corners": {
+          "radii": [
+            0
+          ],
+          "style": 0,
+          "smoothing": 0.6
+        }
+      }
+    },
+    {
+      "id": "94786D60-6912-4218-BF59-C0C269FE069D",
+      "type": "Text",
+      "name": "Title",
+      "path": "07 · Личный кабинет — выбор открытия/Попап / Открыть личный кабинет/Выбор / Telegram или сайт/Действие / Открыть личный кабинет на сайте/Stack/Title",
+      "frame": {
+        "x": 0,
+        "y": 17,
+        "width": 326,
+        "height": 22
+      },
+      "screenFrame": {
+        "x": 32,
+        "y": 707,
+        "width": 326,
+        "height": 22
+      },
+      "text": "Открыть личный кабинет на сайте",
+      "style": {
+        "fontFamily": "SF Pro",
+        "fontSize": null,
+        "fontWeight": null,
+        "textColor": "#a61643ff",
+        "alignment": "center",
+        "lineHeight": 22
+      }
+    },
+    {
+      "id": "76F87943-2895-4320-A322-192A1EE00033",
+      "type": "Group",
+      "name": "Действие / Открыть личный кабинет в Telegram",
+      "path": "07 · Личный кабинет — выбор открытия/Попап / Открыть личный кабинет/Выбор / Telegram или сайт/Действие / Открыть личный кабинет в Telegram",
+      "frame": {
+        "x": 0,
+        "y": 73,
+        "width": 358,
+        "height": 56
+      },
+      "screenFrame": {
+        "x": 16,
+        "y": 634,
+        "width": 358,
+        "height": 56
+      },
+      "style": {
+        "fills": [
+          {
+            "type": "Color",
+            "color": "#ffffff00"
+          }
+        ],
+        "corners": {
+          "radii": [
+            0
+          ],
+          "style": 0,
+          "smoothing": 0.6
+        }
+      }
+    },
+    {
+      "id": "90F3A3A0-F647-486D-B41C-B3A02C089F51",
+      "type": "Group",
+      "name": "Stack",
+      "path": "07 · Личный кабинет — выбор открытия/Попап / Открыть личный кабинет/Выбор / Telegram или сайт/Действие / Открыть личный кабинет в Telegram/Stack",
+      "frame": {
+        "x": 16,
+        "y": 0,
+        "width": 326,
+        "height": 56
+      },
+      "screenFrame": {
+        "x": 32,
+        "y": 634,
+        "width": 326,
+        "height": 56
+      },
+      "style": {
+        "borders": [
+          {
+            "color": "#0000001f",
+            "thickness": 1,
+            "position": "Outside"
+          }
+        ],
+        "corners": {
+          "radii": [
+            0
+          ],
+          "style": 0,
+          "smoothing": 0.6
+        }
+      }
+    },
+    {
+      "id": "94786D60-6912-4218-BF59-C0C269FE069D",
+      "type": "Text",
+      "name": "Title",
+      "path": "07 · Личный кабинет — выбор открытия/Попап / Открыть личный кабинет/Выбор / Telegram или сайт/Действие / Открыть личный кабинет в Telegram/Stack/Title",
+      "frame": {
+        "x": 0,
+        "y": 17,
+        "width": 326,
+        "height": 22
+      },
+      "screenFrame": {
+        "x": 32,
+        "y": 651,
+        "width": 326,
+        "height": 22
+      },
+      "text": "Открыть личный кабинет в Telegram",
+      "style": {
+        "fontFamily": "SF Pro",
+        "fontSize": null,
+        "fontWeight": null,
+        "textColor": "#a61643ff",
+        "alignment": "center",
+        "lineHeight": 22
+      }
+    },
+    {
+      "id": "1A27A725-8DD5-423E-9A93-0948AEF21DE6",
+      "type": "Group",
+      "name": "Личный кабинет / Заголовок и пояснение",
+      "path": "07 · Личный кабинет — выбор открытия/Попап / Открыть личный кабинет/Выбор / Telegram или сайт/Личный кабинет / Заголовок и пояснение",
+      "frame": {
+        "x": 0,
+        "y": 0,
+        "width": 358,
+        "height": 73
+      },
+      "screenFrame": {
+        "x": 16,
+        "y": 561,
+        "width": 358,
+        "height": 73
+      },
+      "style": {
+        "corners": {
+          "radii": [],
+          "style": 0,
+          "smoothing": 0.6
+        }
+      }
+    },
+    {
+      "id": "38F65BA4-D786-466C-96F7-16E51C1959A9",
+      "type": "Text",
+      "name": "Пояснение / Выбор места открытия",
+      "path": "07 · Личный кабинет — выбор открытия/Попап / Открыть личный кабинет/Выбор / Telegram или сайт/Личный кабинет / Заголовок и пояснение/Пояснение / Выбор места открытия",
+      "frame": {
+        "x": 16,
+        "y": 42,
+        "width": 326,
+        "height": 15
+      },
+      "screenFrame": {
+        "x": 32,
+        "y": 603,
+        "width": 326,
+        "height": 15
+      },
+      "text": "Выберите, где открыть личный кабинет",
+      "style": {
+        "fontFamily": "SF Pro",
+        "fontSize": null,
+        "fontWeight": null,
+        "textColor": "#6d6d72ff",
+        "alignment": "center",
+        "lineHeight": null
+      }
+    },
+    {
+      "id": "5355119C-4864-4CEA-9E48-983D8F59B0AF",
+      "type": "Text",
+      "name": "Заголовок / Личный кабинет",
+      "path": "07 · Личный кабинет — выбор открытия/Попап / Открыть личный кабинет/Выбор / Telegram или сайт/Личный кабинет / Заголовок и пояснение/Заголовок / Личный кабинет",
+      "frame": {
+        "x": 16,
+        "y": 16,
+        "width": 326,
+        "height": 20
+      },
+      "screenFrame": {
+        "x": 32,
+        "y": 577,
+        "width": 326,
+        "height": 20
+      },
+      "text": "Личный кабинет",
+      "style": {
+        "fontFamily": "SF Pro",
+        "fontSize": null,
+        "fontWeight": null,
+        "textColor": "#000000ff",
+        "alignment": "center",
+        "lineHeight": null
+      }
+    }
+  ]
+}

@@ -114,7 +114,11 @@ final class PacketTunnelProvider: ExtensionProvider {
             capture.setSession(session.id_)
             let cacheDirectory = FilePath.prototypeRuleSetDirectory
             try FileManager.default.createDirectory(at: cacheDirectory, withIntermediateDirectories: true)
-            let configuration = try PrototypeRouting.configurationWithPersistentCache(Data(session.configuration.utf8), directory: cacheDirectory)
+            var dnsConfiguration = Data(session.configuration.utf8)
+            if !baseline {
+                dnsConfiguration = try PrototypeRouting.configurationWithDNSPolicy(dnsConfiguration)
+            }
+            let configuration = try PrototypeRouting.configurationWithPersistentCache(dnsConfiguration, directory: cacheDirectory)
             guard let configText = String(bytes: configuration, encoding: .utf8) else { throw VKTurnError.invalidField }
             var effective = options ?? [:]
             // Derive policy exclusively from this runtime document, never start options.
@@ -133,8 +137,12 @@ final class PacketTunnelProvider: ExtensionProvider {
             if priorityFailoverJSON != nil {
                 capture.setFailoverServer(commandServer)
             }
+            if !baseline {
+                capture.setHealthServer(commandServer)
+            }
             LibboxSetVKTurnPrototypeLogServer(commandServer)
             commandServer?.writeMessage(4, message: "[VPN] Connected: " + (vless ? "VLESS" : "VK TURN"))
+            #if DEBUG
             if !baseline {
                 let profileDirectory = directory.appendingPathComponent("Library/Caches/Prototype/OOMVerification").path
                 try await withCheckedThrowingContinuation { (continuation: CheckedContinuation<Void, Error>) in
@@ -149,9 +157,11 @@ final class PacketTunnelProvider: ExtensionProvider {
                     }
                 }
             }
+            #endif
             guard !stateLock.withLock({ stopped }) else { throw CancellationError() }
             capture.setPhase(baseline ? "baseline" : vless ? "vless" : "combined")
         } catch {
+            capture.setHealthServer(nil)
             capture.setFailoverServer(nil)
             if commandServer != nil {
                 await super.stopTunnel(with: .providerFailed)
@@ -184,6 +194,7 @@ final class PacketTunnelProvider: ExtensionProvider {
         }
         stateLock.withLock { startingServer = nil }
         LibboxSetVKTurnPrototypeLogServer(nil)
+        capture?.setHealthServer(nil)
         capture?.setFailoverServer(nil)
         await super.stopTunnel(with: reason)
         capture?.stop()
@@ -205,6 +216,24 @@ private final class PrototypeMemoryCapture {
     private var finished = false
     private var nextMinuteSample = 780.0
     private var failoverServer: LibboxCommandServer?
+    private let healthQueue = DispatchQueue(label: "PrototypeHealth", qos: .utility)
+    private var healthServer: LibboxCommandServer?
+    private var health: Bool?
+    private var healthUpdatedAt: Date?
+    private var healthChecking = false
+    private var healthGeneration: UInt64 = 0
+    private var nextHealthProbe = 0.0
+
+    func setHealthServer(_ server: LibboxCommandServer?) {
+        queue.sync {
+            healthGeneration &+= 1
+            healthServer = server
+            health = nil
+            healthUpdatedAt = nil
+            healthChecking = false
+            nextHealthProbe = 0
+        }
+    }
 
     func setFailoverServer(_ server: LibboxCommandServer?) {
         queue.sync { failoverServer = server }
@@ -256,6 +285,8 @@ private final class PrototypeMemoryCapture {
         guard !finished else { return }
         finished = true
         failoverServer = nil
+        healthServer = nil
+        healthGeneration &+= 1
         timer?.cancel(); timer = nil
         try? file.synchronize()
         try? file.close()
@@ -264,6 +295,29 @@ private final class PrototypeMemoryCapture {
     private func sample(forceCSV: Bool = false) {
         guard !finished else { return }
         let elapsed = ProcessInfo.processInfo.systemUptime - started
+        if ["vless", "combined"].contains(phase), !healthChecking,
+           elapsed >= nextHealthProbe, let server = healthServer
+        {
+            healthChecking = true
+            let generation = healthGeneration
+            healthQueue.async { [self] in
+                var healthy = ObjCBool(false)
+                do {
+                    try server.probeOutbound("vk-wg", timeoutMilliseconds: 5000, ret0_: &healthy)
+                } catch {
+                    healthy = false
+                }
+                let result = healthy.boolValue
+                queue.async { [self] in
+                    guard !finished, generation == healthGeneration else { return }
+                    healthChecking = false
+                    health = result
+                    healthUpdatedAt = Date()
+                    nextHealthProbe = ProcessInfo.processInfo.systemUptime - started + 10
+                    sample()
+                }
+            }
+        }
         var info = task_vm_info_data_t()
         var count = mach_msg_type_number_t(MemoryLayout<task_vm_info_data_t>.size / MemoryLayout<integer_t>.size)
         let result = withUnsafeMutablePointer(to: &info) { pointer in
@@ -285,13 +339,21 @@ private final class PrototypeMemoryCapture {
                 }
             }
             struct Failover: Codable { let mode: String; let selected: String?; let primaryHealth: String?; let allDown: Bool }
-            struct Status: Encodable { let footprintBytes: UInt64; let phase: String; let error: String?; let updatedAt: Date; let failover: Failover? }
+            struct Status: Encodable {
+                let footprintBytes: UInt64
+                let phase: String
+                let error: String?
+                let updatedAt: Date
+                let failover: Failover?
+                let health: Bool?
+                let healthUpdatedAt: Date?
+            }
             var failover: Failover?
             var statusError: NSError?
             if let text = failoverServer?.priorityFailoverStatus(&statusError), statusError == nil {
                 failover = try? JSONDecoder().decode(Failover.self, from: Data(text.utf8))
             }
-            let data = try JSONEncoder().encode(Status(footprintBytes: info.phys_footprint, phase: phase, error: lastError, updatedAt: Date(), failover: failover))
+            let data = try JSONEncoder().encode(Status(footprintBytes: info.phys_footprint, phase: phase, error: lastError, updatedAt: Date(), failover: failover, health: health, healthUpdatedAt: healthUpdatedAt))
             try data.write(to: directory.appendingPathComponent("prototype-status.json"), options: [.atomic, .completeFileProtectionUntilFirstUserAuthentication])
         } catch { timer?.cancel(); timer = nil }
     }

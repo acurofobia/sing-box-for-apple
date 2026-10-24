@@ -1,0 +1,105 @@
+{
+  "schemaVersion": 1,
+  "kind": "vless-failover",
+  "state": "available",
+  "reason": null,
+  "outbounds": [
+    {
+      "type": "vless",
+      "tag": "n1",
+      "server": "example.org",
+      "server_port": 443,
+      "uuid": "bf000d23-0752-40b4-affe-68f7707a9661",
+      "flow": "xtls-rprx-vision",
+      "tls": {
+        "enabled": true,
+        "server_name": "example.org",
+        "utls": {
+          "enabled": true,
+          "fingerprint": "chrome"
+        },
+        "reality": {
+          "enabled": true,
+          "public_key": "AAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAA",
+          "short_id": "abcd"
+        }
+      }
+    },
+    {
+      "type": "vless",
+      "tag": "n2",
+      "server": "example.org",
+      "server_port": 443,
+      "uuid": "bf000d23-0752-40b4-affe-68f7707a9661",
+      "flow": "xtls-rprx-vision",
+      "tls": {
+        "enabled": true,
+        "server_name": "example.org",
+        "utls": {
+          "enabled": true,
+          "fingerprint": "chrome"
+        },
+        "reality": {
+          "enabled": true,
+          "public_key": "AAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAA",
+          "short_id": "abcd"
+        }
+      }
+    },
+    {
+      "type": "vless",
+      "tag": "n3",
+      "server": "example.org",
+      "server_port": 443,
+      "uuid": "bf000d23-0752-40b4-affe-68f7707a9661",
+      "flow": "xtls-rprx-vision",
+      "tls": {
+        "enabled": true,
+        "server_name": "example.org",
+        "utls": {
+          "enabled": true,
+          "fingerprint": "chrome"
+        },
+        "reality": {
+          "enabled": true,
+          "public_key": "AAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAA",
+          "short_id": "abcd"
+        }
+      }
+    },
+    {
+      "type": "vless",
+      "tag": "n4",
+      "server": "example.org",
+      "server_port": 443,
+      "uuid": "bf000d23-0752-40b4-affe-68f7707a9661",
+      "flow": "xtls-rprx-vision",
+      "tls": {
+        "enabled": true,
+        "server_name": "example.org",
+        "utls": {
+          "enabled": true,
+          "fingerprint": "chrome"
+        },
+        "reality": {
+          "enabled": true,
+          "public_key": "AAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAA",
+          "short_id": "abcd"
+        }
+      }
+    }
+  ],
+  "failover": {
+    "selector": "vk-wg",
+    "primary": "n1",
+    "backups": [
+      "n2",
+      "n3",
+      "n4"
+    ],
+    "intervalMilliseconds": 10000,
+    "timeoutMilliseconds": 5000,
+    "failureThreshold": 1,
+    "recoveryThreshold": 3
+  }
+}

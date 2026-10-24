@@ -1,0 +1,745 @@
+--- android-baseline/daemon/priority_failover_integration_test.go
++++ ios-current/daemon/priority_failover_integration_test.go
+@@ -4,16 +4,21 @@
+ 	"context"
+ 	"encoding/json"
+ 	"fmt"
++	"github.com/sagernet/sing-box/experimental/cachefile"
++	"github.com/sagernet/sing-box/log"
++	"github.com/sagernet/sing-box/option"
+ 	"io"
+ 	"net"
+ 	"net/http"
+ 	"net/http/httptest"
++	"path/filepath"
+ 	"strconv"
+ 	"sync/atomic"
+ 	"testing"
+ 	"time"
+ 
+ 	box "github.com/sagernet/sing-box"
++	"github.com/sagernet/sing-box/adapter"
+ 	"github.com/sagernet/sing-box/adapter/certificate"
+ 	"github.com/sagernet/sing-box/adapter/endpoint"
+ 	"github.com/sagernet/sing-box/adapter/inbound"
+@@ -162,7 +167,9 @@
+ 	}()
+ 	return uint16(listener.Addr().(*net.TCPAddr).Port)
+ }
+-func TestPriorityColdStartupBeforeRuleSet(t *testing.T) {
++func TestPriorityColdStartupBeforeRuleSet(t *testing.T)             { testPriorityColdStartup(t, "") }
++func TestPriorityColdStartupOverridesCachedDeadBackup(t *testing.T) { testPriorityColdStartup(t, "b2") }
++func testPriorityColdStartup(t *testing.T, cached string) {
+ 	var instance *Instance
+ 	var selectedAtFetch string
+ 	server := httptest.NewServer(http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
+@@ -187,6 +194,26 @@
+ 	local.RegisterTransport(dnsRegistry)
+ 	ctx := box.Context(context.Background(), inbound.NewRegistry(), outboundRegistry, endpoint.NewRegistry(), dnsRegistry, boxservice.NewRegistry(), certificate.NewRegistry())
+ 	ctx = filemanager.WithDefault(service.ExtendContext(ctx), t.TempDir(), t.TempDir(), -1, -1)
++	if cached != "" {
++		cachePath := filepath.Join(t.TempDir(), "cache.db")
++		cache := cachefile.New(ctx, log.NewNOPFactory().Logger(), option.CacheFileOptions{Path: cachePath})
++		if err := cache.Start(adapter.StartStateInitialize); err != nil {
++			t.Fatal(err)
++		}
++		if err := cache.StoreSelected("proxy", cached); err != nil {
++			t.Fatal(err)
++		}
++		if err := cache.Close(); err != nil {
++			t.Fatal(err)
++		}
++		var raw map[string]any
++		if err := json.Unmarshal([]byte(config), &raw); err != nil {
++			t.Fatal(err)
++		}
++		raw["experimental"] = map[string]any{"cache_file": map[string]any{"enabled": true, "path": cachePath}}
++		encoded, _ := json.Marshal(raw)
++		config = string(encoded)
++	}
+ 	started := NewStartedService(ServiceOptions{Context: ctx})
+ 	defer started.Close()
+ 	policy, _ := json.Marshal(testPriorityPolicy())
+--- android-baseline/daemon/priority_failover_test.go
++++ ios-current/daemon/priority_failover_test.go
+@@ -247,3 +247,18 @@
+ 		t.Fatal("initial active state queued an extra startup cycle")
+ 	}
+ }
++
++func TestPriorityKeepsHealthyBackupWhenHigherBackupRecovers(t *testing.T) {
++	b := &priorityTestBackend{selected: "b2", results: map[string][]bool{"p": {false, false}, "b2": {true, true}, "b1": {true, true}}}
++	c := testPriorityController(t, b)
++	c.cycle(false)
++	c.cycle(false)
++	if b.Selected() != "b2" || len(b.calls) != 4 {
++		t.Fatalf("selected=%s calls=%v", b.Selected(), b.calls)
++	}
++	for _, tag := range b.calls {
++		if tag == "b1" {
++			t.Fatal("probed unnecessary backup")
++		}
++	}
++}
+--- android-baseline/experimental/libbox/command_server.go
++++ ios-current/experimental/libbox/command_server.go
+@@ -31,6 +31,7 @@
+ type CommandServer struct {
+ 	*daemon.StartedService
+ 	ctx               context.Context
++	cancel            context.CancelFunc
+ 	managedService    *daemon.ManagedService
+ 	handler           CommandServerHandler
+ 	platformInterface PlatformInterface
+@@ -53,7 +54,7 @@
+ }
+ 
+ func NewCommandServer(handler CommandServerHandler, platformInterface PlatformInterface) (*CommandServer, error) {
+-	ctx := baseContext(platformInterface)
++	ctx, cancel := context.WithCancel(baseContext(platformInterface))
+ 	powerManager := powerreport.NewManager()
+ 	service.MustRegister[*powerreport.Manager](ctx, powerManager)
+ 	platformWrapper := &platformInterfaceWrapper{
+@@ -64,6 +65,7 @@
+ 	service.MustRegister[adapter.PlatformInterface](ctx, platformWrapper)
+ 	server := &CommandServer{
+ 		ctx:               ctx,
++		cancel:            cancel,
+ 		handler:           handler,
+ 		platformInterface: platformInterface,
+ 		platformWrapper:   platformWrapper,
+@@ -193,6 +195,7 @@
+ }
+ 
+ func (s *CommandServer) Close() {
++	s.CancelServiceStart()
+ 	if s.endPauseTimer != nil {
+ 		s.endPauseTimer.Stop()
+ 	}
+@@ -213,6 +216,9 @@
+ }
+ 
+ func (s *CommandServer) StartOrReloadService(configContent string, options *OverrideOptions) error {
++	if err := s.ctx.Err(); err != nil {
++		return err
++	}
+ 	saveConfigSnapshot(configContent)
+ 	if s.powerManager.Recorder() != nil {
+ 		copyConfigSnapshot(filepath.Join(sWorkingPath, powerreport.DraftDirectoryName))
+@@ -233,6 +239,15 @@
+ 	return s.StartedService.CloseService()
+ }
+ 
++// CancelServiceStart latches cancellation for this server's lifetime. A provider
++// shutting down can interrupt cold probes and rule downloads without closing
++// command/platform resources until its asynchronous startup has unwound.
++func (s *CommandServer) CancelServiceStart() {
++	if s.cancel != nil {
++		s.cancel()
++	}
++}
++
+ func (s *CommandServer) WriteMessage(level int32, message string) {
+ 	s.StartedService.WriteMessage(log.Level(level), message)
+ }
+--- android-baseline/experimental/libbox/vk_turn_prototype.go
++++ ios-current/experimental/libbox/vk_turn_prototype.go
+@@ -8,7 +8,6 @@
+ 	"os"
+ 	"path/filepath"
+ 	"runtime"
+-	"strings"
+ 	"time"
+ 
+ 	"github.com/cacggghp/vk-turn-proxy/pkg/proxy"
+@@ -24,17 +23,16 @@
+ // StartVKTurnPrototype bootstraps only the VK transport. WireGuard is created
+ // by sing-box from the returned configuration, within the same Go runtime.
+ func StartVKTurnPrototype(input string) (*VKTurnPrototypeSession, error) {
+-	if !vkturn.SessionsStopped() {
+-		return nil, fmt.Errorf("previous VK TURN workers are still stopping")
+-	}
+ 	var settings struct {
+-		Route      json.RawMessage        `json:"route"`
+-		Generation int64                  `json:"generation"`
+-		Baseline   bool                   `json:"baseline"`
+-		Mode       string                 `json:"mode"`
+-		VLESS      json.RawMessage        `json:"vless"`
+-		WireGuard  vkturn.WireGuardConfig `json:"wireguard"`
+-		Proxy      struct {
++		Route          json.RawMessage        `json:"route"`
++		Generation     int64                  `json:"generation"`
++		Baseline       bool                   `json:"baseline"`
++		Mode           string                 `json:"mode"`
++		VLESS          json.RawMessage        `json:"vless"`
++		VLESSOutbounds []json.RawMessage      `json:"vless_outbounds"`
++		VLESSPrimary   string                 `json:"vless_primary"`
++		WireGuard      vkturn.WireGuardConfig `json:"wireguard"`
++		Proxy          struct {
+ 			VKLink     string `json:"vk_link"`
+ 			PeerAddr   string `json:"peer_addr"`
+ 			UseUDP     bool   `json:"use_udp"`
+@@ -55,6 +53,13 @@
+ 		return &VKTurnPrototypeSession{Configuration: text}, err
+ 	}
+ 	if settings.Mode == "vless" {
++		if settings.VLESSOutbounds != nil || settings.VLESSPrimary != "" {
++			if len(settings.VLESS) != 0 {
++				return nil, fmt.Errorf("conflicting VLESS inputs")
++			}
++			text, err := vkturn.BuildVLESSFailoverConfiguration(settings.Route, settings.VLESSOutbounds, settings.VLESSPrimary)
++			return &VKTurnPrototypeSession{Configuration: text}, err
++		}
+ 		text, err := vkturn.BuildVLESSConfiguration(settings.Route, settings.VLESS)
+ 		return &VKTurnPrototypeSession{Configuration: text}, err
+ 	}
+@@ -65,18 +70,10 @@
+ 		return nil, fmt.Errorf("TURN connection count must be 1...50")
+ 	}
+ 	pc := settings.Proxy
+-	if runtime.GOOS == "android" && (!pc.UseWrapA || pc.Password == "" || pc.DeviceID == "") {
+-		return nil, fmt.Errorf("Android VK TURN requires WRAP-A, gateway password and installation device ID")
+-	}
+-	for _, value := range []string{pc.Password, pc.DeviceID, pc.PeerAddr, pc.VKLink} {
+-		if strings.ContainsAny(value, "\r\n\x00") {
+-			return nil, fmt.Errorf("invalid control characters in TURN settings")
+-		}
+-	}
+ 	prototypeLogs.reset([]string{pc.VKLink, pc.Password, settings.WireGuard.PrivateKey, settings.WireGuard.PresharedKey})
+ 	p := proxy.NewProxy(proxy.Config{VKLink: pc.VKLink, PeerAddr: pc.PeerAddr, UseUDP: pc.UseUDP, UseSrtp: !pc.UseWrapA, UseDTLS: !pc.UseWrapA,
+ 		UseWrapA: pc.UseWrapA, WrapAPassword: pc.Password, DeviceID: pc.DeviceID, NumConns: pc.NumConns,
+-		TurnServer: pc.TurnServer, TurnPort: pc.TurnPort, CredCachePath: ""})
++		TurnServer: pc.TurnServer, TurnPort: pc.TurnPort, CredCachePath: filepath.Join(settings.CachePath, "prototype-turn-credentials.json")})
+ 	if settings.Generation == 0 {
+ 		settings.Generation = vkturn.BeginSession()
+ 	}
+@@ -90,6 +87,7 @@
+ 			vkturn.StopSession(id)
+ 		}
+ 	}()
++	go p.Start()
+ 	if err := p.WaitBootstrap(90 * time.Second); err != nil {
+ 		return nil, fmt.Errorf("VK TURN bootstrap failed: %w", err)
+ 	}
+@@ -116,29 +114,13 @@
+ 	if err != nil {
+ 		return nil, err
+ 	}
+-	if err := vkturn.CheckSession(id, settings.Generation); err != nil {
+-		return nil, err
+-	}
+ 	success = true
+ 	return &VKTurnPrototypeSession{ID: id, Configuration: text}, nil
+ }
+ 
+ func StopVKTurnPrototype(id int64) { vkturn.StopSession(id) }
+ 
+-func CancelVKTurnPrototype() {
+-	prototypeLogs.Lock()
+-	prototypeLogs.active = false
+-	prototypeLogs.server = nil
+-	prototypeLogs.Unlock()
+-	vkturn.CancelSessions()
+-}
+-
+-// Invalidation is safe on Android's ingress gate: it never waits for workers.
+-func InvalidateVKTurnPrototype() { vkturn.InvalidateSessions() }
+-
+-// A timeout is not proof of shutdown. Android must keep reconnect disabled
+-// until this returns true, even after CancelVKTurnPrototype has returned.
+-func VerifyAndroidTransportStopped() bool { return vkturn.SessionsStopped() }
++func CancelVKTurnPrototype() { vkturn.CancelSessions() }
+ 
+ // BeginVKTurnPrototype must run before asynchronous bootstrap dispatch.
+ func BeginVKTurnPrototype() int64 {
+@@ -150,12 +132,11 @@
+ 	ActiveConnections int32
+ 	TxBytes           int64
+ 	RxBytes           int64
+-	Error             string
+ }
+ 
+ func GetVKTurnPrototypeStats(id int64) *VKTurnPrototypeStats {
+ 	s := vkturn.SessionStats(id)
+-	return &VKTurnPrototypeStats{ActiveConnections: s.ActiveConns, TxBytes: s.TxBytes, RxBytes: s.RxBytes, Error: vkturn.SessionError(id)}
++	return &VKTurnPrototypeStats{ActiveConnections: s.ActiveConns, TxBytes: s.TxBytes, RxBytes: s.RxBytes}
+ }
+ 
+ // VerifyVKTurnPrototypeOOMProfiles exercises the former crash path on the device
+--- android-baseline/experimental/libbox/vk_turn_prototype_log.go
++++ ios-current/experimental/libbox/vk_turn_prototype_log.go
+@@ -12,37 +12,28 @@
+ // The transport bootstraps before the command server exists. Keep a bounded
+ // backlog, then deliver its standard-library logs to the normal sing-box stream.
+ var prototypeLogs = newPrototypeLogWriter()
+-var prototypeSecretField = regexp.MustCompile(`(?i)((?:access_token|success_token|anonym_token|anonymous_token|session_token|token|password|private_key|pre_shared_key|captcha_sid)"?\s*[=:]\s*"?)[^"\s&,}]+`)
+-var prototypeURL = regexp.MustCompile(`(?i)(?:https?|wdtt|vkturnproxy)://[^\s"'<>]+`)
+-var prototypeKey = regexp.MustCompile(`(?i)((?:privatekey|publickey|username|credential|turn_password)"?\s*[=:]\s*"?)[^"\s&,}]+`)
++var prototypeSecretField = regexp.MustCompile(`(?i)((?:access_token|success_token|password|private_key|pre_shared_key|captcha_sid)\s*[=:]\s*)[^\s&,]+`)
+ 
+ type prototypeLogWriter struct {
+ 	sync.Mutex
+ 	server  *CommandServer
+ 	pending []string
+-	history []string
+ 	secrets []string
+-	active  bool
+ }
+ 
+-func newPrototypeLogWriter() *prototypeLogWriter { return &prototypeLogWriter{active: true} }
++func newPrototypeLogWriter() *prototypeLogWriter { return &prototypeLogWriter{} }
+ 
+ func (w *prototypeLogWriter) reset(secrets []string) {
+ 	w.Lock()
+ 	defer w.Unlock()
+ 	w.server = nil
+ 	w.pending = nil
+-	w.history = nil
+ 	w.secrets = secrets
+-	w.active = true
+ }
+ 
+ func (w *prototypeLogWriter) Write(data []byte) (int, error) {
+ 	w.Lock()
+ 	defer w.Unlock()
+-	if !w.active {
+-		return len(data), nil
+-	}
+ 	message := strings.TrimSpace(string(data))
+ 	for _, secret := range w.secrets {
+ 		if secret != "" {
+@@ -50,16 +41,10 @@
+ 		}
+ 	}
+ 	message = prototypeSecretField.ReplaceAllString(message, "${1}[redacted]")
+-	message = prototypeKey.ReplaceAllString(message, "${1}[redacted]")
+-	message = prototypeURL.ReplaceAllString(message, "[redacted-url]")
+ 	if len(message) > 2048 {
+ 		message = string([]rune(message)[:min(len([]rune(message)), 1024)]) + "…"
+ 	}
+ 	message = "[VK TURN] " + message
+-	if len(w.history) == 200 {
+-		w.history = w.history[1:]
+-	}
+-	w.history = append(w.history, message)
+ 	if w.server != nil {
+ 		w.server.WriteMessage(int32(log.LevelInfo), message)
+ 	} else {
+--- android-baseline/experimental/libbox/vk_turn_prototype_test.go
++++ ios-current/experimental/libbox/vk_turn_prototype_test.go
+@@ -31,3 +31,31 @@
+ 		t.Fatal("accepted missing VLESS configuration")
+ 	}
+ }
++
++func TestVLESSPrototypeFailoverValidatesPolicyAndRejectsMixedInput(t *testing.T) {
++	nodes := make([]json.RawMessage, 0, 4)
++	for _, tag := range []string{"p", "b1", "b2", "b3"} {
++		nodes = append(nodes, json.RawMessage(`{"type":"vless","tag":"`+tag+`","server":"example.org","server_port":443,"uuid":"bf000d23-0752-40b4-affe-68f7707a9661","tls":{"enabled":true,"server_name":"example.org","utls":{"enabled":true,"fingerprint":"chrome"},"reality":{"enabled":true,"public_key":"AAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAA","short_id":""}}}`))
++	}
++	input := map[string]any{"mode": "vless", "route": map[string]string{"final": "vk-wg"}, "vless_outbounds": nodes, "vless_primary": "p"}
++	data, _ := json.Marshal(input)
++	session, err := StartVKTurnPrototype(string(data))
++	if err != nil {
++		t.Fatal(err)
++	}
++	if session.ID != 0 {
++		t.Fatal("TURN started")
++	}
++	policy := `{"selector":"vk-wg","primary":"p","backups":["b1","b2","b3"],"intervalMilliseconds":10000,"timeoutMilliseconds":5000,"failureThreshold":2,"recoveryThreshold":3}`
++	if err := ValidatePriorityFailover(session.Configuration, policy); err != nil {
++		t.Fatal(err)
++	}
++	if err := ValidatePriorityFailover(session.Configuration, strings.Replace(policy, `"b3"`, `"missing"`, 1)); err == nil {
++		t.Fatal("missing node accepted")
++	}
++	input["vless"] = nodes[0]
++	data, _ = json.Marshal(input)
++	if _, err := StartVKTurnPrototype(string(data)); err == nil {
++		t.Fatal("mixed legacy and failover inputs accepted")
++	}
++}
+--- android-baseline/protocol/vkturn/config.go
++++ ios-current/protocol/vkturn/config.go
+@@ -1,10 +1,11 @@
+ package vkturn
+ 
+ import (
+-	"encoding/base64"
++	"bytes"
+ 	"encoding/json"
+ 	"fmt"
+-	"net/netip"
++	"regexp"
++	"strings"
+ )
+ 
+ // WireGuardConfig carries only the keys and address provisioned for native sing-box WireGuard.
+@@ -20,19 +21,6 @@
+ 	if !json.Valid(route) {
+ 		return "", fmt.Errorf("invalid routing JSON")
+ 	}
+-	var routing map[string]json.RawMessage
+-	if err := json.Unmarshal(route, &routing); err != nil || routing == nil {
+-		return "", fmt.Errorf("route must be an object")
+-	}
+-	var rules []json.RawMessage
+-	if len(routing["rules"]) != 0 {
+-		if err := json.Unmarshal(routing["rules"], &rules); err != nil {
+-			return "", fmt.Errorf("invalid route rules")
+-		}
+-	}
+-	rules = append([]json.RawMessage{json.RawMessage(`{"ip_version":6,"action":"reject"}`)}, rules...)
+-	routing["rules"], _ = json.Marshal(rules)
+-	route, _ = json.Marshal(routing)
+ 	type outbound struct {
+ 		Type    string `json:"type"`
+ 		Tag     string `json:"tag"`
+@@ -68,7 +56,7 @@
+ 	}{
+ 		Log:          json.RawMessage(`{"level":"info","timestamp":true}`),
+ 		DNS:          json.RawMessage(`{"servers":[{"type":"udp","tag":"dns","server":"1.1.1.1","detour":"vk-wg"}],"final":"dns","strategy":"ipv4_only"}`),
+-		Inbounds:     json.RawMessage(`[{"type":"tun","tag":"tun","address":["172.19.0.1/30","fdfe:dcba:9876::1/126"],"mtu":1280,"auto_route":true,"stack":"gvisor"}]`),
++		Inbounds:     json.RawMessage(`[{"type":"tun","tag":"tun","address":["172.19.0.1/30"],"mtu":1280,"auto_route":true,"stack":"gvisor"}]`),
+ 		Outbounds:    []outbound{{Type: "direct", Tag: "direct"}},
+ 		Route:        route,
+ 		Experimental: json.RawMessage(`{"cache_file":{"enabled":true,"path":"prototype-cache.db"}}`),
+@@ -79,15 +67,6 @@
+ 	} else {
+ 		if session <= 0 || wg.PrivateKey == "" || wg.PublicKey == "" || wg.Address == "" {
+ 			return "", fmt.Errorf("missing WireGuard session parameters")
+-		}
+-		address, err := netip.ParsePrefix(wg.Address)
+-		if err != nil || !address.Addr().Is4() {
+-			return "", fmt.Errorf("invalid WireGuard IPv4 CIDR")
+-		}
+-		for _, key := range []string{wg.PrivateKey, wg.PublicKey} {
+-			if bytes, err := base64.StdEncoding.DecodeString(key); err != nil || len(bytes) != 32 {
+-				return "", fmt.Errorf("invalid WireGuard key")
+-			}
+ 		}
+ 		c.Outbounds = append(c.Outbounds, outbound{Type: "vk-turn-transport", Tag: "vk-transport", Session: session})
+ 		c.Endpoints = []endpoint{{Type: "wireguard", Tag: "vk-wg", Address: []string{wg.Address}, PrivateKey: wg.PrivateKey, MTU: wg.MTU, Workers: 1,
+@@ -131,7 +110,112 @@
+ 		return "", err
+ 	}
+ 	config["outbounds"] = outbounds
+-	config["dns"] = json.RawMessage(`{"servers":[{"type":"udp","tag":"dns","server":"1.1.1.1","detour":"vk-wg"},{"type":"local","tag":"bootstrap"}],"final":"dns","strategy":"ipv4_only"}`)
++	config["dns"] = json.RawMessage(`{"servers":[{"type":"udp","tag":"dns","server":"1.1.1.1","detour":"vk-wg"},{"type":"udp","tag":"bootstrap","server":"1.1.1.1"}],"final":"dns","strategy":"ipv4_only"}`)
+ 	data, err := json.Marshal(config)
+ 	return string(data), err
+ }
++
++// BuildVLESSFailoverConfiguration builds one selector around four provisioned
++// nodes. Policy remains an external Libbox override, never a sing-box JSON key.
++func BuildVLESSFailoverConfiguration(route json.RawMessage, nodes []json.RawMessage, primary string) (string, error) {
++	if len(nodes) != 4 {
++		return "", fmt.Errorf("four VLESS outbounds required")
++	}
++	baseline, err := BuildConfiguration(route, nil, 0)
++	if err != nil {
++		return "", err
++	}
++	var config map[string]json.RawMessage
++	if err = json.Unmarshal([]byte(baseline), &config); err != nil {
++		return "", err
++	}
++	tags := make([]string, 0, 4)
++	seen := map[string]bool{"direct": true, "vk-wg": true}
++	outbounds := []any{map[string]string{"type": "direct", "tag": "direct"}}
++	for _, node := range nodes {
++		outbound, tag, err := validateFailoverVLESS(node)
++		if err != nil {
++			return "", err
++		}
++		if seen[tag] {
++			return "", fmt.Errorf("duplicate or reserved VLESS tag")
++		}
++		seen[tag] = true
++		tags = append(tags, tag)
++		outbound["domain_resolver"] = json.RawMessage(`{"server":"bootstrap","strategy":"ipv4_only"}`)
++		outbounds = append(outbounds, outbound)
++	}
++	found := false
++	for _, tag := range tags {
++		if tag == primary {
++			found = true
++		}
++	}
++	if !found {
++		return "", fmt.Errorf("VLESS primary missing")
++	}
++	outbounds = append(outbounds, map[string]any{"type": "selector", "tag": "vk-wg", "outbounds": tags, "default": primary, "interrupt_exist_connections": true})
++	config["outbounds"], err = json.Marshal(outbounds)
++	if err != nil {
++		return "", err
++	}
++	config["dns"] = json.RawMessage(`{"servers":[{"type":"udp","tag":"dns","server":"1.1.1.1","detour":"vk-wg"},{"type":"udp","tag":"bootstrap","server":"1.1.1.1"}],"final":"dns","strategy":"ipv4_only"}`)
++	data, err := json.Marshal(config)
++	return string(data), err
++}
++
++func validateFailoverVLESS(node json.RawMessage) (map[string]json.RawMessage, string, error) {
++	var fields struct {
++		Type   string `json:"type"`
++		Tag    string `json:"tag"`
++		Server string `json:"server"`
++		Port   int    `json:"server_port"`
++		UUID   string `json:"uuid"`
++		Flow   string `json:"flow"`
++		TLS    struct {
++			Enabled    bool   `json:"enabled"`
++			ServerName string `json:"server_name"`
++			UTLS       struct {
++				Enabled     bool   `json:"enabled"`
++				Fingerprint string `json:"fingerprint"`
++			} `json:"utls"`
++			Reality struct {
++				Enabled   bool   `json:"enabled"`
++				PublicKey string `json:"public_key"`
++				ShortID   string `json:"short_id"`
++			} `json:"reality"`
++			ALPN []string `json:"alpn"`
++		} `json:"tls"`
++	}
++	decoder := json.NewDecoder(bytes.NewReader(node))
++	decoder.DisallowUnknownFields()
++	if decoder.Decode(&fields) != nil || fields.Type != "vless" || !failoverTag.MatchString(fields.Tag) ||
++		fields.Server == "" || strings.ContainsAny(fields.Server, " \t\r\n") || fields.Port < 1 || fields.Port > 65535 ||
++		!failoverUUID.MatchString(fields.UUID) || (fields.Flow != "" && fields.Flow != "xtls-rprx-vision") ||
++		!fields.TLS.Enabled || fields.TLS.ServerName == "" || !fields.TLS.UTLS.Enabled ||
++		!fields.TLS.Reality.Enabled || !failoverPublicKey.MatchString(fields.TLS.Reality.PublicKey) || !failoverShortID.MatchString(fields.TLS.Reality.ShortID) {
++		return nil, "", fmt.Errorf("invalid failover VLESS outbound")
++	}
++	switch fields.TLS.UTLS.Fingerprint {
++	case "chrome", "firefox", "edge", "safari", "ios", "android", "random", "randomized", "360", "qq":
++	default:
++		return nil, "", fmt.Errorf("invalid failover VLESS fingerprint")
++	}
++	for _, alpn := range fields.TLS.ALPN {
++		if alpn == "" {
++			return nil, "", fmt.Errorf("invalid failover VLESS ALPN")
++		}
++	}
++	var outbound map[string]json.RawMessage
++	if err := json.Unmarshal(node, &outbound); err != nil {
++		return nil, "", fmt.Errorf("invalid failover VLESS outbound")
++	}
++	return outbound, fields.Tag, nil
++}
++
++var (
++	failoverTag       = regexp.MustCompile(`^[A-Za-z0-9_.-]{1,64}$`)
++	failoverUUID      = regexp.MustCompile(`^[0-9a-fA-F]{8}-[0-9a-fA-F]{4}-[0-9a-fA-F]{4}-[0-9a-fA-F]{4}-[0-9a-fA-F]{12}$`)
++	failoverPublicKey = regexp.MustCompile(`^[A-Za-z0-9_-]{43}$`)
++	failoverShortID   = regexp.MustCompile(`^(?:[0-9a-fA-F]{2}){0,8}$`)
++)
+--- android-baseline/protocol/vkturn/config_test.go
++++ ios-current/protocol/vkturn/config_test.go
+@@ -2,7 +2,6 @@
+ 
+ import (
+ 	"encoding/json"
+-	"reflect"
+ 	"strings"
+ 	"testing"
+ )
+@@ -28,31 +27,14 @@
+ 	if err := json.Unmarshal([]byte(text), &c); err != nil {
+ 		t.Fatal(err)
+ 	}
+-	assertRoutingWithIPv6Guard(t, route, c.Route)
++	if string(c.Route) != string(route) {
++		t.Fatalf("routing changed: %s", c.Route)
++	}
+ 	if len(c.Endpoints) != 1 || c.Endpoints[0].Type != "wireguard" || c.Endpoints[0].Detour != "vk-transport" || c.Endpoints[0].System {
+ 		t.Fatalf("not native userspace WireGuard: %+v", c.Endpoints)
+ 	}
+ 	if len(c.Outbounds) != 2 || c.Outbounds[1].Type != "vk-turn-transport" || c.Outbounds[1].Session != 7 {
+ 		t.Fatalf("missing transport: %+v", c.Outbounds)
+-	}
+-}
+-
+-func assertRoutingWithIPv6Guard(t *testing.T, original, actual json.RawMessage) {
+-	t.Helper()
+-	var source, result map[string]any
+-	if err := json.Unmarshal(original, &source); err != nil {
+-		t.Fatal(err)
+-	}
+-	if err := json.Unmarshal(actual, &result); err != nil {
+-		t.Fatal(err)
+-	}
+-	rules := result["rules"].([]any)
+-	if len(rules) == 0 || !reflect.DeepEqual(rules[0], map[string]any{"ip_version": float64(6), "action": "reject"}) {
+-		t.Fatal("missing first IPv6 guard")
+-	}
+-	result["rules"] = rules[1:]
+-	if !reflect.DeepEqual(source, result) {
+-		t.Fatalf("original routing changed: %s", actual)
+ 	}
+ }
+ 
+--- android-baseline/protocol/vkturn/outbound.go
++++ ios-current/protocol/vkturn/outbound.go
+@@ -18,7 +18,6 @@
+ 
+ var sessionsMu sync.Mutex
+ var sessions = make(map[int64]*proxy.Proxy)
+-var retiring = make(map[int64]chan struct{})
+ var nextSession atomic.Int64
+ var generation int64
+ 
+@@ -37,9 +36,6 @@
+ 	}
+ 	id := nextSession.Add(1)
+ 	sessions[id] = p
+-	// The startup sentinel is acquired while registration is locked, so Stop
+-	// cannot observe an empty WaitGroup before the start goroutine is scheduled.
+-	p.StartAsync()
+ 	sessionsMu.Unlock()
+ 	return id, nil
+ }
+@@ -47,47 +43,10 @@
+ 	sessionsMu.Lock()
+ 	p := sessions[id]
+ 	delete(sessions, id)
+-	var finished chan struct{}
+-	if p != nil {
+-		finished = make(chan struct{})
+-		retiring[id] = finished
+-	}
+ 	sessionsMu.Unlock()
+ 	if p != nil {
+-		proxy.ClosePhysicalSockets()
+-		go func() {
+-			p.Stop()
+-			sessionsMu.Lock()
+-			delete(retiring, id)
+-			close(finished)
+-			sessionsMu.Unlock()
+-		}()
+-		select {
+-		case <-finished:
+-		case <-time.After(15 * time.Second):
+-		}
++		p.StopWithTimeout(3 * time.Second)
+ 	}
+-}
+-
+-func SessionsStopped() bool {
+-	sessionsMu.Lock()
+-	defer sessionsMu.Unlock()
+-	return len(sessions) == 0 && len(retiring) == 0
+-}
+-
+-func InvalidateSessions() {
+-	sessionsMu.Lock()
+-	generation++
+-	sessionsMu.Unlock()
+-}
+-
+-func CheckSession(id, expectedGeneration int64) error {
+-	sessionsMu.Lock()
+-	defer sessionsMu.Unlock()
+-	if expectedGeneration != generation || sessions[id] == nil || sessions[id].Stopped() {
+-		return fmt.Errorf("VK TURN startup cancelled")
+-	}
+-	return nil
+ }
+ 
+ type Options struct {
+@@ -143,13 +102,3 @@
+ 	}
+ 	return p.GetStats()
+ }
+-
+-func SessionError(id int64) string {
+-	sessionsMu.Lock()
+-	p := sessions[id]
+-	sessionsMu.Unlock()
+-	if p == nil {
+-		return ""
+-	}
+-	return p.TerminalError()
+-}
+--- android-baseline/protocol/vkturn/packet.go
++++ ios-current/protocol/vkturn/packet.go
+@@ -103,15 +103,7 @@
+ 	}
+ 	// Native WireGuard does not set transport write deadlines. Closing this
+ 	// connection also unblocks a send waiting for room in the TURN queue.
+-	var err error
+-	if sender, ok := c.transport.(interface {
+-		SendPacketUntilDeadline(<-chan struct{}, []byte, time.Time) error
+-	}); ok {
+-		err = sender.SendPacketUntilDeadline(c.done, b, deadline)
+-	} else {
+-		err = c.transport.SendPacketUntil(c.done, b)
+-	}
+-	if err != nil {
++	if err := c.transport.SendPacketUntil(c.done, b); err != nil {
+ 		return 0, err
+ 	}
+ 	return len(b), nil
+--- android-baseline/protocol/vkturn/vless_test.go
++++ ios-current/protocol/vkturn/vless_test.go
+@@ -22,7 +22,9 @@
+ 	if err := json.Unmarshal([]byte(text), &config); err != nil {
+ 		t.Fatal(err)
+ 	}
+-	assertRoutingWithIPv6Guard(t, route, config.Route)
++	if string(config.Route) != string(route) {
++		t.Fatal("VLESS changed the original routing")
++	}
+ 	if len(config.Endpoints) != 0 || len(config.Outbounds) != 2 {
+ 		t.Fatal("VLESS started extra engines")
+ 	}
+@@ -50,3 +52,48 @@
+ 		}
+ 	}
+ }
++
++func TestVLESSFailoverConfigurationPreservesFourTags(t *testing.T) {
++	route := json.RawMessage(`{"final":"vk-wg","rule_set":[{"type":"remote","tag":"test","format":"binary","url":"https://example.org/rules.srs","download_detour":"vk-wg"}]}`)
++	nodes := []json.RawMessage{}
++	for _, tag := range []string{"p", "b1", "b2", "b3"} {
++		nodes = append(nodes, json.RawMessage(`{"type":"vless","tag":"`+tag+`","server":"example.org","server_port":443,"uuid":"bf000d23-0752-40b4-affe-68f7707a9661","flow":"xtls-rprx-vision","tls":{"enabled":true,"server_name":"example.org","utls":{"enabled":true,"fingerprint":"chrome"},"reality":{"enabled":true,"public_key":"AAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAA","short_id":"abcd"}}}`))
++	}
++	text, err := BuildVLESSFailoverConfiguration(route, nodes, "b2")
++	if err != nil {
++		t.Fatal(err)
++	}
++	var config struct {
++		Outbounds []map[string]any
++		Inbounds  []any
++		Endpoints []any
++		DNS       struct{ Servers []map[string]any }
++		Route     json.RawMessage
++	}
++	if err := json.Unmarshal([]byte(text), &config); err != nil {
++		t.Fatal(err)
++	}
++	if len(config.Outbounds) != 6 || len(config.Inbounds) != 1 || len(config.Endpoints) != 0 {
++		t.Fatal("extra/missing engine components")
++	}
++	selector := config.Outbounds[5]
++	if selector["type"] != "selector" || selector["tag"] != "vk-wg" || selector["default"] != "b2" || selector["interrupt_exist_connections"] != true {
++		t.Fatal(selector)
++	}
++	for i, tag := range []string{"p", "b1", "b2", "b3"} {
++		if config.Outbounds[i+1]["tag"] != tag || config.Outbounds[i+1]["domain_resolver"] == nil {
++			t.Fatal("lost node/bootstrap")
++		}
++	}
++	if string(config.Route) != string(route) || config.DNS.Servers[0]["detour"] != "vk-wg" || config.DNS.Servers[1]["detour"] != nil {
++		t.Fatal("routing/bootstrap changed")
++	}
++	for _, bad := range [][]json.RawMessage{nodes[:3], {nodes[0], nodes[0], nodes[2], nodes[3]}} {
++		if _, err := BuildVLESSFailoverConfiguration(route, bad, "p"); err == nil {
++			t.Fatal("invalid nodes accepted")
++		}
++	}
++	if _, err := BuildVLESSFailoverConfiguration(route, nodes, "missing"); err == nil {
++		t.Fatal("missing primary accepted")
++	}
++}

@@ -1,0 +1,48 @@
+8dfc5f32976b5663db74cde2be498491bcf3c23f 2026-10-14T23:23:29+05:00 Save VK TURN routing prototype and VLESS integration
+
+ box.go                                             |   8 +
+ cmd/vk-turn-prototype-check/main.go                |  81 ++++++
+ daemon/instance.go                                 |  58 +++-
+ daemon/priority_failover.go                        | 271 +++++++++++++++++++
+ daemon/priority_failover_config.go                 | 103 +++++++
+ daemon/priority_failover_integration_test.go       | 298 +++++++++++++++++++++
+ daemon/priority_failover_probe.go                  | 116 ++++++++
+ daemon/priority_failover_test.go                   | 249 +++++++++++++++++
+ daemon/started_service.go                          |  17 ++
+ experimental/libbox/command_server.go              |  14 +-
+ experimental/libbox/config.go                      | 102 +++++++
+ experimental/libbox/config_probe_test.go           |  61 +++++
+ .../libbox/internal/oomprofile/linkname.go         |   3 -
+ .../libbox/internal/oomprofile/oomprofile.go       |  22 +-
+ .../libbox/internal/oomprofile/oomprofile_test.go  |  53 ++++
+ experimental/libbox/priority_failover.go           |  48 ++++
+ experimental/libbox/priority_failover_test.go      |  76 ++++++
+ experimental/libbox/vk_turn_prototype.go           | 153 +++++++++++
+ experimental/libbox/vk_turn_prototype_log.go       |  76 ++++++
+ experimental/libbox/vk_turn_prototype_log_test.go  |  51 ++++
+ experimental/libbox/vk_turn_prototype_test.go      |  33 +++
+ go.mod                                             |  28 +-
+ go.sum                                             |  39 +++
+ include/registry.go                                |   2 +
+ protocol/group/selector.go                         |  14 +
+ protocol/vkturn/config.go                          | 113 ++++++++
+ protocol/vkturn/config_startup_test.go             |  60 +++++
+ protocol/vkturn/config_test.go                     |  58 ++++
+ protocol/vkturn/outbound.go                        | 104 +++++++
+ protocol/vkturn/packet.go                          | 139 ++++++++++
+ protocol/vkturn/packet_test.go                     |  67 +++++
+ protocol/vkturn/session_test.go                    |  15 ++
+ protocol/vkturn/vless_test.go                      |  54 ++++
+ protocol/vkturn/vless_transport_test.go            | 101 +++++++
+ 34 files changed, 2656 insertions(+), 31 deletions(-)
+1c3c78d566f28a2df7c72bcf3e63099beea8493f 2026-10-20T19:06:37+05:00 Add prototype VLESS subscription failover
+
+ daemon/priority_failover_integration_test.go       |  29 +++++-
+ daemon/priority_failover_test.go                   |  15 +++
+ experimental/libbox/command_server.go              |  17 +++-
+ .../libbox/priority_start_cancellation_test.go     |  79 +++++++++++++++
+ experimental/libbox/vk_turn_prototype.go           |  23 +++--
+ experimental/libbox/vk_turn_prototype_test.go      |  28 ++++++
+ protocol/vkturn/config.go                          | 108 +++++++++++++++++++++
+ protocol/vkturn/vless_test.go                      |  45 +++++++++
+ 8 files changed, 335 insertions(+), 9 deletions(-)

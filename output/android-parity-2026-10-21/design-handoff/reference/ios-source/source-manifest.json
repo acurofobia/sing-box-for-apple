@@ -1,0 +1,160 @@
+{
+  "asOf": "2026-10-20",
+  "timezone": "Asia/Yekaterinburg",
+  "kind": "UI, model, contract and routing reference; not a complete buildable iOS project",
+  "includesCurrentWorkingTree": true,
+  "files": [
+    {
+      "source": "PrototypeApp/Application.swift",
+      "sha256": "76e57e060c7a6d09daf4a4ba1c35492c7324c95aeaf603b7deb8fccb19790c12"
+    },
+    {
+      "source": "PrototypeApp/LogView.swift",
+      "sha256": "e9b40f0bccde345d9071c328b6202da15d0e97c728e0c0356acac1989e39a527"
+    },
+    {
+      "source": "PrototypeApp/ModeDrawer.swift",
+      "sha256": "4343ab91bee393a5e02f1772ed2f287c3d7f74bcbd49dfb807e1de351774a764"
+    },
+    {
+      "source": "PrototypeApp/PresentationCoordinator.swift",
+      "sha256": "c6a19d24d4bb333182c0f5c7be68e4cbf72abbebb4bdcede2c79609e0f0560ce"
+    },
+    {
+      "source": "PrototypeApp/PrototypeStyle.swift",
+      "sha256": "5a8ec3044457c1656f29154ea6b347ef4aa9725b920a4b63f9ece2ae0226fe98"
+    },
+    {
+      "source": "PrototypeApp/PrototypeView.swift",
+      "sha256": "d5c226cc00dd46d540a64f868823e9d308089fc69e2d657c36bea91f333df4d7"
+    },
+    {
+      "source": "PrototypeApp/RoutingView.swift",
+      "sha256": "3a4ed728feb2a39ca86be60ba01f7279097c8f9580f17f3d09eb28b9be474fb8"
+    },
+    {
+      "source": "PrototypeApp/Subscription.swift",
+      "sha256": "9163bcdf9914aa52edd7c69f2fc75ecb146ea70c6cec70c153f34cc091611354"
+    },
+    {
+      "source": "PrototypeApp/SubscriptionLoader.swift",
+      "sha256": "236cba7d5f12c7cd567813e3dbf9ea231b853e315278254205b43e7cd70ac074"
+    },
+    {
+      "source": "PrototypeApp/SubscriptionStore.swift",
+      "sha256": "ccd4e5df431005c8f703b7f91c606f6440a68de0570c64ad848a7e3955e3a212"
+    },
+    {
+      "source": "PrototypeApp/SubscriptionUIDocument.swift",
+      "sha256": "9418b88c5bd78a37860d10f024195d56f5eb34bfcbbda359800359ee37aa1139"
+    },
+    {
+      "source": "PrototypeApp/VPNCard.swift",
+      "sha256": "d5140a15fa28e7d66e168e1cab623c0750cb5022b0a6a323e23328dfa47ac30f"
+    },
+    {
+      "source": "Library/Network/PrototypeRouting.swift",
+      "sha256": "057a3671a8e8643ae09b6d676d8522ecf6d26cef11000c7c4ba55365348cfab7"
+    },
+    {
+      "source": "Library/Network/VKTurnConfiguration.swift",
+      "sha256": "d1ffcb19b88789fbdccac1f2f9cbcebf5fbf564b9505dd44c5344d830e63d69d"
+    },
+    {
+      "source": "SFIUITests/PrototypeSmokeTests.swift",
+      "sha256": "7b1b763d51f5823a62cc6c5a695c091ffe3b415e5f305cfc943dff6a31485dea"
+    },
+    {
+      "source": "PrototypeApp/routing.json",
+      "sha256": "67afc88bd5950ab93d4faee6a3d194fcff4384a81a86a8683657fba4f917b6c7"
+    },
+    {
+      "source": "PrototypeApp/RuleSets/geoip-direct.srs",
+      "sha256": "7e2589128de083abd3984f45686d231d878e80ca508b4a224943f2a32688a779"
+    },
+    {
+      "source": "PrototypeApp/RuleSets/geosite-apple.srs",
+      "sha256": "54ab9fb19ea02cfed47abc4dbed229c41647f654512724cc65fdc0b0ce80d23c"
+    },
+    {
+      "source": "PrototypeApp/RuleSets/geosite-category-ads.srs",
+      "sha256": "dd6a4e90947dee59e8004e0261d6866f07df4f6813ab52649084944477e037cf"
+    },
+    {
+      "source": "PrototypeApp/RuleSets/geosite-category-ru.srs",
+      "sha256": "8a2ba056d0a53da9b1e69b42ac3d389be497dc1601163853cee3cf9ec9a715d2"
+    },
+    {
+      "source": "PrototypeApp/RuleSets/geosite-epicgames.srs",
+      "sha256": "e065046f906117bb2281ff7c4a59e382ad542f1dda29b5d18ee33cc388367ad9"
+    },
+    {
+      "source": "PrototypeApp/RuleSets/geosite-escapefromtarkov.srs",
+      "sha256": "986dc235907095187b7532fbee1935ce52bc4bbd048b3fbd478ac7f231e00a1a"
+    },
+    {
+      "source": "PrototypeApp/RuleSets/geosite-faceit.srs",
+      "sha256": "c4d64ba670e1bb4e6d0feb351001182d4a2b59b561e5fb170781a4612b06b5da"
+    },
+    {
+      "source": "PrototypeApp/RuleSets/geosite-github.srs",
+      "sha256": "cc925296ae8b318181f94e3c531c25d2d8b507e092293d9d12c78551a0680f41"
+    },
+    {
+      "source": "PrototypeApp/RuleSets/geosite-google-play.srs",
+      "sha256": "094bc4c176dac3465565a2e6d90cce526c779e108ddf574ad1c98727fb2f245e"
+    },
+    {
+      "source": "PrototypeApp/RuleSets/geosite-microsoft.srs",
+      "sha256": "177e06718d7de536cdfb029207be046244b2e1b3393e971918ddf0c2ca00a7b2"
+    },
+    {
+      "source": "PrototypeApp/RuleSets/geosite-pinterest.srs",
+      "sha256": "522032639746cd248c9e74bece1ca7710064c06d182cd3bd4f6507dcdd770f27"
+    },
+    {
+      "source": "PrototypeApp/RuleSets/geosite-private.srs",
+      "sha256": "cec6020ca1643dde6cc1cc1564eaaedfa3bc22ccc9a5860c6d74b19dc93908d3"
+    },
+    {
+      "source": "PrototypeApp/RuleSets/geosite-riot.srs",
+      "sha256": "cdf8e0f8a94740945443f5556e7dd0a144845a3a11cd4e34d6041e8c87fb147b"
+    },
+    {
+      "source": "PrototypeApp/RuleSets/geosite-steam.srs",
+      "sha256": "7633bcf8d0fe974deecade7d5dfa43e072a3a3e7b38386a5d4d961768469e5e1"
+    },
+    {
+      "source": "PrototypeApp/RuleSets/geosite-telegram.srs",
+      "sha256": "83f8b1e271b4c78e3d8fb1ce6cee70e21b0ea5cd6c7bbc020a7ab6f3fd8f37f3"
+    },
+    {
+      "source": "PrototypeApp/RuleSets/geosite-torrent.srs",
+      "sha256": "e9f7d7b618041780c488fd6a0d9f3a3dc1a7f4fe5f91a7bad0f9806da51e39af"
+    },
+    {
+      "source": "PrototypeApp/RuleSets/geosite-twitch-ads.srs",
+      "sha256": "d7e632adeb6622360c4eb90176877c583d5ee9a0362c8407cde3b088dd47b492"
+    },
+    {
+      "source": "PrototypeApp/RuleSets/geosite-twitch.srs",
+      "sha256": "12c41a520bf50f58b634ce13e8282ecd866761025ada6ae648b47bc3643b2164"
+    },
+    {
+      "source": "PrototypeApp/RuleSets/geosite-whitelist.srs",
+      "sha256": "6e77a9baec718977e46006cbbf1cc6aac5148339123dd0bb834e9c54731d1fc3"
+    },
+    {
+      "source": "PrototypeApp/RuleSets/geosite-win-spy.srs",
+      "sha256": "f862f9f0191065f28261bf399f85b9cf58d7c6f409626083ffd43c6f914cf52b"
+    },
+    {
+      "source": "PrototypeApp/RuleSets/geosite-youtube.srs",
+      "sha256": "cdbda19162a99a50e639a9e50efcbac8a6f4b08d3d1cc61f68ff229246dd5f6e"
+    },
+    {
+      "source": "PrototypeApp/RuleSets/russia-inside.srs",
+      "sha256": "b14105d17273ed6084334bf6fa1a781a5e95d66c2fff1f345c4cd8fe1836dc7b"
+    }
+  ]
+}

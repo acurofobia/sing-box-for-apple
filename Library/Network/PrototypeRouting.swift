@@ -50,6 +50,63 @@ public enum PrototypeRouting {
         return try JSONSerialization.data(withJSONObject: route, options: [.sortedKeys])
     }
 
+    public static func configurationWithDNSPolicy(_ data: Data) throws -> Data {
+        guard var configuration = try JSONSerialization.jsonObject(with: data) as? [String: Any],
+              let route = configuration["route"] as? [String: Any],
+              let rules = route["rules"] as? [[String: Any]],
+              let final = route["final"] as? String, ["direct", "vk-wg"].contains(final)
+        else {
+            throw CocoaError(.fileReadCorruptFile)
+        }
+        let finalServer = final == "direct" ? "dns-direct" : "dns"
+        let matchFields: Set = ["domain", "domain_suffix", "domain_keyword", "domain_regex", "rule_set", "ip_cidr", "ip_is_private", "invert"]
+        let allowedFields = matchFields.union(["action", "outbound"])
+        var dnsRules: [[String: Any]] = []
+        var evaluatedResponse = false
+        for rule in rules {
+            // Traffic-specific rules (including YouTube QUIC rejection) must not become DNS-wide rules.
+            guard rule.keys.allSatisfy({ allowedFields.contains($0) }) else { continue }
+            var dnsRule = rule.filter { matchFields.contains($0.key) }
+            guard !dnsRule.isEmpty else { continue }
+            if rule["action"] as? String == "reject" {
+                dnsRule["action"] = "reject"
+            } else if let outbound = rule["outbound"] as? String, ["direct", "vk-wg"].contains(outbound) {
+                dnsRule["action"] = "route"
+                dnsRule["server"] = outbound == "direct" ? "dns-direct" : "dns"
+            } else {
+                continue
+            }
+            let ruleSets = (rule["rule_set"] as? [String]) ?? (rule["rule_set"] as? String).map { [$0] } ?? []
+            if rule["ip_cidr"] != nil || rule["ip_is_private"] != nil || ruleSets.contains(where: { $0.hasPrefix("geoip-") }) {
+                // IP routing can only be decided after a lookup. Reuse the default answer if no IP rule matches.
+                if !evaluatedResponse {
+                    dnsRules.append(["action": "evaluate", "server": finalServer])
+                    evaluatedResponse = true
+                }
+                dnsRule["match_response"] = true
+            }
+            dnsRules.append(dnsRule)
+        }
+        if evaluatedResponse {
+            dnsRules.append(["action": "respond"])
+        }
+        var dns = configuration["dns"] as? [String: Any] ?? [:]
+        var servers: [[String: Any]] = [
+            // HTTPS DNS uses a direct dialer when detour is omitted.
+            ["type": "https", "tag": "dns-direct", "server": "77.88.8.8", "path": "/dns-query"],
+            ["type": "https", "tag": "dns", "server": "8.8.8.8", "path": "/dns-query", "detour": "vk-wg"],
+        ]
+        if (dns["servers"] as? [[String: Any]])?.contains(where: { $0["tag"] as? String == "bootstrap" }) == true {
+            // Keep VLESS server resolution independent of the tunnel it is about to establish.
+            servers.append(["type": "https", "tag": "bootstrap", "server": "77.88.8.8", "path": "/dns-query"])
+        }
+        dns["servers"] = servers
+        dns["rules"] = dnsRules
+        dns["final"] = finalServer
+        configuration["dns"] = dns
+        return try JSONSerialization.data(withJSONObject: configuration, options: [.sortedKeys])
+    }
+
     public static func configurationWithPersistentCache(_ data: Data, directory: URL) throws -> Data {
         guard var configuration = try JSONSerialization.jsonObject(with: data) as? [String: Any] else {
             throw CocoaError(.fileReadCorruptFile)

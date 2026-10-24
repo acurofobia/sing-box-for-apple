@@ -1,0 +1,27 @@
+{
+  "name": "vipin",
+  "version": "1.14.6",
+  "build": "2",
+  "bundle_id": "ru.acurofobia.singbox.vkprototype",
+  "extension_bundle_id": "ru.acurofobia.singbox.vkprototype.extension",
+  "team_id": "YG7A3W5844",
+  "primary_locale": "ru",
+  "privacy_policy_url": "https://vipin.eagerdell32.chatgpt.site/",
+  "support_url": "https://vipin.eagerdell32.chatgpt.site/",
+  "source_release_url": "https://github.com/acurofobia/sing-box-for-apple/releases/tag/vipin-1.14.6-2",
+  "feedback_email": "fusedased@gmail.com",
+  "review_contact": {"first_name": "Sergey", "last_name": "Mikhailov", "email": "fusedased@gmail.com"},
+  "beta_app_description": "vipin is an open-source client for user-provided network servers and subscriptions. It supports VLESS and VK TURN connections, configurable routing, and local connection diagnostics. The developer does not sell VPN subscriptions or operate a VPN service. Users supply their own server configuration.",
+  "what_to_test": "Test subscription import and refresh, VLESS and VK TURN connections, routing changes, reconnecting after network changes, and stopping the tunnel. Check the privacy policy, software licenses, and release source information available before import and in Profile. Please include the app version, iOS version, and reproduction steps in feedback; remove subscription links, tokens, and other secrets from logs before sending them.",
+  "review_notes": "vipin is a client for user-configured servers. It does not sell connectivity or provide developer-operated VPN infrastructure. The Connection tab starts or stops the tunnel; Routing changes routing rules; Profile contains settings, local logs, the privacy policy, licenses, and source information. Before the first connection, the app explains its data handling. VK TURN mode uses VK API and TURN relay infrastructure as an intermediate transport to the configured exit server. Connection testing requires a working subscription supplied separately in the private review instructions.",
+  "encryption_inventory": {
+    "uses_encryption": true,
+    "implemented_outside_apple_os": true,
+    "limited_to_https_requests": false,
+    "purpose": "Secure network connections and VPN/proxy transports",
+    "standard_algorithms": ["AES", "ChaCha20-Poly1305", "X25519", "Ed25519", "RSA", "SHA-2"],
+    "nonstandard_or_proprietary_encryption_algorithms": false,
+    "classification": null,
+    "note": "Technical inventory for the App Store Connect questionnaire. It does not assign an export classification or claim a documentation exemption. Complete the questionnaire for the chosen distribution territories."
+  }
+}

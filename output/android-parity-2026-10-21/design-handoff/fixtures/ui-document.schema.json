@@ -1,0 +1,466 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "title": "Prototype UI document structural schema",
+  "$comment": "Structural companion. Duplicate JSON keys, cross-document ID uniqueness, slot types, references, URL policy, integer lexical form and value<=maximum require semantic checks from SubscriptionUIDocument.swift.",
+  "type": "object",
+  "required": [
+    "schemaVersion",
+    "blocks",
+    "pages"
+  ],
+  "additionalProperties": false,
+  "properties": {
+    "schemaVersion": {
+      "const": 1
+    },
+    "blocks": {
+      "type": "array",
+      "items": {
+        "oneOf": [
+          {
+            "type": "object",
+            "required": [
+              "id",
+              "type",
+              "title",
+              "buttons"
+            ],
+            "additionalProperties": false,
+            "properties": {
+              "id": {
+                "type": "string",
+                "pattern": "^[A-Za-z][A-Za-z0-9_-]{0,63}$"
+              },
+              "type": {
+                "const": "card"
+              },
+              "visible": {
+                "type": "boolean"
+              },
+              "title": {
+                "type": "string",
+                "minLength": 1,
+                "maxLength": 4096
+              },
+              "subtitle": {
+                "type": "string",
+                "minLength": 1,
+                "maxLength": 4096
+              },
+              "text": {
+                "type": "string",
+                "minLength": 1,
+                "maxLength": 4096
+              },
+              "buttons": {
+                "type": "array",
+                "items": {
+                  "$ref": "#/$defs/button"
+                }
+              }
+            }
+          },
+          {
+            "type": "object",
+            "required": [
+              "id",
+              "type",
+              "title",
+              "buttons"
+            ],
+            "additionalProperties": false,
+            "properties": {
+              "id": {
+                "type": "string",
+                "pattern": "^[A-Za-z][A-Za-z0-9_-]{0,63}$"
+              },
+              "type": {
+                "const": "valueRow"
+              },
+              "visible": {
+                "type": "boolean"
+              },
+              "title": {
+                "type": "string",
+                "minLength": 1,
+                "maxLength": 4096
+              },
+              "subtitle": {
+                "type": "string",
+                "minLength": 1,
+                "maxLength": 4096
+              },
+              "text": {
+                "type": "string",
+                "minLength": 1,
+                "maxLength": 4096
+              },
+              "buttons": {
+                "type": "array",
+                "items": {
+                  "$ref": "#/$defs/button"
+                }
+              }
+            }
+          },
+          {
+            "type": "object",
+            "required": [
+              "id",
+              "type",
+              "title",
+              "buttons"
+            ],
+            "additionalProperties": false,
+            "properties": {
+              "id": {
+                "type": "string",
+                "pattern": "^[A-Za-z][A-Za-z0-9_-]{0,63}$"
+              },
+              "type": {
+                "const": "actionSheet"
+              },
+              "visible": {
+                "type": "boolean"
+              },
+              "title": {
+                "type": "string",
+                "minLength": 1,
+                "maxLength": 4096
+              },
+              "subtitle": {
+                "type": "string",
+                "minLength": 1,
+                "maxLength": 4096
+              },
+              "text": {
+                "type": "string",
+                "minLength": 1,
+                "maxLength": 4096
+              },
+              "buttons": {
+                "type": "array",
+                "items": {
+                  "$ref": "#/$defs/button"
+                }
+              }
+            }
+          },
+          {
+            "type": "object",
+            "required": [
+              "id",
+              "type",
+              "items"
+            ],
+            "additionalProperties": false,
+            "properties": {
+              "id": {
+                "type": "string",
+                "pattern": "^[A-Za-z][A-Za-z0-9_-]{0,63}$"
+              },
+              "type": {
+                "const": "selectionList"
+              },
+              "visible": {
+                "type": "boolean"
+              },
+              "title": {
+                "type": "string",
+                "minLength": 1,
+                "maxLength": 4096
+              },
+              "subtitle": {
+                "type": "string",
+                "minLength": 1,
+                "maxLength": 4096
+              },
+              "text": {
+                "type": "string",
+                "minLength": 1,
+                "maxLength": 4096
+              },
+              "items": {
+                "type": "array",
+                "items": {
+                  "$ref": "#/$defs/item"
+                }
+              }
+            }
+          },
+          {
+            "type": "object",
+            "required": [
+              "id",
+              "type",
+              "items"
+            ],
+            "additionalProperties": false,
+            "properties": {
+              "id": {
+                "type": "string",
+                "pattern": "^[A-Za-z][A-Za-z0-9_-]{0,63}$"
+              },
+              "type": {
+                "const": "menu"
+              },
+              "visible": {
+                "type": "boolean"
+              },
+              "title": {
+                "type": "string",
+                "minLength": 1,
+                "maxLength": 4096
+              },
+              "subtitle": {
+                "type": "string",
+                "minLength": 1,
+                "maxLength": 4096
+              },
+              "text": {
+                "type": "string",
+                "minLength": 1,
+                "maxLength": 4096
+              },
+              "items": {
+                "type": "array",
+                "items": {
+                  "$ref": "#/$defs/button"
+                }
+              }
+            }
+          },
+          {
+            "type": "object",
+            "required": [
+              "id",
+              "type",
+              "value",
+              "maximum",
+              "unit"
+            ],
+            "additionalProperties": false,
+            "properties": {
+              "id": {
+                "type": "string",
+                "pattern": "^[A-Za-z][A-Za-z0-9_-]{0,63}$"
+              },
+              "type": {
+                "const": "progress"
+              },
+              "visible": {
+                "type": "boolean"
+              },
+              "title": {
+                "type": "string",
+                "minLength": 1,
+                "maxLength": 4096
+              },
+              "subtitle": {
+                "type": "string",
+                "minLength": 1,
+                "maxLength": 4096
+              },
+              "text": {
+                "type": "string",
+                "minLength": 1,
+                "maxLength": 4096
+              },
+              "value": {
+                "type": "integer",
+                "minimum": 0
+              },
+              "maximum": {
+                "type": "integer",
+                "minimum": 1
+              },
+              "unit": {
+                "enum": [
+                  "bytes",
+                  "count",
+                  "percent"
+                ]
+              },
+              "period": {
+                "enum": [
+                  "day",
+                  "week",
+                  "month",
+                  "total"
+                ]
+              },
+              "resetAt": {
+                "type": [
+                  "string",
+                  "null"
+                ]
+              }
+            }
+          }
+        ]
+      }
+    },
+    "pages": {
+      "type": "array",
+      "items": {
+        "type": "object",
+        "required": [
+          "id",
+          "title",
+          "text"
+        ],
+        "additionalProperties": false,
+        "properties": {
+          "id": {
+            "type": "string",
+            "pattern": "^[A-Za-z][A-Za-z0-9_-]{0,63}$"
+          },
+          "title": {
+            "type": "string",
+            "minLength": 1,
+            "maxLength": 4096
+          },
+          "text": {
+            "type": "string",
+            "maxLength": 32768
+          }
+        }
+      }
+    }
+  },
+  "$defs": {
+    "action": {
+      "oneOf": [
+        {
+          "type": "object",
+          "additionalProperties": false,
+          "required": [
+            "type",
+            "url"
+          ],
+          "properties": {
+            "type": {
+              "const": "openExternalUrl"
+            },
+            "url": {
+              "type": "string",
+              "maxLength": 2048
+            }
+          }
+        },
+        {
+          "type": "object",
+          "additionalProperties": false,
+          "required": [
+            "type",
+            "targetId"
+          ],
+          "properties": {
+            "type": {
+              "enum": [
+                "openScreen",
+                "openBlock"
+              ]
+            },
+            "targetId": {
+              "type": "string",
+              "pattern": "^[A-Za-z][A-Za-z0-9_-]{0,63}$"
+            }
+          }
+        }
+      ]
+    },
+    "button": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": [
+        "id",
+        "title",
+        "action"
+      ],
+      "properties": {
+        "id": {
+          "type": "string",
+          "pattern": "^[A-Za-z][A-Za-z0-9_-]{0,63}$"
+        },
+        "title": {
+          "type": "string",
+          "minLength": 1,
+          "maxLength": 4096
+        },
+        "visible": {
+          "type": "boolean"
+        },
+        "action": {
+          "$ref": "#/$defs/action"
+        }
+      }
+    },
+    "item": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": [
+        "id",
+        "title",
+        "text",
+        "state",
+        "buttons"
+      ],
+      "properties": {
+        "id": {
+          "type": "string",
+          "pattern": "^[A-Za-z][A-Za-z0-9_-]{0,63}$"
+        },
+        "title": {
+          "type": "string",
+          "minLength": 1,
+          "maxLength": 4096
+        },
+        "text": {
+          "type": "string",
+          "minLength": 1,
+          "maxLength": 4096
+        },
+        "visible": {
+          "type": "boolean"
+        },
+        "state": {
+          "enum": [
+            "available",
+            "restricted",
+            "unavailable"
+          ]
+        },
+        "stateText": {
+          "anyOf": [
+            {
+              "type": "string",
+              "minLength": 1,
+              "maxLength": 4096
+            },
+            {
+              "type": "null"
+            }
+          ]
+        },
+        "detailsPageId": {
+          "anyOf": [
+            {
+              "type": "string",
+              "pattern": "^[A-Za-z][A-Za-z0-9_-]{0,63}$"
+            },
+            {
+              "type": "null"
+            }
+          ]
+        },
+        "buttons": {
+          "type": "array",
+          "items": {
+            "$ref": "#/$defs/button"
+          }
+        }
+      }
+    }
+  }
+}

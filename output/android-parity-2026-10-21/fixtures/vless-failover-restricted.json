@@ -1,0 +1,8 @@
+{
+  "schemaVersion": 1,
+  "kind": "vless-failover",
+  "state": "restricted",
+  "reason": "not_allowed",
+  "outbounds": [],
+  "failover": null
+}

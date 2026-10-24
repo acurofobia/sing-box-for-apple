@@ -1,0 +1,8 @@
+{
+  "schemaVersion": 1,
+  "kind": "vless-failover",
+  "state": "unavailable",
+  "reason": "traffic_limited",
+  "outbounds": [],
+  "failover": null
+}

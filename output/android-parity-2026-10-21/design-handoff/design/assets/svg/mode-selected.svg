@@ -1,0 +1,11 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<svg width="28px" height="28px" viewBox="0 0 28 28" version="1.1" xmlns="http://www.w3.org/2000/svg" xmlns:xlink="http://www.w3.org/1999/xlink">
+    <title>mode-selected</title>
+    <defs>
+        <path d="M25,14 C25,20.0751322 20.0751322,25 14,25 C7.92486775,25 3,20.0751322 3,14 C3,7.92486775 7.92486775,3 14,3 C20.0751322,3 25,7.92486775 25,14 Z" id="path-1"></path>
+    </defs>
+    <g id="Выбор-режима-/-Выбран" stroke="none" fill="none" xlink:href="#path-1">
+        <circle id="Круг-/-Контур" stroke="#A61643" stroke-width="1.5" cx="14" cy="14" r="10.25"></circle>
+        <circle id="Круг-/-Точка-выбора" fill="#A61643" fill-rule="evenodd" cx="14" cy="14" r="5"></circle>
+    </g>
+</svg>

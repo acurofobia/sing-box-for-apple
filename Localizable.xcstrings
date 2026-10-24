@@ -1,6 +1,28 @@
 {
   "sourceLanguage" : "en",
   "strings" : {
+    "Проверка соединения…": {
+      "extractionState": "manual",
+      "localizations": {
+        "ru": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Проверка соединения…"
+          }
+        }
+      }
+    },
+    "Сервер недоступен": {
+      "extractionState": "manual",
+      "localizations": {
+        "ru": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Сервер недоступен"
+          }
+        }
+      }
+    },
     "Туннель поднят · все выходы недоступны": {
       "extractionState": "manual",
       "localizations": {

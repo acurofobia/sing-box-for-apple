@@ -1,0 +1,832 @@
+{
+  "ok": true,
+  "screen": "00a-onboarding-filled",
+  "sketchFrameId": "6A52DF39-6861-4477-BA63-3B380A6287FE",
+  "title": "00а · Начало — ссылка вставлена",
+  "coordinateSpace": "screen-relative Sketch points; canvas origin removed",
+  "canvas": {
+    "width": 390,
+    "height": 844
+  },
+  "includesResolvedSymbolInstances": true,
+  "nodes": [
+    {
+      "id": "3E92845E-2169-4620-8C69-BAC146FEE488",
+      "type": "Group",
+      "name": "Начало / Заголовок и пояснение",
+      "path": "00а · Начало — ссылка вставлена/Начало / Заголовок и пояснение",
+      "frame": {
+        "x": 22,
+        "y": 119,
+        "width": 346,
+        "height": 90
+      },
+      "screenFrame": {
+        "x": 22,
+        "y": 119,
+        "width": 346,
+        "height": 90
+      },
+      "style": {
+        "corners": {
+          "radii": [],
+          "style": 0,
+          "smoothing": 0.6
+        }
+      }
+    },
+    {
+      "id": "252C5FF1-C325-4E5F-93AA-EE51419CEA8A",
+      "type": "Text",
+      "name": "Пояснение / Для начала нужна подписка",
+      "path": "00а · Начало — ссылка вставлена/Начало / Заголовок и пояснение/Пояснение / Для начала нужна подписка",
+      "frame": {
+        "x": 0,
+        "y": 50,
+        "width": 346,
+        "height": 40
+      },
+      "screenFrame": {
+        "x": 22,
+        "y": 169,
+        "width": 346,
+        "height": 40
+      },
+      "text": "Вставьте ссылку на подписку, чтобы начать пользоваться VPN.",
+      "style": {
+        "fontFamily": "SF Pro",
+        "fontSize": null,
+        "fontWeight": null,
+        "textColor": "#8e8e93ff",
+        "alignment": "left",
+        "lineHeight": null
+      }
+    },
+    {
+      "id": "F8A8ED3D-793B-4631-9F34-FAB564B948B9",
+      "type": "Text",
+      "name": "Заголовок / Добавьте подписку",
+      "path": "00а · Начало — ссылка вставлена/Начало / Заголовок и пояснение/Заголовок / Добавьте подписку",
+      "frame": {
+        "x": 0,
+        "y": 0,
+        "width": 346,
+        "height": 38
+      },
+      "screenFrame": {
+        "x": 22,
+        "y": 119,
+        "width": 346,
+        "height": 38
+      },
+      "text": "Добавьте подписку",
+      "style": {
+        "fontFamily": "SF Pro",
+        "fontSize": null,
+        "fontWeight": null,
+        "textColor": "#000000ff",
+        "alignment": "left",
+        "lineHeight": null
+      }
+    },
+    {
+      "id": "66D1FBCE-F890-46A2-B3B4-BA6201787F44",
+      "type": "Group",
+      "name": "Форма / Добавление подписки",
+      "path": "00а · Начало — ссылка вставлена/Форма / Добавление подписки",
+      "frame": {
+        "x": 22,
+        "y": 265,
+        "width": 346,
+        "height": 216
+      },
+      "screenFrame": {
+        "x": 22,
+        "y": 265,
+        "width": 346,
+        "height": 216
+      },
+      "style": {
+        "corners": {
+          "radii": [],
+          "style": 0,
+          "smoothing": 0.6
+        }
+      }
+    },
+    {
+      "id": "B9EA7B44-7044-4C92-A8CC-4F8C5A2CABFA",
+      "type": "SymbolInstance",
+      "name": "Где взять ссылку? / Открыть выбор Telegram или сайта",
+      "path": "00а · Начало — ссылка вставлена/Форма / Добавление подписки/Где взять ссылку? / Открыть выбор Telegram или сайта",
+      "frame": {
+        "x": 0,
+        "y": 172,
+        "width": 346,
+        "height": 44
+      },
+      "screenFrame": {
+        "x": 22,
+        "y": 437,
+        "width": 346,
+        "height": 44
+      },
+      "style": {}
+    },
+    {
+      "id": "631E94BE-BF44-48C3-A086-E7ED264FA08D",
+      "type": "Text",
+      "name": "Label",
+      "path": "00а · Начало — ссылка вставлена/Форма / Добавление подписки/Где взять ссылку? / Открыть выбор Telegram или сайта/Label",
+      "frame": {
+        "x": 108,
+        "y": 5,
+        "width": 130,
+        "height": 18
+      },
+      "screenFrame": {
+        "x": 130,
+        "y": 442,
+        "width": 130,
+        "height": 18
+      },
+      "text": "Где взять ссылку?",
+      "style": {
+        "fontFamily": "SF Pro",
+        "fontSize": null,
+        "fontWeight": null,
+        "textColor": "#c7c7ccff",
+        "alignment": "left",
+        "lineHeight": 18
+      }
+    },
+    {
+      "id": "6880A995-0D3E-441F-982E-18004266859E",
+      "type": "SymbolInstance",
+      "name": "Добавить подписку / Загрузить по ссылке",
+      "path": "00а · Начало — ссылка вставлена/Форма / Добавление подписки/Добавить подписку / Загрузить по ссылке",
+      "frame": {
+        "x": 0,
+        "y": 98,
+        "width": 346,
+        "height": 50
+      },
+      "screenFrame": {
+        "x": 22,
+        "y": 363,
+        "width": 346,
+        "height": 50
+      },
+      "style": {},
+      "flow": {
+        "targetId": "9DC15F1C-5E00-4769-BBD5-F5445B362CAB",
+        "animationType": "slideFromRight"
+      }
+    },
+    {
+      "id": "3B10D9D8-452D-4D93-A7B2-E9BAFDFA01B9",
+      "type": "Text",
+      "name": "Label",
+      "path": "00а · Начало — ссылка вставлена/Форма / Добавление подписки/Добавить подписку / Загрузить по ссылке/Label",
+      "frame": {
+        "x": 94.5,
+        "y": 16,
+        "width": 157,
+        "height": 18
+      },
+      "screenFrame": {
+        "x": 116.5,
+        "y": 379,
+        "width": 157,
+        "height": 18
+      },
+      "text": "Добавить подписку",
+      "style": {
+        "fontFamily": "SF Pro",
+        "fontSize": null,
+        "fontWeight": null,
+        "textColor": "#ffffffff",
+        "alignment": "left",
+        "lineHeight": 18
+      }
+    },
+    {
+      "id": "BB4E4F7B-60FE-4205-8F5A-F3BA7A490930",
+      "type": "Group",
+      "name": "Поле / Ссылка на подписку",
+      "path": "00а · Начало — ссылка вставлена/Форма / Добавление подписки/Поле / Ссылка на подписку",
+      "frame": {
+        "x": 0,
+        "y": 0,
+        "width": 346,
+        "height": 82
+      },
+      "screenFrame": {
+        "x": 22,
+        "y": 265,
+        "width": 346,
+        "height": 82
+      },
+      "style": {
+        "corners": {
+          "radii": [],
+          "style": 0,
+          "smoothing": 0.6
+        }
+      }
+    },
+    {
+      "id": "33516F06-C632-4C15-8E7E-D937B1954B54",
+      "type": "Group",
+      "name": "Ввод / Ссылка на подписку",
+      "path": "00а · Начало — ссылка вставлена/Форма / Добавление подписки/Поле / Ссылка на подписку/Ввод / Ссылка на подписку",
+      "frame": {
+        "x": 0,
+        "y": 26,
+        "width": 346,
+        "height": 56
+      },
+      "screenFrame": {
+        "x": 22,
+        "y": 291,
+        "width": 346,
+        "height": 56
+      },
+      "style": {
+        "fills": [
+          {
+            "type": "Color",
+            "color": "#f2f2f7ff"
+          }
+        ],
+        "corners": {
+          "radii": [
+            16,
+            16,
+            16,
+            16
+          ],
+          "style": 1,
+          "smoothing": 0.6
+        }
+      }
+    },
+    {
+      "id": "B625C644-7BC6-4D1C-B36F-BEC5AA7951E6",
+      "type": "SymbolInstance",
+      "name": "Вставить / Из буфера обмена",
+      "path": "00а · Начало — ссылка вставлена/Форма / Добавление подписки/Поле / Ссылка на подписку/Ввод / Ссылка на подписку/Вставить / Из буфера обмена",
+      "frame": {
+        "x": 253,
+        "y": 14,
+        "width": 85,
+        "height": 28
+      },
+      "screenFrame": {
+        "x": 275,
+        "y": 305,
+        "width": 85,
+        "height": 28
+      },
+      "style": {},
+      "flow": {
+        "targetId": "6A52DF39-6861-4477-BA63-3B380A6287FE",
+        "animationType": "slideFromRight"
+      }
+    },
+    {
+      "id": "631E94BE-BF44-48C3-A086-E7ED264FA08D",
+      "type": "Text",
+      "name": "Label",
+      "path": "00а · Начало — ссылка вставлена/Форма / Добавление подписки/Поле / Ссылка на подписку/Ввод / Ссылка на подписку/Вставить / Из буфера обмена/Label",
+      "frame": {
+        "x": 10,
+        "y": 5,
+        "width": 65,
+        "height": 18
+      },
+      "screenFrame": {
+        "x": 285,
+        "y": 310,
+        "width": 65,
+        "height": 18
+      },
+      "text": "Вставить",
+      "style": {
+        "fontFamily": "SF Pro",
+        "fontSize": null,
+        "fontWeight": null,
+        "textColor": "#a61643ff",
+        "alignment": "left",
+        "lineHeight": 18
+      }
+    },
+    {
+      "id": "D1DBFD1D-1E1A-45FB-A6D7-2EB2EEDBBB44",
+      "type": "Text",
+      "name": "Значение / Ссылка на подписку",
+      "path": "00а · Начало — ссылка вставлена/Форма / Добавление подписки/Поле / Ссылка на подписку/Ввод / Ссылка на подписку/Значение / Ссылка на подписку",
+      "frame": {
+        "x": 16,
+        "y": 19,
+        "width": 229,
+        "height": 18
+      },
+      "screenFrame": {
+        "x": 38,
+        "y": 310,
+        "width": 229,
+        "height": 18
+      },
+      "text": "http://localhost:18081/subscri…",
+      "style": {
+        "fontFamily": "SF Pro",
+        "fontSize": null,
+        "fontWeight": null,
+        "textColor": "#1c1c1eff",
+        "alignment": "left",
+        "lineHeight": null
+      }
+    },
+    {
+      "id": "F703EAF8-887A-4A57-8676-1DD953EF3028",
+      "type": "Text",
+      "name": "Метка / Ссылка на подписку",
+      "path": "00а · Начало — ссылка вставлена/Форма / Добавление подписки/Поле / Ссылка на подписку/Метка / Ссылка на подписку",
+      "frame": {
+        "x": 0,
+        "y": 0,
+        "width": 346,
+        "height": 18
+      },
+      "screenFrame": {
+        "x": 22,
+        "y": 265,
+        "width": 346,
+        "height": 18
+      },
+      "text": "Ссылка на подписку",
+      "style": {
+        "fontFamily": "SF Pro",
+        "fontSize": null,
+        "fontWeight": null,
+        "textColor": "#1c1c1eff",
+        "alignment": "left",
+        "lineHeight": null
+      }
+    },
+    {
+      "id": "32EF036F-5371-4DFE-8F26-509E7973DA5C",
+      "type": "SymbolInstance",
+      "name": "iOS / Строка состояния / Светлая",
+      "path": "00а · Начало — ссылка вставлена/iOS / Строка состояния / Светлая",
+      "frame": {
+        "x": 0,
+        "y": 0,
+        "width": 390,
+        "height": 47
+      },
+      "screenFrame": {
+        "x": 0,
+        "y": 0,
+        "width": 390,
+        "height": 47
+      },
+      "style": {}
+    },
+    {
+      "id": "F0B80F6B-95A7-4734-A618-61934E036E70",
+      "type": "Text",
+      "name": "Время",
+      "path": "00а · Начало — ссылка вставлена/iOS / Строка состояния / Светлая/Время",
+      "frame": {
+        "x": 40,
+        "y": 16,
+        "width": 47,
+        "height": 20
+      },
+      "screenFrame": {
+        "x": 40,
+        "y": 16,
+        "width": 47,
+        "height": 20
+      },
+      "text": "22:04",
+      "style": {
+        "fontFamily": "SF Pro",
+        "fontSize": null,
+        "fontWeight": null,
+        "textColor": "#000000ff",
+        "alignment": "left",
+        "lineHeight": null
+      }
+    },
+    {
+      "id": "5D793788-9C03-408C-A342-277B94507298",
+      "type": "Group",
+      "name": "Сотовая сеть / Wi-Fi / Аккумулятор",
+      "path": "00а · Начало — ссылка вставлена/iOS / Строка состояния / Светлая/Сотовая сеть / Wi-Fi / Аккумулятор",
+      "frame": {
+        "x": 284,
+        "y": 16,
+        "width": 78,
+        "height": 18
+      },
+      "screenFrame": {
+        "x": 284,
+        "y": 16,
+        "width": 78,
+        "height": 18
+      },
+      "style": {
+        "corners": {
+          "radii": [],
+          "style": 0,
+          "smoothing": 0.6
+        }
+      }
+    },
+    {
+      "id": "9254D002-4BAE-46A6-9632-3AC5DC169607",
+      "type": "Group",
+      "name": "Group",
+      "path": "00а · Начало — ссылка вставлена/iOS / Строка состояния / Светлая/Сотовая сеть / Wi-Fi / Аккумулятор/Group",
+      "frame": {
+        "x": 0,
+        "y": 3.5,
+        "width": 77.5,
+        "height": 12
+      },
+      "screenFrame": {
+        "x": 284,
+        "y": 19.5,
+        "width": 77.5,
+        "height": 12
+      },
+      "style": {}
+    },
+    {
+      "id": "CB719377-7105-402A-93A2-47405A553264",
+      "type": "Group",
+      "name": "Group",
+      "path": "00а · Начало — ссылка вставлена/iOS / Строка состояния / Светлая/Сотовая сеть / Wi-Fi / Аккумулятор/Group/Group",
+      "frame": {
+        "x": 0,
+        "y": 5.5,
+        "width": 20.5,
+        "height": 4
+      },
+      "screenFrame": {
+        "x": 284,
+        "y": 25,
+        "width": 20.5,
+        "height": 4
+      },
+      "style": {}
+    },
+    {
+      "id": "841B6A47-E7F7-485B-B27B-DE4E636A5D43",
+      "type": "ShapePath",
+      "name": "Oval",
+      "path": "00а · Начало — ссылка вставлена/iOS / Строка состояния / Светлая/Сотовая сеть / Wi-Fi / Аккумулятор/Group/Group/Oval",
+      "frame": {
+        "x": 0,
+        "y": 0,
+        "width": 4,
+        "height": 4
+      },
+      "screenFrame": {
+        "x": 284,
+        "y": 25,
+        "width": 4,
+        "height": 4
+      },
+      "style": {
+        "fills": [
+          {
+            "type": "Color",
+            "color": "#000000ff"
+          }
+        ],
+        "corners": {
+          "radii": [],
+          "style": 0,
+          "smoothing": 0.6
+        }
+      }
+    },
+    {
+      "id": "52D8A041-0009-43E5-B311-9D3574EA1165",
+      "type": "ShapePath",
+      "name": "Oval",
+      "path": "00а · Начало — ссылка вставлена/iOS / Строка состояния / Светлая/Сотовая сеть / Wi-Fi / Аккумулятор/Group/Group/Oval",
+      "frame": {
+        "x": 5.5,
+        "y": 0,
+        "width": 4,
+        "height": 4
+      },
+      "screenFrame": {
+        "x": 289.5,
+        "y": 25,
+        "width": 4,
+        "height": 4
+      },
+      "style": {
+        "fills": [
+          {
+            "type": "Color",
+            "color": "#000000ff"
+          }
+        ],
+        "corners": {
+          "radii": [],
+          "style": 0,
+          "smoothing": 0.6
+        }
+      }
+    },
+    {
+      "id": "82D5B2AD-3BA7-41DA-8A25-3F02F58CEDEF",
+      "type": "ShapePath",
+      "name": "Oval",
+      "path": "00а · Начало — ссылка вставлена/iOS / Строка состояния / Светлая/Сотовая сеть / Wi-Fi / Аккумулятор/Group/Group/Oval",
+      "frame": {
+        "x": 11,
+        "y": 0,
+        "width": 4,
+        "height": 4
+      },
+      "screenFrame": {
+        "x": 295,
+        "y": 25,
+        "width": 4,
+        "height": 4
+      },
+      "style": {
+        "fills": [
+          {
+            "type": "Color",
+            "color": "#000000ff"
+          }
+        ],
+        "corners": {
+          "radii": [],
+          "style": 0,
+          "smoothing": 0.6
+        }
+      }
+    },
+    {
+      "id": "7765952F-7EAE-4C6B-A56F-7E0DA4413813",
+      "type": "ShapePath",
+      "name": "Oval",
+      "path": "00а · Начало — ссылка вставлена/iOS / Строка состояния / Светлая/Сотовая сеть / Wi-Fi / Аккумулятор/Group/Group/Oval",
+      "frame": {
+        "x": 16.5,
+        "y": 0,
+        "width": 4,
+        "height": 4
+      },
+      "screenFrame": {
+        "x": 300.5,
+        "y": 25,
+        "width": 4,
+        "height": 4
+      },
+      "style": {
+        "fills": [
+          {
+            "type": "Color",
+            "color": "#000000ff"
+          }
+        ],
+        "corners": {
+          "radii": [],
+          "style": 0,
+          "smoothing": 0.6
+        }
+      }
+    },
+    {
+      "id": "79A94951-0905-48B0-BE6E-B6B1BC1EE525",
+      "type": "Group",
+      "name": "Group",
+      "path": "00а · Начало — ссылка вставлена/iOS / Строка состояния / Светлая/Сотовая сеть / Wi-Fi / Аккумулятор/Group/Group",
+      "frame": {
+        "x": 28,
+        "y": 0.14999999999999947,
+        "width": 15,
+        "height": 9.749999999999998
+      },
+      "screenFrame": {
+        "x": 312,
+        "y": 19.65,
+        "width": 15,
+        "height": 9.749999999999998
+      },
+      "style": {}
+    },
+    {
+      "id": "DCDFE6A7-E9D4-4451-8092-E60B0D798AA6",
+      "type": "ShapePath",
+      "name": "Path",
+      "path": "00а · Начало — ссылка вставлена/iOS / Строка состояния / Светлая/Сотовая сеть / Wi-Fi / Аккумулятор/Group/Group/Path",
+      "frame": {
+        "x": 0,
+        "y": 8.881784197001252e-16,
+        "width": 15,
+        "height": 2.8499999999999996
+      },
+      "screenFrame": {
+        "x": 312,
+        "y": 19.65,
+        "width": 15,
+        "height": 2.8499999999999996
+      },
+      "style": {
+        "borders": [
+          {
+            "color": "#000000ff",
+            "thickness": 2.4,
+            "position": "Center"
+          }
+        ],
+        "corners": {
+          "radii": [],
+          "style": 0,
+          "smoothing": 0.6
+        }
+      }
+    },
+    {
+      "id": "424B293E-8CB7-46FB-ADBE-A5E53099CFC4",
+      "type": "ShapePath",
+      "name": "Path",
+      "path": "00а · Начало — ссылка вставлена/iOS / Строка состояния / Светлая/Сотовая сеть / Wi-Fi / Аккумулятор/Group/Group/Path",
+      "frame": {
+        "x": 2.8000000000000007,
+        "y": 4.6000000000000005,
+        "width": 9.400000000000002,
+        "height": 1.75
+      },
+      "screenFrame": {
+        "x": 314.8,
+        "y": 24.25,
+        "width": 9.400000000000002,
+        "height": 1.75
+      },
+      "style": {
+        "borders": [
+          {
+            "color": "#000000ff",
+            "thickness": 2.4,
+            "position": "Center"
+          }
+        ],
+        "corners": {
+          "radii": [],
+          "style": 0,
+          "smoothing": 0.6
+        }
+      }
+    },
+    {
+      "id": "A25B1898-26DF-4302-9887-3EC00C210A62",
+      "type": "ShapePath",
+      "name": "Path",
+      "path": "00а · Начало — ссылка вставлена/iOS / Строка состояния / Светлая/Сотовая сеть / Wi-Fi / Аккумулятор/Group/Group/Path",
+      "frame": {
+        "x": 5.799999999999997,
+        "y": 8.75,
+        "width": 3.4000000000000057,
+        "height": 1
+      },
+      "screenFrame": {
+        "x": 317.8,
+        "y": 28.4,
+        "width": 3.4000000000000057,
+        "height": 1
+      },
+      "style": {
+        "borders": [
+          {
+            "color": "#000000ff",
+            "thickness": 2.4,
+            "position": "Center"
+          }
+        ],
+        "corners": {
+          "radii": [],
+          "style": 0,
+          "smoothing": 0.6
+        }
+      }
+    },
+    {
+      "id": "BE7188C8-5AEE-4AE2-8640-168247DDA608",
+      "type": "ShapePath",
+      "name": "Rectangle",
+      "path": "00а · Начало — ссылка вставлена/iOS / Строка состояния / Светлая/Сотовая сеть / Wi-Fi / Аккумулятор/Group/Rectangle",
+      "frame": {
+        "x": 51.5,
+        "y": 0,
+        "width": 24,
+        "height": 12
+      },
+      "screenFrame": {
+        "x": 335.5,
+        "y": 19.5,
+        "width": 24,
+        "height": 12
+      },
+      "style": {
+        "borders": [
+          {
+            "color": "#000000ff",
+            "thickness": 1,
+            "position": "Center"
+          }
+        ],
+        "corners": {
+          "radii": [
+            3.2
+          ],
+          "style": 0,
+          "smoothing": 0.6
+        }
+      }
+    },
+    {
+      "id": "344323E7-1DC7-40A8-BC91-3F7ADDB29130",
+      "type": "ShapePath",
+      "name": "Rectangle",
+      "path": "00а · Начало — ссылка вставлена/iOS / Строка состояния / Светлая/Сотовая сеть / Wi-Fi / Аккумулятор/Group/Rectangle",
+      "frame": {
+        "x": 52.8,
+        "y": 1.2999999999999998,
+        "width": 21.4,
+        "height": 9.4
+      },
+      "screenFrame": {
+        "x": 336.8,
+        "y": 20.8,
+        "width": 21.4,
+        "height": 9.4
+      },
+      "style": {
+        "fills": [
+          {
+            "type": "Color",
+            "color": "#000000ff"
+          }
+        ],
+        "corners": {
+          "radii": [
+            2
+          ],
+          "style": 0,
+          "smoothing": 0.6
+        }
+      }
+    },
+    {
+      "id": "08BA625B-3CDF-400A-9946-6F3C052001BA",
+      "type": "ShapePath",
+      "name": "Path",
+      "path": "00а · Начало — ссылка вставлена/iOS / Строка состояния / Светлая/Сотовая сеть / Wi-Fi / Аккумулятор/Group/Path",
+      "frame": {
+        "x": 76.5,
+        "y": 3.5,
+        "width": 1,
+        "height": 5
+      },
+      "screenFrame": {
+        "x": 360.5,
+        "y": 23,
+        "width": 1,
+        "height": 5
+      },
+      "style": {
+        "fills": [
+          {
+            "type": "Color",
+            "color": "#000000ff"
+          }
+        ],
+        "borders": [
+          {
+            "color": "#000000ff",
+            "thickness": 1.5,
+            "position": "Center"
+          }
+        ],
+        "corners": {
+          "radii": [],
+          "style": 0,
+          "smoothing": 0.6
+        }
+      }
+    }
+  ]
+}

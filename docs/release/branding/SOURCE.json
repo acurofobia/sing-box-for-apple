@@ -1,0 +1,8 @@
+{
+  "project": "Lucide",
+  "repository": "https://github.com/lucide-icons/lucide",
+  "revision": "20aef31db93fe4d9f398dbb15b120d99c48eef95",
+  "icon": "icons/shield-check.svg",
+  "license": "ISC",
+  "modifications": "White icon on solid vipin backgrounds; SVG corner arcs adapted to quadratic curves in CoreGraphics; rendered at 1024 pixels without alpha."
+}

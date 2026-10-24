@@ -1,0 +1,3935 @@
+{
+  "ok": true,
+  "screen": "03a-mode-drawer-restricted",
+  "sketchFrameId": "9CF47344-2529-4BE8-8D61-876D39F115A5",
+  "title": "03а · Режимы — ограничение тарифа",
+  "coordinateSpace": "screen-relative Sketch points; canvas origin removed",
+  "canvas": {
+    "width": 390,
+    "height": 844
+  },
+  "includesResolvedSymbolInstances": true,
+  "nodes": [
+    {
+      "id": "5C270E9E-7D36-4BB0-9D6E-CC0094A91021",
+      "type": "SymbolInstance",
+      "name": "Экран / Подключение",
+      "path": "03а · Режимы — ограничение тарифа/Экран / Подключение",
+      "frame": {
+        "x": 0,
+        "y": 0,
+        "width": 390,
+        "height": 844
+      },
+      "screenFrame": {
+        "x": 0,
+        "y": 0,
+        "width": 390,
+        "height": 844
+      },
+      "style": {}
+    },
+    {
+      "id": "E6FE0A2D-B35B-4606-B96C-566DA00B7BEC",
+      "type": "Group",
+      "name": "Шторка / Режим подключения / Закрыта",
+      "path": "03а · Режимы — ограничение тарифа/Экран / Подключение/Шторка / Режим подключения / Закрыта",
+      "frame": {
+        "x": 0,
+        "y": 47,
+        "width": 390,
+        "height": 52
+      },
+      "screenFrame": {
+        "x": 0,
+        "y": 47,
+        "width": 390,
+        "height": 52
+      },
+      "style": {
+        "fills": [
+          {
+            "type": "Color",
+            "color": "#a61643ff"
+          }
+        ],
+        "corners": {
+          "radii": [
+            0,
+            0,
+            10,
+            10
+          ],
+          "style": 0,
+          "smoothing": 0.6
+        }
+      },
+      "flow": {
+        "targetId": "4836DC0B-FA5E-4230-A711-D9BFFDB8CC1E",
+        "animationType": "slideFromRight"
+      }
+    },
+    {
+      "id": "E597B4AF-3E4A-4FFF-899C-8F3DB860D7A6",
+      "type": "Group",
+      "name": "Apple / Авто · Вниз",
+      "path": "03а · Режимы — ограничение тарифа/Экран / Подключение/Шторка / Режим подключения / Закрыта/Apple / Авто · Вниз",
+      "frame": {
+        "x": 238,
+        "y": 8,
+        "width": 148,
+        "height": 28
+      },
+      "screenFrame": {
+        "x": 238,
+        "y": 55,
+        "width": 148,
+        "height": 28
+      },
+      "style": {
+        "corners": {
+          "radii": [
+            3.402823466385289e+38
+          ],
+          "style": 1,
+          "smoothing": 0.6
+        }
+      }
+    },
+    {
+      "id": "631E94BE-BF44-48C3-A086-E7ED264FA08D",
+      "type": "Text",
+      "name": "Label",
+      "path": "03а · Режимы — ограничение тарифа/Экран / Подключение/Шторка / Режим подключения / Закрыта/Apple / Авто · Вниз/Label",
+      "frame": {
+        "x": 10,
+        "y": 5,
+        "width": 128,
+        "height": 18
+      },
+      "screenFrame": {
+        "x": 248,
+        "y": 60,
+        "width": 128,
+        "height": 18
+      },
+      "text": "Обычный ВПН  􀆈",
+      "style": {
+        "fontFamily": "SF Pro",
+        "fontSize": null,
+        "fontWeight": null,
+        "textColor": "#ffffffff",
+        "alignment": "left",
+        "lineHeight": 18
+      }
+    },
+    {
+      "id": "2B60B96C-7ED7-4909-B174-B7EAA48250C5",
+      "type": "Text",
+      "name": "Режим подключения",
+      "path": "03а · Режимы — ограничение тарифа/Экран / Подключение/Шторка / Режим подключения / Закрыта/Режим подключения",
+      "frame": {
+        "x": 16,
+        "y": 11,
+        "width": 210,
+        "height": 22
+      },
+      "screenFrame": {
+        "x": 16,
+        "y": 58,
+        "width": 210,
+        "height": 22
+      },
+      "text": "Режим подключения",
+      "style": {
+        "fontFamily": "SF Pro",
+        "fontSize": null,
+        "fontWeight": null,
+        "textColor": "#ffffffff",
+        "alignment": "left",
+        "lineHeight": 22
+      }
+    },
+    {
+      "id": "6D1154F4-9E22-419D-B94A-B4774B6D662E",
+      "type": "Group",
+      "name": "Шторка / Ручка открытия",
+      "path": "03а · Режимы — ограничение тарифа/Экран / Подключение/Шторка / Режим подключения / Закрыта/Шторка / Ручка открытия",
+      "frame": {
+        "x": 165,
+        "y": 42,
+        "width": 60,
+        "height": 4
+      },
+      "screenFrame": {
+        "x": 165,
+        "y": 89,
+        "width": 60,
+        "height": 4
+      },
+      "style": {
+        "corners": {
+          "radii": [],
+          "style": 0,
+          "smoothing": 0.6
+        }
+      },
+      "flow": {
+        "targetId": "4836DC0B-FA5E-4230-A711-D9BFFDB8CC1E",
+        "animationType": "slideFromRight"
+      }
+    },
+    {
+      "id": "C086D2CD-1DCE-4F8B-9A23-ADD634B979B1",
+      "type": "ShapePath",
+      "name": "Grabber",
+      "path": "03а · Режимы — ограничение тарифа/Экран / Подключение/Шторка / Режим подключения / Закрыта/Шторка / Ручка открытия/Grabber",
+      "frame": {
+        "x": 0,
+        "y": 0,
+        "width": 60,
+        "height": 4
+      },
+      "screenFrame": {
+        "x": 165,
+        "y": 89,
+        "width": 60,
+        "height": 4
+      },
+      "style": {
+        "fills": [
+          {
+            "type": "Color",
+            "color": "#ffffffb3"
+          }
+        ],
+        "corners": {
+          "radii": [
+            2
+          ],
+          "style": 0,
+          "smoothing": 0.6
+        }
+      }
+    },
+    {
+      "id": "0CAA1D75-4D27-424F-869F-852B39FBA2FE",
+      "type": "Group",
+      "name": "Подписка",
+      "path": "03а · Режимы — ограничение тарифа/Экран / Подключение/Подписка",
+      "frame": {
+        "x": 17,
+        "y": 115,
+        "width": 356,
+        "height": 203
+      },
+      "screenFrame": {
+        "x": 17,
+        "y": 115,
+        "width": 356,
+        "height": 203
+      },
+      "style": {
+        "fills": [
+          {
+            "type": "Color",
+            "color": "#70102dff"
+          }
+        ],
+        "corners": {
+          "radii": [
+            24,
+            24,
+            24,
+            24
+          ],
+          "style": 0,
+          "smoothing": 0.6
+        }
+      }
+    },
+    {
+      "id": "49D309F4-3BD3-4257-9387-C54F5689EBC9",
+      "type": "Group",
+      "name": "Фактура",
+      "path": "03а · Режимы — ограничение тарифа/Экран / Подключение/Подписка/Фактура",
+      "frame": {
+        "x": 0,
+        "y": 0,
+        "width": 356,
+        "height": 203
+      },
+      "screenFrame": {
+        "x": 17,
+        "y": 115,
+        "width": 356,
+        "height": 203
+      },
+      "style": {}
+    },
+    {
+      "id": "D5C2DF25-B79A-49C0-B5BC-785306F828F7",
+      "type": "ShapePath",
+      "name": "Маска",
+      "path": "03а · Режимы — ограничение тарифа/Экран / Подключение/Подписка/Фактура/Маска",
+      "frame": {
+        "x": 0,
+        "y": 0,
+        "width": 356,
+        "height": 203
+      },
+      "screenFrame": {
+        "x": 17,
+        "y": 115,
+        "width": 356,
+        "height": 203
+      },
+      "style": {
+        "fills": [
+          {
+            "type": "Color",
+            "color": "#70102dff"
+          }
+        ],
+        "corners": {
+          "radii": [
+            24,
+            24,
+            24,
+            24
+          ],
+          "style": 0,
+          "smoothing": 0.6
+        }
+      }
+    },
+    {
+      "id": "A48BF295-BE71-43B4-A19C-1E0132FD8EA5",
+      "type": "Image",
+      "name": "Бордовые волны",
+      "path": "03а · Режимы — ограничение тарифа/Экран / Подключение/Подписка/Фактура/Бордовые волны",
+      "frame": {
+        "x": 0,
+        "y": 0,
+        "width": 356,
+        "height": 203
+      },
+      "screenFrame": {
+        "x": 17,
+        "y": 115,
+        "width": 356,
+        "height": 203
+      },
+      "style": {}
+    },
+    {
+      "id": "79A9A2E9-8C63-4F61-BF3E-46A0F3F7CA17",
+      "type": "Text",
+      "name": "Заголовок",
+      "path": "03а · Режимы — ограничение тарифа/Экран / Подключение/Подписка/Заголовок",
+      "frame": {
+        "x": 18,
+        "y": 17,
+        "width": 180,
+        "height": 22
+      },
+      "screenFrame": {
+        "x": 35,
+        "y": 132,
+        "width": 180,
+        "height": 22
+      },
+      "text": "Подписка",
+      "style": {
+        "fontFamily": "Helvetica",
+        "fontSize": null,
+        "fontWeight": null,
+        "textColor": "#ffffffff",
+        "alignment": "left",
+        "lineHeight": 22
+      }
+    },
+    {
+      "id": "40689011-07EE-4BDC-84F0-9C5073B7D825",
+      "type": "Text",
+      "name": "Тариф",
+      "path": "03а · Режимы — ограничение тарифа/Экран / Подключение/Подписка/Тариф",
+      "frame": {
+        "x": 18,
+        "y": 58,
+        "width": 260,
+        "height": 38
+      },
+      "screenFrame": {
+        "x": 35,
+        "y": 173,
+        "width": 260,
+        "height": 38
+      },
+      "text": "Основной",
+      "style": {
+        "fontFamily": "Helvetica",
+        "fontSize": null,
+        "fontWeight": null,
+        "textColor": "#ffffffff",
+        "alignment": "left",
+        "lineHeight": 38
+      }
+    },
+    {
+      "id": "F1A50773-F5FB-4953-AE76-C1E0618B8B0C",
+      "type": "Text",
+      "name": "Остаток срока",
+      "path": "03а · Режимы — ограничение тарифа/Экран / Подключение/Подписка/Остаток срока",
+      "frame": {
+        "x": 18,
+        "y": 128,
+        "width": 190,
+        "height": 23
+      },
+      "screenFrame": {
+        "x": 35,
+        "y": 243,
+        "width": 190,
+        "height": 23
+      },
+      "text": "Осталось 24 дня",
+      "style": {
+        "fontFamily": "Helvetica",
+        "fontSize": null,
+        "fontWeight": null,
+        "textColor": "#ffffffff",
+        "alignment": "left",
+        "lineHeight": 23
+      }
+    },
+    {
+      "id": "5B3DC42C-3BDB-41E6-A3FF-5385F78EA632",
+      "type": "Text",
+      "name": "Последнее обновление",
+      "path": "03а · Режимы — ограничение тарифа/Экран / Подключение/Подписка/Последнее обновление",
+      "frame": {
+        "x": 18,
+        "y": 167,
+        "width": 230,
+        "height": 18
+      },
+      "screenFrame": {
+        "x": 35,
+        "y": 282,
+        "width": 230,
+        "height": 18
+      },
+      "text": "Обновлено сегодня, 22:04",
+      "style": {
+        "fontFamily": "Helvetica",
+        "fontSize": null,
+        "fontWeight": null,
+        "textColor": "#edd3ddff",
+        "alignment": "left",
+        "lineHeight": 18
+      }
+    },
+    {
+      "id": "A4550E21-822C-4644-B2E1-4362F1EF43AA",
+      "type": "Text",
+      "name": "ID пользователя",
+      "path": "03а · Режимы — ограничение тарифа/Экран / Подключение/Подписка/ID пользователя",
+      "frame": {
+        "x": 18,
+        "y": 100,
+        "width": 190,
+        "height": 18
+      },
+      "screenFrame": {
+        "x": 35,
+        "y": 215,
+        "width": 190,
+        "height": 18
+      },
+      "text": "ID: 12345678",
+      "style": {
+        "fontFamily": "Helvetica",
+        "fontSize": null,
+        "fontWeight": null,
+        "textColor": "#edd3ddff",
+        "alignment": "left",
+        "lineHeight": 18
+      }
+    },
+    {
+      "id": "448D6532-4E56-4F0A-9D99-A79A6B26D21C",
+      "type": "Group",
+      "name": "Apple / Обновить",
+      "path": "03а · Режимы — ограничение тарифа/Экран / Подключение/Подписка/Apple / Обновить",
+      "frame": {
+        "x": 218,
+        "y": 17,
+        "width": 120,
+        "height": 28
+      },
+      "screenFrame": {
+        "x": 235,
+        "y": 132,
+        "width": 120,
+        "height": 28
+      },
+      "style": {
+        "fills": [
+          {
+            "type": "Color",
+            "color": "#ebebf54d"
+          }
+        ],
+        "corners": {
+          "radii": [
+            3.402823466385289e+38
+          ],
+          "style": 1,
+          "smoothing": 0.6
+        }
+      }
+    },
+    {
+      "id": "017A568D-16EC-4CBA-AFAF-91C814A5BF3A",
+      "type": "Text",
+      "name": "Label",
+      "path": "03а · Режимы — ограничение тарифа/Экран / Подключение/Подписка/Apple / Обновить/Label",
+      "frame": {
+        "x": 15.5,
+        "y": 5,
+        "width": 89,
+        "height": 18
+      },
+      "screenFrame": {
+        "x": 250.5,
+        "y": 137,
+        "width": 89,
+        "height": 18
+      },
+      "text": "􀅈 Обновить",
+      "style": {
+        "fontFamily": "SF Pro",
+        "fontSize": null,
+        "fontWeight": null,
+        "textColor": "#ffffffff",
+        "alignment": "left",
+        "lineHeight": 18
+      }
+    },
+    {
+      "id": "9C860D66-77D5-4885-8261-563F835B6C2D",
+      "type": "Group",
+      "name": "Apple / Изменить подписку",
+      "path": "03а · Режимы — ограничение тарифа/Экран / Подключение/Подписка/Apple / Изменить подписку",
+      "frame": {
+        "x": 218,
+        "y": 160,
+        "width": 120,
+        "height": 28
+      },
+      "screenFrame": {
+        "x": 235,
+        "y": 275,
+        "width": 120,
+        "height": 28
+      },
+      "style": {
+        "fills": [
+          {
+            "type": "Color",
+            "color": "#ebebf54d"
+          }
+        ],
+        "corners": {
+          "radii": [
+            3.402823466385289e+38
+          ],
+          "style": 1,
+          "smoothing": 0.6
+        }
+      }
+    },
+    {
+      "id": "017A568D-16EC-4CBA-AFAF-91C814A5BF3A",
+      "type": "Text",
+      "name": "Label",
+      "path": "03а · Режимы — ограничение тарифа/Экран / Подключение/Подписка/Apple / Изменить подписку/Label",
+      "frame": {
+        "x": 15,
+        "y": 5,
+        "width": 90,
+        "height": 18
+      },
+      "screenFrame": {
+        "x": 250,
+        "y": 280,
+        "width": 90,
+        "height": 18
+      },
+      "text": "􀈊 Изменить",
+      "style": {
+        "fontFamily": "SF Pro",
+        "fontSize": null,
+        "fontWeight": null,
+        "textColor": "#ffffffff",
+        "alignment": "left",
+        "lineHeight": 18
+      }
+    },
+    {
+      "id": "C48A8426-4DE9-46E6-BCCB-6E332E7ADEC3",
+      "type": "Group",
+      "name": "Apple / Три вкладки",
+      "path": "03а · Режимы — ограничение тарифа/Экран / Подключение/Apple / Три вкладки",
+      "frame": {
+        "x": 13,
+        "y": 745,
+        "width": 364,
+        "height": 99
+      },
+      "screenFrame": {
+        "x": 13,
+        "y": 745,
+        "width": 364,
+        "height": 99
+      },
+      "style": {
+        "corners": {
+          "radii": [],
+          "style": 1,
+          "smoothing": 0.6
+        }
+      }
+    },
+    {
+      "id": "2397F84E-A6E7-409B-9CFD-14F55DE9B924",
+      "type": "Group",
+      "name": "Tabs",
+      "path": "03а · Режимы — ограничение тарифа/Экран / Подключение/Apple / Три вкладки/Tabs",
+      "frame": {
+        "x": 21,
+        "y": 16,
+        "width": 322,
+        "height": 62
+      },
+      "screenFrame": {
+        "x": 34,
+        "y": 761,
+        "width": 322,
+        "height": 62
+      },
+      "style": {
+        "corners": {
+          "radii": [],
+          "style": 0,
+          "smoothing": 0.6
+        }
+      }
+    },
+    {
+      "id": "886EDD98-1EF2-480A-8F1C-921F6FFDA991",
+      "type": "Group",
+      "name": "Stack",
+      "path": "03а · Режимы — ограничение тарифа/Экран / Подключение/Apple / Три вкладки/Tabs/Stack",
+      "frame": {
+        "x": 0,
+        "y": 0,
+        "width": 322,
+        "height": 62
+      },
+      "screenFrame": {
+        "x": 34,
+        "y": 761,
+        "width": 322,
+        "height": 62
+      },
+      "style": {
+        "fills": [
+          {
+            "type": "Color",
+            "color": "#f8f8f833"
+          },
+          {
+            "type": "Color",
+            "color": "#00000040"
+          },
+          {
+            "type": "Color",
+            "color": "#ffffff40"
+          },
+          {
+            "type": "Color",
+            "color": "#44444499"
+          }
+        ],
+        "corners": {
+          "radii": [
+            3.402823466385289e+38
+          ],
+          "style": 1,
+          "smoothing": 0.6
+        },
+        "shadows": [
+          {
+            "color": "#00000005",
+            "x": 0,
+            "y": 8,
+            "blur": 15,
+            "spread": 0
+          },
+          {
+            "color": "#dbdbdbff",
+            "x": 0,
+            "y": 0,
+            "blur": 0,
+            "spread": 0.5
+          },
+          {
+            "color": "#dbdbdbff",
+            "x": -1.25,
+            "y": 0,
+            "blur": 0,
+            "spread": -0.75
+          },
+          {
+            "color": "#dbdbdbff",
+            "x": 1.25,
+            "y": 0,
+            "blur": 0,
+            "spread": -0.75
+          }
+        ]
+      }
+    },
+    {
+      "id": "83BC57B8-98C0-498D-AA28-CE2A4147AE26",
+      "type": "Group",
+      "name": "Tab 3",
+      "path": "03а · Режимы — ограничение тарифа/Экран / Подключение/Apple / Три вкладки/Tabs/Stack/Tab 3",
+      "frame": {
+        "x": 212,
+        "y": 4,
+        "width": 102,
+        "height": 54
+      },
+      "screenFrame": {
+        "x": 246,
+        "y": 765,
+        "width": 102,
+        "height": 54
+      },
+      "style": {
+        "corners": {
+          "radii": [],
+          "style": 0,
+          "smoothing": 0.6
+        }
+      }
+    },
+    {
+      "id": "2CAD4618-C664-476C-AE8F-C98C99802ADF",
+      "type": "Text",
+      "name": "Label",
+      "path": "03а · Режимы — ограничение тарифа/Экран / Подключение/Apple / Три вкладки/Tabs/Stack/Tab 3/Label",
+      "frame": {
+        "x": 9,
+        "y": 35.9990303955078,
+        "width": 84,
+        "height": 12
+      },
+      "screenFrame": {
+        "x": 255,
+        "y": 800.9990303955078,
+        "width": 84,
+        "height": 12
+      },
+      "text": "Профиль",
+      "style": {
+        "fontFamily": "SF Pro",
+        "fontSize": null,
+        "fontWeight": null,
+        "textColor": "#1a1a1aff",
+        "alignment": "center",
+        "lineHeight": null
+      }
+    },
+    {
+      "id": "5E941A80-10DF-4419-96A4-1C2B16E880C7",
+      "type": "Text",
+      "name": "Symbol",
+      "path": "03а · Режимы — ограничение тарифа/Экран / Подключение/Apple / Три вкладки/Tabs/Stack/Tab 3/Symbol",
+      "frame": {
+        "x": 9,
+        "y": 7,
+        "width": 84,
+        "height": 28
+      },
+      "screenFrame": {
+        "x": 255,
+        "y": 772,
+        "width": 84,
+        "height": 28
+      },
+      "text": "􀉪",
+      "style": {
+        "fontFamily": "SF Pro",
+        "fontSize": null,
+        "fontWeight": null,
+        "textColor": "#1a1a1aff",
+        "alignment": "center",
+        "lineHeight": 22
+      }
+    },
+    {
+      "id": "8B604245-1FE2-4CB2-80F3-7D017BC6A8AD",
+      "type": "Group",
+      "name": "Tab 2",
+      "path": "03а · Режимы — ограничение тарифа/Экран / Подключение/Apple / Три вкладки/Tabs/Stack/Tab 2",
+      "frame": {
+        "x": 110,
+        "y": 4,
+        "width": 102,
+        "height": 54
+      },
+      "screenFrame": {
+        "x": 144,
+        "y": 765,
+        "width": 102,
+        "height": 54
+      },
+      "style": {
+        "corners": {
+          "radii": [],
+          "style": 0,
+          "smoothing": 0.6
+        }
+      }
+    },
+    {
+      "id": "2CAD4618-C664-476C-AE8F-C98C99802ADF",
+      "type": "Text",
+      "name": "Label",
+      "path": "03а · Режимы — ограничение тарифа/Экран / Подключение/Apple / Три вкладки/Tabs/Stack/Tab 2/Label",
+      "frame": {
+        "x": 9,
+        "y": 35.9990303955078,
+        "width": 84,
+        "height": 12
+      },
+      "screenFrame": {
+        "x": 153,
+        "y": 800.9990303955078,
+        "width": 84,
+        "height": 12
+      },
+      "text": "Роутинг",
+      "style": {
+        "fontFamily": "SF Pro",
+        "fontSize": null,
+        "fontWeight": null,
+        "textColor": "#1a1a1aff",
+        "alignment": "center",
+        "lineHeight": null
+      }
+    },
+    {
+      "id": "5E941A80-10DF-4419-96A4-1C2B16E880C7",
+      "type": "Text",
+      "name": "Symbol",
+      "path": "03а · Режимы — ограничение тарифа/Экран / Подключение/Apple / Три вкладки/Tabs/Stack/Tab 2/Symbol",
+      "frame": {
+        "x": 9,
+        "y": 7,
+        "width": 84,
+        "height": 28
+      },
+      "screenFrame": {
+        "x": 153,
+        "y": 772,
+        "width": 84,
+        "height": 28
+      },
+      "text": "􀙠",
+      "style": {
+        "fontFamily": "SF Pro",
+        "fontSize": null,
+        "fontWeight": null,
+        "textColor": "#1a1a1aff",
+        "alignment": "center",
+        "lineHeight": 22
+      }
+    },
+    {
+      "id": "783D2CB3-4026-4364-B1BB-28D36A94EC3C",
+      "type": "Group",
+      "name": "Tab 1",
+      "path": "03а · Режимы — ограничение тарифа/Экран / Подключение/Apple / Три вкладки/Tabs/Stack/Tab 1",
+      "frame": {
+        "x": 8,
+        "y": 4,
+        "width": 102,
+        "height": 54
+      },
+      "screenFrame": {
+        "x": 42,
+        "y": 765,
+        "width": 102,
+        "height": 54
+      },
+      "style": {
+        "corners": {
+          "radii": [],
+          "style": 0,
+          "smoothing": 0.6
+        }
+      }
+    },
+    {
+      "id": "2CAD4618-C664-476C-AE8F-C98C99802ADF",
+      "type": "Text",
+      "name": "Label",
+      "path": "03а · Режимы — ограничение тарифа/Экран / Подключение/Apple / Три вкладки/Tabs/Stack/Tab 1/Label",
+      "frame": {
+        "x": 9,
+        "y": 35.999030395507816,
+        "width": 84,
+        "height": 12
+      },
+      "screenFrame": {
+        "x": 51,
+        "y": 800.9990303955078,
+        "width": 84,
+        "height": 12
+      },
+      "text": "Подключение",
+      "style": {
+        "fontFamily": "SF Pro",
+        "fontSize": null,
+        "fontWeight": null,
+        "textColor": "#a61643ff",
+        "alignment": "center",
+        "lineHeight": null
+      }
+    },
+    {
+      "id": "5E941A80-10DF-4419-96A4-1C2B16E880C7",
+      "type": "Text",
+      "name": "Symbol",
+      "path": "03а · Режимы — ограничение тарифа/Экран / Подключение/Apple / Три вкладки/Tabs/Stack/Tab 1/Symbol",
+      "frame": {
+        "x": 9,
+        "y": 7,
+        "width": 84,
+        "height": 28
+      },
+      "screenFrame": {
+        "x": 51,
+        "y": 772,
+        "width": 84,
+        "height": 28
+      },
+      "text": "􀆨",
+      "style": {
+        "fontFamily": "SF Pro",
+        "fontSize": null,
+        "fontWeight": null,
+        "textColor": "#a61643ff",
+        "alignment": "center",
+        "lineHeight": 22
+      }
+    },
+    {
+      "id": "DECB6AB1-A716-4E43-ACA4-22696F07F912",
+      "type": "Group",
+      "name": "Apple / Подсветка подключения",
+      "path": "03а · Режимы — ограничение тарифа/Экран / Подключение/Apple / Подсветка подключения",
+      "frame": {
+        "x": 41,
+        "y": 765,
+        "width": 102,
+        "height": 54
+      },
+      "screenFrame": {
+        "x": 41,
+        "y": 765,
+        "width": 102,
+        "height": 54
+      },
+      "style": {
+        "corners": {
+          "radii": [],
+          "style": 1,
+          "smoothing": 0.6
+        }
+      }
+    },
+    {
+      "id": "24635C9D-9954-4CAD-8CA9-23931AF826FF",
+      "type": "ShapePath",
+      "name": "Selection",
+      "path": "03а · Режимы — ограничение тарифа/Экран / Подключение/Apple / Подсветка подключения/Selection",
+      "frame": {
+        "x": -4,
+        "y": 0,
+        "width": 110,
+        "height": 54
+      },
+      "screenFrame": {
+        "x": 37,
+        "y": 765,
+        "width": 110,
+        "height": 54
+      },
+      "style": {
+        "fills": [
+          {
+            "type": "Color",
+            "color": "#78788029"
+          }
+        ],
+        "corners": {
+          "radii": [
+            3.402823466385289e+38
+          ],
+          "style": 0,
+          "smoothing": 0.6
+        }
+      }
+    },
+    {
+      "id": "6C382C26-9F7C-4722-88D0-A6420CB32533",
+      "type": "Group",
+      "name": "Трафик / Дневной лимит обычных серверов",
+      "path": "03а · Режимы — ограничение тарифа/Экран / Подключение/Трафик / Дневной лимит обычных серверов",
+      "frame": {
+        "x": 18,
+        "y": 334,
+        "width": 354,
+        "height": 76
+      },
+      "screenFrame": {
+        "x": 18,
+        "y": 334,
+        "width": 354,
+        "height": 76
+      },
+      "style": {
+        "fills": [
+          {
+            "type": "Color",
+            "color": "#ffffffff"
+          }
+        ],
+        "borders": [
+          {
+            "color": "#eadce2ff",
+            "thickness": 1,
+            "position": "Inside"
+          }
+        ],
+        "corners": {
+          "radii": [
+            24,
+            24,
+            24,
+            24
+          ],
+          "style": 1,
+          "smoothing": 0.6
+        },
+        "shadows": [
+          {
+            "color": "#4d193014",
+            "x": 0,
+            "y": 4,
+            "blur": 16,
+            "spread": 0
+          }
+        ]
+      }
+    },
+    {
+      "id": "57F39249-9993-4714-9052-5334B823B5E9",
+      "type": "Group",
+      "name": "Лимит / Значение и прогресс",
+      "path": "03а · Режимы — ограничение тарифа/Экран / Подключение/Трафик / Дневной лимит обычных серверов/Лимит / Значение и прогресс",
+      "frame": {
+        "x": 16,
+        "y": 16,
+        "width": 322,
+        "height": 44
+      },
+      "screenFrame": {
+        "x": 34,
+        "y": 350,
+        "width": 322,
+        "height": 44
+      },
+      "style": {
+        "corners": {
+          "radii": [],
+          "style": 0,
+          "smoothing": 0.6
+        }
+      }
+    },
+    {
+      "id": "DEF55CC0-62E2-491F-8A81-72006F7F8339",
+      "type": "ShapePath",
+      "name": "Прогресс / 0 из 2 GB",
+      "path": "03а · Режимы — ограничение тарифа/Экран / Подключение/Трафик / Дневной лимит обычных серверов/Лимит / Значение и прогресс/Прогресс / 0 из 2 GB",
+      "frame": {
+        "x": 0,
+        "y": 38,
+        "width": 322,
+        "height": 6
+      },
+      "screenFrame": {
+        "x": 34,
+        "y": 388,
+        "width": 322,
+        "height": 6
+      },
+      "style": {
+        "fills": [
+          {
+            "type": "Color",
+            "color": "#edd3ddff"
+          }
+        ],
+        "corners": {
+          "radii": [
+            3,
+            3,
+            3,
+            3
+          ],
+          "style": 0,
+          "smoothing": 0.6
+        }
+      }
+    },
+    {
+      "id": "D519B8D7-19BE-40B9-A4B1-9D7E210F9BEC",
+      "type": "Group",
+      "name": "Расход / Значение и период",
+      "path": "03а · Режимы — ограничение тарифа/Экран / Подключение/Трафик / Дневной лимит обычных серверов/Лимит / Значение и прогресс/Расход / Значение и период",
+      "frame": {
+        "x": 0,
+        "y": 0,
+        "width": 322,
+        "height": 28
+      },
+      "screenFrame": {
+        "x": 34,
+        "y": 350,
+        "width": 322,
+        "height": 28
+      },
+      "style": {
+        "corners": {
+          "radii": [],
+          "style": 0,
+          "smoothing": 0.6
+        }
+      }
+    },
+    {
+      "id": "61EB7B27-0C05-47EC-930A-DA39606545DB",
+      "type": "Group",
+      "name": "Apple / Обновить трафик",
+      "path": "03а · Режимы — ограничение тарифа/Экран / Подключение/Трафик / Дневной лимит обычных серверов/Лимит / Значение и прогресс/Расход / Значение и период/Apple / Обновить трафик",
+      "frame": {
+        "x": 214,
+        "y": 0,
+        "width": 108,
+        "height": 28
+      },
+      "screenFrame": {
+        "x": 248,
+        "y": 350,
+        "width": 108,
+        "height": 28
+      },
+      "style": {
+        "corners": {
+          "radii": [
+            3.402823466385289e+38
+          ],
+          "style": 1,
+          "smoothing": 0.6
+        }
+      }
+    },
+    {
+      "id": "631E94BE-BF44-48C3-A086-E7ED264FA08D",
+      "type": "Text",
+      "name": "Label",
+      "path": "03а · Режимы — ограничение тарифа/Экран / Подключение/Трафик / Дневной лимит обычных серверов/Лимит / Значение и прогресс/Расход / Значение и период/Apple / Обновить трафик/Label",
+      "frame": {
+        "x": 9.5,
+        "y": 5,
+        "width": 89,
+        "height": 18
+      },
+      "screenFrame": {
+        "x": 257.5,
+        "y": 355,
+        "width": 89,
+        "height": 18
+      },
+      "text": "􀅈 Обновить",
+      "style": {
+        "fontFamily": "SF Pro",
+        "fontSize": null,
+        "fontWeight": null,
+        "textColor": "#a61643ff",
+        "alignment": "left",
+        "lineHeight": 18
+      }
+    },
+    {
+      "id": "C4F1CD1C-F571-436F-872A-A2226E15D14F",
+      "type": "Group",
+      "name": "Период / в день",
+      "path": "03а · Режимы — ограничение тарифа/Экран / Подключение/Трафик / Дневной лимит обычных серверов/Лимит / Значение и прогресс/Расход / Значение и период/Период / в день",
+      "frame": {
+        "x": 138,
+        "y": 2,
+        "width": 68,
+        "height": 24
+      },
+      "screenFrame": {
+        "x": 172,
+        "y": 352,
+        "width": 68,
+        "height": 24
+      },
+      "style": {
+        "fills": [
+          {
+            "type": "Color",
+            "color": "#a61643ff"
+          }
+        ],
+        "corners": {
+          "radii": [
+            12,
+            12,
+            12,
+            12
+          ],
+          "style": 0,
+          "smoothing": 0.6
+        }
+      }
+    },
+    {
+      "id": "CC9D554C-B321-451C-9CA6-B81A1BE5C49A",
+      "type": "Text",
+      "name": "Период",
+      "path": "03а · Режимы — ограничение тарифа/Экран / Подключение/Трафик / Дневной лимит обычных серверов/Лимит / Значение и прогресс/Расход / Значение и период/Период / в день/Период",
+      "frame": {
+        "x": 10,
+        "y": 1,
+        "width": 48,
+        "height": 18
+      },
+      "screenFrame": {
+        "x": 182,
+        "y": 353,
+        "width": 48,
+        "height": 18
+      },
+      "text": "в день",
+      "style": {
+        "fontFamily": "SF Pro",
+        "fontSize": null,
+        "fontWeight": null,
+        "textColor": "#ffffffff",
+        "alignment": "center",
+        "lineHeight": null
+      }
+    },
+    {
+      "id": "EAD5B595-5C76-4406-BFED-CB06D4BF325C",
+      "type": "Text",
+      "name": "Израсходовано / Дневной лимит",
+      "path": "03а · Режимы — ограничение тарифа/Экран / Подключение/Трафик / Дневной лимит обычных серверов/Лимит / Значение и прогресс/Расход / Значение и период/Израсходовано / Дневной лимит",
+      "frame": {
+        "x": 0,
+        "y": 3,
+        "width": 130,
+        "height": 22
+      },
+      "screenFrame": {
+        "x": 34,
+        "y": 353,
+        "width": 130,
+        "height": 22
+      },
+      "text": "0 GB из 2.0 GB",
+      "style": {
+        "fontFamily": "SF Pro",
+        "fontSize": null,
+        "fontWeight": null,
+        "textColor": "#000000ff",
+        "alignment": "left",
+        "lineHeight": 22
+      }
+    },
+    {
+      "id": "238F7127-D681-4837-BA83-12F660C67DD4",
+      "type": "HotSpot",
+      "name": "Открыть профиль",
+      "path": "03а · Режимы — ограничение тарифа/Экран / Подключение/Открыть профиль",
+      "frame": {
+        "x": 247,
+        "y": 765,
+        "width": 110,
+        "height": 54
+      },
+      "screenFrame": {
+        "x": 247,
+        "y": 765,
+        "width": 110,
+        "height": 54
+      },
+      "flow": {
+        "targetId": "B6354B48-201B-4D50-AB61-11092BB596D3",
+        "animationType": "none"
+      }
+    },
+    {
+      "id": "8A856E76-AC84-4290-AE4C-A4903BCEFF9C",
+      "type": "ShapePath",
+      "name": "iOS / Фон строки состояния",
+      "path": "03а · Режимы — ограничение тарифа/Экран / Подключение/iOS / Фон строки состояния",
+      "frame": {
+        "x": 0,
+        "y": 0,
+        "width": 390,
+        "height": 47
+      },
+      "screenFrame": {
+        "x": 0,
+        "y": 0,
+        "width": 390,
+        "height": 47
+      },
+      "style": {
+        "fills": [
+          {
+            "type": "Color",
+            "color": "#a61643ff"
+          }
+        ],
+        "corners": {
+          "radii": [],
+          "style": 0,
+          "smoothing": 0.6
+        }
+      }
+    },
+    {
+      "id": "686F865D-30D9-4CBD-9BD4-88B04C497532",
+      "type": "Group",
+      "name": "iOS / Строка состояния / Светлая",
+      "path": "03а · Режимы — ограничение тарифа/Экран / Подключение/iOS / Строка состояния / Светлая",
+      "frame": {
+        "x": 0,
+        "y": 0,
+        "width": 390,
+        "height": 47
+      },
+      "screenFrame": {
+        "x": 0,
+        "y": 0,
+        "width": 390,
+        "height": 47
+      },
+      "style": {
+        "corners": {
+          "radii": [],
+          "style": 0,
+          "smoothing": 0.6
+        }
+      }
+    },
+    {
+      "id": "F0B80F6B-95A7-4734-A618-61934E036E70",
+      "type": "Text",
+      "name": "Время",
+      "path": "03а · Режимы — ограничение тарифа/Экран / Подключение/iOS / Строка состояния / Светлая/Время",
+      "frame": {
+        "x": 40,
+        "y": 16,
+        "width": 47,
+        "height": 20
+      },
+      "screenFrame": {
+        "x": 40,
+        "y": 16,
+        "width": 47,
+        "height": 20
+      },
+      "text": "22:04",
+      "style": {
+        "fontFamily": "SF Pro",
+        "fontSize": null,
+        "fontWeight": null,
+        "textColor": "#000000ff",
+        "alignment": "left",
+        "lineHeight": null
+      }
+    },
+    {
+      "id": "5D793788-9C03-408C-A342-277B94507298",
+      "type": "Group",
+      "name": "Сотовая сеть / Wi-Fi / Аккумулятор",
+      "path": "03а · Режимы — ограничение тарифа/Экран / Подключение/iOS / Строка состояния / Светлая/Сотовая сеть / Wi-Fi / Аккумулятор",
+      "frame": {
+        "x": 284,
+        "y": 16,
+        "width": 78,
+        "height": 18
+      },
+      "screenFrame": {
+        "x": 284,
+        "y": 16,
+        "width": 78,
+        "height": 18
+      },
+      "style": {
+        "corners": {
+          "radii": [],
+          "style": 0,
+          "smoothing": 0.6
+        }
+      }
+    },
+    {
+      "id": "9254D002-4BAE-46A6-9632-3AC5DC169607",
+      "type": "Group",
+      "name": "Group",
+      "path": "03а · Режимы — ограничение тарифа/Экран / Подключение/iOS / Строка состояния / Светлая/Сотовая сеть / Wi-Fi / Аккумулятор/Group",
+      "frame": {
+        "x": 0,
+        "y": 3.5,
+        "width": 77.5,
+        "height": 12
+      },
+      "screenFrame": {
+        "x": 284,
+        "y": 19.5,
+        "width": 77.5,
+        "height": 12
+      },
+      "style": {}
+    },
+    {
+      "id": "CB719377-7105-402A-93A2-47405A553264",
+      "type": "Group",
+      "name": "Group",
+      "path": "03а · Режимы — ограничение тарифа/Экран / Подключение/iOS / Строка состояния / Светлая/Сотовая сеть / Wi-Fi / Аккумулятор/Group/Group",
+      "frame": {
+        "x": 0,
+        "y": 5.5,
+        "width": 20.5,
+        "height": 4
+      },
+      "screenFrame": {
+        "x": 284,
+        "y": 25,
+        "width": 20.5,
+        "height": 4
+      },
+      "style": {}
+    },
+    {
+      "id": "841B6A47-E7F7-485B-B27B-DE4E636A5D43",
+      "type": "ShapePath",
+      "name": "Oval",
+      "path": "03а · Режимы — ограничение тарифа/Экран / Подключение/iOS / Строка состояния / Светлая/Сотовая сеть / Wi-Fi / Аккумулятор/Group/Group/Oval",
+      "frame": {
+        "x": 0,
+        "y": 0,
+        "width": 4,
+        "height": 4
+      },
+      "screenFrame": {
+        "x": 284,
+        "y": 25,
+        "width": 4,
+        "height": 4
+      },
+      "style": {
+        "fills": [
+          {
+            "type": "Color",
+            "color": "#000000ff"
+          }
+        ],
+        "corners": {
+          "radii": [],
+          "style": 0,
+          "smoothing": 0.6
+        }
+      }
+    },
+    {
+      "id": "52D8A041-0009-43E5-B311-9D3574EA1165",
+      "type": "ShapePath",
+      "name": "Oval",
+      "path": "03а · Режимы — ограничение тарифа/Экран / Подключение/iOS / Строка состояния / Светлая/Сотовая сеть / Wi-Fi / Аккумулятор/Group/Group/Oval",
+      "frame": {
+        "x": 5.5,
+        "y": 0,
+        "width": 4,
+        "height": 4
+      },
+      "screenFrame": {
+        "x": 289.5,
+        "y": 25,
+        "width": 4,
+        "height": 4
+      },
+      "style": {
+        "fills": [
+          {
+            "type": "Color",
+            "color": "#000000ff"
+          }
+        ],
+        "corners": {
+          "radii": [],
+          "style": 0,
+          "smoothing": 0.6
+        }
+      }
+    },
+    {
+      "id": "82D5B2AD-3BA7-41DA-8A25-3F02F58CEDEF",
+      "type": "ShapePath",
+      "name": "Oval",
+      "path": "03а · Режимы — ограничение тарифа/Экран / Подключение/iOS / Строка состояния / Светлая/Сотовая сеть / Wi-Fi / Аккумулятор/Group/Group/Oval",
+      "frame": {
+        "x": 11,
+        "y": 0,
+        "width": 4,
+        "height": 4
+      },
+      "screenFrame": {
+        "x": 295,
+        "y": 25,
+        "width": 4,
+        "height": 4
+      },
+      "style": {
+        "fills": [
+          {
+            "type": "Color",
+            "color": "#000000ff"
+          }
+        ],
+        "corners": {
+          "radii": [],
+          "style": 0,
+          "smoothing": 0.6
+        }
+      }
+    },
+    {
+      "id": "7765952F-7EAE-4C6B-A56F-7E0DA4413813",
+      "type": "ShapePath",
+      "name": "Oval",
+      "path": "03а · Режимы — ограничение тарифа/Экран / Подключение/iOS / Строка состояния / Светлая/Сотовая сеть / Wi-Fi / Аккумулятор/Group/Group/Oval",
+      "frame": {
+        "x": 16.5,
+        "y": 0,
+        "width": 4,
+        "height": 4
+      },
+      "screenFrame": {
+        "x": 300.5,
+        "y": 25,
+        "width": 4,
+        "height": 4
+      },
+      "style": {
+        "fills": [
+          {
+            "type": "Color",
+            "color": "#000000ff"
+          }
+        ],
+        "corners": {
+          "radii": [],
+          "style": 0,
+          "smoothing": 0.6
+        }
+      }
+    },
+    {
+      "id": "79A94951-0905-48B0-BE6E-B6B1BC1EE525",
+      "type": "Group",
+      "name": "Group",
+      "path": "03а · Режимы — ограничение тарифа/Экран / Подключение/iOS / Строка состояния / Светлая/Сотовая сеть / Wi-Fi / Аккумулятор/Group/Group",
+      "frame": {
+        "x": 28,
+        "y": 0.14999999999999947,
+        "width": 15,
+        "height": 9.749999999999998
+      },
+      "screenFrame": {
+        "x": 312,
+        "y": 19.65,
+        "width": 15,
+        "height": 9.749999999999998
+      },
+      "style": {}
+    },
+    {
+      "id": "DCDFE6A7-E9D4-4451-8092-E60B0D798AA6",
+      "type": "ShapePath",
+      "name": "Path",
+      "path": "03а · Режимы — ограничение тарифа/Экран / Подключение/iOS / Строка состояния / Светлая/Сотовая сеть / Wi-Fi / Аккумулятор/Group/Group/Path",
+      "frame": {
+        "x": 0,
+        "y": 8.881784197001252e-16,
+        "width": 15,
+        "height": 2.8499999999999996
+      },
+      "screenFrame": {
+        "x": 312,
+        "y": 19.65,
+        "width": 15,
+        "height": 2.8499999999999996
+      },
+      "style": {
+        "borders": [
+          {
+            "color": "#000000ff",
+            "thickness": 2.4,
+            "position": "Center"
+          }
+        ],
+        "corners": {
+          "radii": [],
+          "style": 0,
+          "smoothing": 0.6
+        }
+      }
+    },
+    {
+      "id": "424B293E-8CB7-46FB-ADBE-A5E53099CFC4",
+      "type": "ShapePath",
+      "name": "Path",
+      "path": "03а · Режимы — ограничение тарифа/Экран / Подключение/iOS / Строка состояния / Светлая/Сотовая сеть / Wi-Fi / Аккумулятор/Group/Group/Path",
+      "frame": {
+        "x": 2.8000000000000007,
+        "y": 4.6000000000000005,
+        "width": 9.400000000000002,
+        "height": 1.75
+      },
+      "screenFrame": {
+        "x": 314.8,
+        "y": 24.25,
+        "width": 9.400000000000002,
+        "height": 1.75
+      },
+      "style": {
+        "borders": [
+          {
+            "color": "#000000ff",
+            "thickness": 2.4,
+            "position": "Center"
+          }
+        ],
+        "corners": {
+          "radii": [],
+          "style": 0,
+          "smoothing": 0.6
+        }
+      }
+    },
+    {
+      "id": "A25B1898-26DF-4302-9887-3EC00C210A62",
+      "type": "ShapePath",
+      "name": "Path",
+      "path": "03а · Режимы — ограничение тарифа/Экран / Подключение/iOS / Строка состояния / Светлая/Сотовая сеть / Wi-Fi / Аккумулятор/Group/Group/Path",
+      "frame": {
+        "x": 5.799999999999997,
+        "y": 8.75,
+        "width": 3.4000000000000057,
+        "height": 1
+      },
+      "screenFrame": {
+        "x": 317.8,
+        "y": 28.4,
+        "width": 3.4000000000000057,
+        "height": 1
+      },
+      "style": {
+        "borders": [
+          {
+            "color": "#000000ff",
+            "thickness": 2.4,
+            "position": "Center"
+          }
+        ],
+        "corners": {
+          "radii": [],
+          "style": 0,
+          "smoothing": 0.6
+        }
+      }
+    },
+    {
+      "id": "BE7188C8-5AEE-4AE2-8640-168247DDA608",
+      "type": "ShapePath",
+      "name": "Rectangle",
+      "path": "03а · Режимы — ограничение тарифа/Экран / Подключение/iOS / Строка состояния / Светлая/Сотовая сеть / Wi-Fi / Аккумулятор/Group/Rectangle",
+      "frame": {
+        "x": 51.5,
+        "y": 0,
+        "width": 24,
+        "height": 12
+      },
+      "screenFrame": {
+        "x": 335.5,
+        "y": 19.5,
+        "width": 24,
+        "height": 12
+      },
+      "style": {
+        "borders": [
+          {
+            "color": "#000000ff",
+            "thickness": 1,
+            "position": "Center"
+          }
+        ],
+        "corners": {
+          "radii": [
+            3.2
+          ],
+          "style": 0,
+          "smoothing": 0.6
+        }
+      }
+    },
+    {
+      "id": "344323E7-1DC7-40A8-BC91-3F7ADDB29130",
+      "type": "ShapePath",
+      "name": "Rectangle",
+      "path": "03а · Режимы — ограничение тарифа/Экран / Подключение/iOS / Строка состояния / Светлая/Сотовая сеть / Wi-Fi / Аккумулятор/Group/Rectangle",
+      "frame": {
+        "x": 52.8,
+        "y": 1.2999999999999998,
+        "width": 21.4,
+        "height": 9.4
+      },
+      "screenFrame": {
+        "x": 336.8,
+        "y": 20.8,
+        "width": 21.4,
+        "height": 9.4
+      },
+      "style": {
+        "fills": [
+          {
+            "type": "Color",
+            "color": "#000000ff"
+          }
+        ],
+        "corners": {
+          "radii": [
+            2
+          ],
+          "style": 0,
+          "smoothing": 0.6
+        }
+      }
+    },
+    {
+      "id": "08BA625B-3CDF-400A-9946-6F3C052001BA",
+      "type": "ShapePath",
+      "name": "Path",
+      "path": "03а · Режимы — ограничение тарифа/Экран / Подключение/iOS / Строка состояния / Светлая/Сотовая сеть / Wi-Fi / Аккумулятор/Group/Path",
+      "frame": {
+        "x": 76.5,
+        "y": 3.5,
+        "width": 1,
+        "height": 5
+      },
+      "screenFrame": {
+        "x": 360.5,
+        "y": 23,
+        "width": 1,
+        "height": 5
+      },
+      "style": {
+        "fills": [
+          {
+            "type": "Color",
+            "color": "#000000ff"
+          }
+        ],
+        "borders": [
+          {
+            "color": "#000000ff",
+            "thickness": 1.5,
+            "position": "Center"
+          }
+        ],
+        "corners": {
+          "radii": [],
+          "style": 0,
+          "smoothing": 0.6
+        }
+      }
+    },
+    {
+      "id": "2C714C85-B0F1-4833-806D-26C059E6B60C",
+      "type": "HotSpot",
+      "name": "Открыть роутинг",
+      "path": "03а · Режимы — ограничение тарифа/Экран / Подключение/Открыть роутинг",
+      "frame": {
+        "x": 140,
+        "y": 765,
+        "width": 110,
+        "height": 54
+      },
+      "screenFrame": {
+        "x": 140,
+        "y": 765,
+        "width": 110,
+        "height": 54
+      },
+      "flow": {
+        "targetId": "4701C194-743B-4B50-82A6-E1943A15A773",
+        "animationType": "slideFromRight"
+      }
+    },
+    {
+      "id": "AB6DE615-F737-4524-82BD-7A199E5CCF84",
+      "type": "SymbolInstance",
+      "name": "VPN / Подключено / Компактно",
+      "path": "03а · Режимы — ограничение тарифа/VPN / Подключено / Компактно",
+      "frame": {
+        "x": 18,
+        "y": 516,
+        "width": 354,
+        "height": 198
+      },
+      "screenFrame": {
+        "x": 18,
+        "y": 516,
+        "width": 354,
+        "height": 198
+      },
+      "style": {}
+    },
+    {
+      "id": "0D7A65D6-A01F-489B-97D3-F34BCF2201F1",
+      "type": "Group",
+      "name": "Apple / Подключено · Длительность",
+      "path": "03а · Режимы — ограничение тарифа/VPN / Подключено / Компактно/Apple / Подключено · Длительность",
+      "frame": {
+        "x": 0,
+        "y": 148,
+        "width": 354,
+        "height": 50
+      },
+      "screenFrame": {
+        "x": 18,
+        "y": 664,
+        "width": 354,
+        "height": 50
+      },
+      "style": {
+        "fills": [
+          {
+            "type": "Color",
+            "color": "#a61643ff"
+          }
+        ],
+        "corners": {
+          "radii": [
+            3.402823466385289e+38
+          ],
+          "style": 1,
+          "smoothing": 0.6
+        }
+      },
+      "flow": {
+        "targetId": "9DC15F1C-5E00-4769-BBD5-F5445B362CAB",
+        "animationType": "slideFromRight"
+      }
+    },
+    {
+      "id": "3B10D9D8-452D-4D93-A7B2-E9BAFDFA01B9",
+      "type": "Text",
+      "name": "Label",
+      "path": "03а · Режимы — ограничение тарифа/VPN / Подключено / Компактно/Apple / Подключено · Длительность/Label",
+      "frame": {
+        "x": 124.5,
+        "y": 16,
+        "width": 129,
+        "height": 18
+      },
+      "screenFrame": {
+        "x": 142.5,
+        "y": 680,
+        "width": 129,
+        "height": 18
+      },
+      "text": "Подключено · —",
+      "style": {
+        "fontFamily": "SF Pro",
+        "fontSize": null,
+        "fontWeight": null,
+        "textColor": "#ffffffff",
+        "alignment": "left",
+        "lineHeight": 18
+      }
+    },
+    {
+      "id": "37D2D216-7801-48A8-9E6C-95BDE6311ADD",
+      "type": "Text",
+      "name": "Symbol",
+      "path": "03а · Режимы — ограничение тарифа/VPN / Подключено / Компактно/Apple / Подключено · Длительность/Symbol",
+      "frame": {
+        "x": 100.5,
+        "y": 16,
+        "width": 20,
+        "height": 18
+      },
+      "screenFrame": {
+        "x": 118.5,
+        "y": 680,
+        "width": 20,
+        "height": 18
+      },
+      "text": "􀆨",
+      "style": {
+        "fontFamily": "SF Pro",
+        "fontSize": null,
+        "fontWeight": null,
+        "textColor": "#ffffffff",
+        "alignment": "left",
+        "lineHeight": 18
+      }
+    },
+    {
+      "id": "62E57524-8ADA-469F-99A8-091B79751C76",
+      "type": "Group",
+      "name": "Apple / Потребление памяти",
+      "path": "03а · Режимы — ограничение тарифа/VPN / Подключено / Компактно/Apple / Потребление памяти",
+      "frame": {
+        "x": 0,
+        "y": 104,
+        "width": 354,
+        "height": 44
+      },
+      "screenFrame": {
+        "x": 18,
+        "y": 620,
+        "width": 354,
+        "height": 44
+      },
+      "style": {
+        "fills": [
+          {
+            "type": "Color",
+            "color": "#ffffff00"
+          }
+        ],
+        "corners": {
+          "radii": [
+            0
+          ],
+          "style": 0,
+          "smoothing": 0.6
+        }
+      }
+    },
+    {
+      "id": "90F3A3A0-F647-486D-B41C-B3A02C089F51",
+      "type": "Group",
+      "name": "Stack",
+      "path": "03а · Режимы — ограничение тарифа/VPN / Подключено / Компактно/Apple / Потребление памяти/Stack",
+      "frame": {
+        "x": 16,
+        "y": 0,
+        "width": 322,
+        "height": 44
+      },
+      "screenFrame": {
+        "x": 34,
+        "y": 620,
+        "width": 322,
+        "height": 44
+      },
+      "style": {
+        "borders": [
+          {
+            "color": "#00000000",
+            "thickness": 1,
+            "position": "Outside"
+          }
+        ],
+        "corners": {
+          "radii": [
+            0
+          ],
+          "style": 0,
+          "smoothing": 0.6
+        }
+      }
+    },
+    {
+      "id": "E542C57C-584A-488A-BD8A-09C8BF596693",
+      "type": "Group",
+      "name": "Trailing",
+      "path": "03а · Режимы — ограничение тарифа/VPN / Подключено / Компактно/Apple / Потребление памяти/Stack/Trailing",
+      "frame": {
+        "x": 307,
+        "y": 0,
+        "width": 15,
+        "height": 44
+      },
+      "screenFrame": {
+        "x": 341,
+        "y": 620,
+        "width": 15,
+        "height": 44
+      },
+      "style": {
+        "corners": {
+          "radii": [],
+          "style": 0,
+          "smoothing": 0.6
+        }
+      }
+    },
+    {
+      "id": "34DFFD8A-FF38-497F-9F30-9BADC081920F",
+      "type": "Text",
+      "name": "Detail",
+      "path": "03а · Режимы — ограничение тарифа/VPN / Подключено / Компактно/Apple / Потребление памяти/Stack/Trailing/Detail",
+      "frame": {
+        "x": 0,
+        "y": 11,
+        "width": 15,
+        "height": 22
+      },
+      "screenFrame": {
+        "x": 341,
+        "y": 631,
+        "width": 15,
+        "height": 22
+      },
+      "text": "—",
+      "style": {
+        "fontFamily": "SF Pro",
+        "fontSize": null,
+        "fontWeight": null,
+        "textColor": "#3c3c4399",
+        "alignment": "right",
+        "lineHeight": 22
+      }
+    },
+    {
+      "id": "94786D60-6912-4218-BF59-C0C269FE069D",
+      "type": "Text",
+      "name": "Title",
+      "path": "03а · Режимы — ограничение тарифа/VPN / Подключено / Компактно/Apple / Потребление памяти/Stack/Title",
+      "frame": {
+        "x": 0,
+        "y": 11,
+        "width": 307,
+        "height": 22
+      },
+      "screenFrame": {
+        "x": 34,
+        "y": 631,
+        "width": 307,
+        "height": 22
+      },
+      "text": "Память",
+      "style": {
+        "fontFamily": "SF Pro",
+        "fontSize": null,
+        "fontWeight": null,
+        "textColor": "#000000ff",
+        "alignment": "left",
+        "lineHeight": 22
+      }
+    },
+    {
+      "id": "64C72192-C024-49E4-B668-A74DC0DCB084",
+      "type": "Group",
+      "name": "Пинг / Кнопка и значение",
+      "path": "03а · Режимы — ограничение тарифа/VPN / Подключено / Компактно/Пинг / Кнопка и значение",
+      "frame": {
+        "x": 0,
+        "y": 60,
+        "width": 354,
+        "height": 44
+      },
+      "screenFrame": {
+        "x": 18,
+        "y": 576,
+        "width": 354,
+        "height": 44
+      },
+      "style": {
+        "borders": [
+          {
+            "color": "#0000001f",
+            "thickness": 0.5,
+            "position": "Inside"
+          }
+        ],
+        "corners": {
+          "radii": [],
+          "style": 0,
+          "smoothing": 0.6
+        }
+      }
+    },
+    {
+      "id": "28C3BE33-E61D-4CDA-8CAA-DAAE1F043285",
+      "type": "Text",
+      "name": "Результат пинга",
+      "path": "03а · Режимы — ограничение тарифа/VPN / Подключено / Компактно/Пинг / Кнопка и значение/Результат пинга",
+      "frame": {
+        "x": 151,
+        "y": 11,
+        "width": 187,
+        "height": 22
+      },
+      "screenFrame": {
+        "x": 169,
+        "y": 587,
+        "width": 187,
+        "height": 22
+      },
+      "text": "—",
+      "style": {
+        "fontFamily": "SF Pro",
+        "fontSize": null,
+        "fontWeight": null,
+        "textColor": "#8e8e93ff",
+        "alignment": "right",
+        "lineHeight": 22
+      }
+    },
+    {
+      "id": "DE39C888-0219-424A-855C-1D2030237139",
+      "type": "Group",
+      "name": "Apple / Проверить пинг",
+      "path": "03а · Режимы — ограничение тарифа/VPN / Подключено / Компактно/Пинг / Кнопка и значение/Apple / Проверить пинг",
+      "frame": {
+        "x": 4,
+        "y": 8,
+        "width": 135,
+        "height": 28
+      },
+      "screenFrame": {
+        "x": 22,
+        "y": 584,
+        "width": 135,
+        "height": 28
+      },
+      "style": {
+        "corners": {
+          "radii": [
+            3.402823466385289e+38
+          ],
+          "style": 1,
+          "smoothing": 0.6
+        }
+      }
+    },
+    {
+      "id": "631E94BE-BF44-48C3-A086-E7ED264FA08D",
+      "type": "Text",
+      "name": "Label",
+      "path": "03а · Режимы — ограничение тарифа/VPN / Подключено / Компактно/Пинг / Кнопка и значение/Apple / Проверить пинг/Label",
+      "frame": {
+        "x": 10,
+        "y": 5,
+        "width": 115,
+        "height": 18
+      },
+      "screenFrame": {
+        "x": 32,
+        "y": 589,
+        "width": 115,
+        "height": 18
+      },
+      "text": "Проверить пинг",
+      "style": {
+        "fontFamily": "SF Pro",
+        "fontSize": null,
+        "fontWeight": null,
+        "textColor": "#a61643ff",
+        "alignment": "left",
+        "lineHeight": 18
+      }
+    },
+    {
+      "id": "9C5CD371-AD94-4ADF-AC9E-7A9A70CB234D",
+      "type": "Group",
+      "name": "Заголовок / Режим + Подробнее",
+      "path": "03а · Режимы — ограничение тарифа/VPN / Подключено / Компактно/Заголовок / Режим + Подробнее",
+      "frame": {
+        "x": 0,
+        "y": 16,
+        "width": 354,
+        "height": 44
+      },
+      "screenFrame": {
+        "x": 18,
+        "y": 532,
+        "width": 354,
+        "height": 44
+      },
+      "style": {
+        "borders": [
+          {
+            "color": "#0000001f",
+            "thickness": 1,
+            "position": "Inside"
+          }
+        ],
+        "corners": {
+          "radii": [],
+          "style": 0,
+          "smoothing": 0.6
+        }
+      }
+    },
+    {
+      "id": "55A8B52F-B2B0-40E6-A241-492860F2E9C9",
+      "type": "Group",
+      "name": "Apple / Подробнее · Вверх",
+      "path": "03а · Режимы — ограничение тарифа/VPN / Подключено / Компактно/Заголовок / Режим + Подробнее/Apple / Подробнее · Вверх",
+      "frame": {
+        "x": 220,
+        "y": 8,
+        "width": 126,
+        "height": 28
+      },
+      "screenFrame": {
+        "x": 238,
+        "y": 540,
+        "width": 126,
+        "height": 28
+      },
+      "style": {
+        "corners": {
+          "radii": [
+            3.402823466385289e+38
+          ],
+          "style": 1,
+          "smoothing": 0.6
+        }
+      },
+      "flow": {
+        "targetId": "AF0FE632-D69A-4955-945E-9DA948D7226B",
+        "animationType": "none"
+      }
+    },
+    {
+      "id": "631E94BE-BF44-48C3-A086-E7ED264FA08D",
+      "type": "Text",
+      "name": "Label",
+      "path": "03а · Режимы — ограничение тарифа/VPN / Подключено / Компактно/Заголовок / Режим + Подробнее/Apple / Подробнее · Вверх/Label",
+      "frame": {
+        "x": 10,
+        "y": 5,
+        "width": 106,
+        "height": 18
+      },
+      "screenFrame": {
+        "x": 248,
+        "y": 545,
+        "width": 106,
+        "height": 18
+      },
+      "text": "Подробнее  􀆇",
+      "style": {
+        "fontFamily": "SF Pro",
+        "fontSize": null,
+        "fontWeight": null,
+        "textColor": "#a61643ff",
+        "alignment": "left",
+        "lineHeight": 18
+      }
+    },
+    {
+      "id": "602AEB38-8628-44FE-BD51-CE319B36CB95",
+      "type": "Text",
+      "name": "Текущий режим",
+      "path": "03а · Режимы — ограничение тарифа/VPN / Подключено / Компактно/Заголовок / Режим + Подробнее/Текущий режим",
+      "frame": {
+        "x": 16,
+        "y": 11,
+        "width": 196,
+        "height": 22
+      },
+      "screenFrame": {
+        "x": 34,
+        "y": 543,
+        "width": 196,
+        "height": 22
+      },
+      "text": "Обычный ВПН",
+      "style": {
+        "fontFamily": "SF Pro",
+        "fontSize": null,
+        "fontWeight": null,
+        "textColor": "#000000ff",
+        "alignment": "left",
+        "lineHeight": 22
+      },
+      "flow": {
+        "targetId": "AF0FE632-D69A-4955-945E-9DA948D7226B",
+        "animationType": "none"
+      }
+    },
+    {
+      "id": "E9D2EFB4-3C73-4A40-8483-5DE88F0BE407",
+      "type": "Group",
+      "name": "Ручка / Центрированный стек",
+      "path": "03а · Режимы — ограничение тарифа/VPN / Подключено / Компактно/Ручка / Центрированный стек",
+      "frame": {
+        "x": 0,
+        "y": 0,
+        "width": 354,
+        "height": 16
+      },
+      "screenFrame": {
+        "x": 18,
+        "y": 516,
+        "width": 354,
+        "height": 16
+      },
+      "style": {
+        "corners": {
+          "radii": [],
+          "style": 0,
+          "smoothing": 0.6
+        }
+      }
+    },
+    {
+      "id": "7F0C7C35-2F6A-4A6D-A7CB-127714B9F164",
+      "type": "Group",
+      "name": "VPN / Ручка выдвижения · Apple",
+      "path": "03а · Режимы — ограничение тарифа/VPN / Подключено / Компактно/Ручка / Центрированный стек/VPN / Ручка выдвижения · Apple",
+      "frame": {
+        "x": 147,
+        "y": 6,
+        "width": 60,
+        "height": 4
+      },
+      "screenFrame": {
+        "x": 165,
+        "y": 522,
+        "width": 60,
+        "height": 4
+      },
+      "style": {
+        "corners": {
+          "radii": [],
+          "style": 0,
+          "smoothing": 0.6
+        }
+      }
+    },
+    {
+      "id": "C086D2CD-1DCE-4F8B-9A23-ADD634B979B1",
+      "type": "ShapePath",
+      "name": "Grabber",
+      "path": "03а · Режимы — ограничение тарифа/VPN / Подключено / Компактно/Ручка / Центрированный стек/VPN / Ручка выдвижения · Apple/Grabber",
+      "frame": {
+        "x": 0,
+        "y": 0,
+        "width": 60,
+        "height": 4
+      },
+      "screenFrame": {
+        "x": 165,
+        "y": 522,
+        "width": 60,
+        "height": 4
+      },
+      "style": {
+        "fills": [
+          {
+            "type": "Color",
+            "color": "#cfcfcfff"
+          }
+        ],
+        "corners": {
+          "radii": [
+            2
+          ],
+          "style": 0,
+          "smoothing": 0.6
+        }
+      }
+    },
+    {
+      "id": "20B51EA1-01F3-4D3A-A2B2-51031D6AA64E",
+      "type": "ShapePath",
+      "name": "Разделитель / 148",
+      "path": "03а · Режимы — ограничение тарифа/VPN / Подключено / Компактно/Разделитель / 148",
+      "frame": {
+        "x": 0,
+        "y": 147,
+        "width": 354,
+        "height": 1
+      },
+      "screenFrame": {
+        "x": 18,
+        "y": 663,
+        "width": 354,
+        "height": 1
+      },
+      "style": {
+        "fills": [
+          {
+            "type": "Color",
+            "color": "#ebebebff"
+          }
+        ],
+        "corners": {
+          "radii": [],
+          "style": 0,
+          "smoothing": 0.6
+        }
+      }
+    },
+    {
+      "id": "D50652F8-22A6-4F9B-B2D5-2A6F031B237D",
+      "type": "SymbolInstance",
+      "name": "Apple / Затемнение под шторкой",
+      "path": "03а · Режимы — ограничение тарифа/Apple / Затемнение под шторкой",
+      "frame": {
+        "x": 0,
+        "y": 0,
+        "width": 390,
+        "height": 844
+      },
+      "screenFrame": {
+        "x": 0,
+        "y": 0,
+        "width": 390,
+        "height": 844
+      },
+      "style": {},
+      "flow": {
+        "targetId": "1F1BCC60-7F60-4353-82E0-24CBA52DEECE",
+        "animationType": "none"
+      }
+    },
+    {
+      "id": "87E1686B-8FF3-4AE4-9D4D-798AE8D4E830",
+      "type": "SymbolInstance",
+      "name": "Шторка / Ограничение тарифа",
+      "path": "03а · Режимы — ограничение тарифа/Шторка / Ограничение тарифа",
+      "frame": {
+        "x": 0,
+        "y": 47,
+        "width": 390,
+        "height": 530
+      },
+      "screenFrame": {
+        "x": 0,
+        "y": 47,
+        "width": 390,
+        "height": 530
+      },
+      "style": {}
+    },
+    {
+      "id": "3A4568F7-BC1B-4CED-BEFD-CDD9D4AB5112",
+      "type": "Group",
+      "name": "Шторка / Область закрытия",
+      "path": "03а · Режимы — ограничение тарифа/Шторка / Ограничение тарифа/Шторка / Область закрытия",
+      "frame": {
+        "x": 0,
+        "y": 522,
+        "width": 390,
+        "height": 8
+      },
+      "screenFrame": {
+        "x": 0,
+        "y": 569,
+        "width": 390,
+        "height": 8
+      },
+      "style": {
+        "fills": [
+          {
+            "type": "Color",
+            "color": "#a61643ff"
+          }
+        ],
+        "corners": {
+          "radii": [
+            0,
+            0,
+            14,
+            14
+          ],
+          "style": 0,
+          "smoothing": 0.6
+        }
+      },
+      "flow": {
+        "targetId": "1F1BCC60-7F60-4353-82E0-24CBA52DEECE",
+        "animationType": "none"
+      }
+    },
+    {
+      "id": "1A0F2724-67F0-4A7F-B3F1-9493478D5B76",
+      "type": "Group",
+      "name": "VPN / Ручка выдвижения · Apple",
+      "path": "03а · Режимы — ограничение тарифа/Шторка / Ограничение тарифа/Шторка / Область закрытия/VPN / Ручка выдвижения · Apple",
+      "frame": {
+        "x": 165,
+        "y": 0,
+        "width": 60,
+        "height": 4
+      },
+      "screenFrame": {
+        "x": 165,
+        "y": 569,
+        "width": 60,
+        "height": 4
+      },
+      "style": {
+        "corners": {
+          "radii": [],
+          "style": 0,
+          "smoothing": 0.6
+        }
+      },
+      "flow": {
+        "targetId": "1F1BCC60-7F60-4353-82E0-24CBA52DEECE",
+        "animationType": "none"
+      }
+    },
+    {
+      "id": "C086D2CD-1DCE-4F8B-9A23-ADD634B979B1",
+      "type": "ShapePath",
+      "name": "Grabber",
+      "path": "03а · Режимы — ограничение тарифа/Шторка / Ограничение тарифа/Шторка / Область закрытия/VPN / Ручка выдвижения · Apple/Grabber",
+      "frame": {
+        "x": 0,
+        "y": 0,
+        "width": 60,
+        "height": 4
+      },
+      "screenFrame": {
+        "x": 165,
+        "y": 569,
+        "width": 60,
+        "height": 4
+      },
+      "style": {
+        "fills": [
+          {
+            "type": "Color",
+            "color": "#ffffffa6"
+          }
+        ],
+        "corners": {
+          "radii": [
+            2
+          ],
+          "style": 0,
+          "smoothing": 0.6
+        }
+      }
+    },
+    {
+      "id": "BFE195EB-C0FD-4EF1-A707-7454A32A187A",
+      "type": "Group",
+      "name": "Режим / Авто",
+      "path": "03а · Режимы — ограничение тарифа/Шторка / Ограничение тарифа/Режим / Авто",
+      "frame": {
+        "x": 12,
+        "y": 330,
+        "width": 366,
+        "height": 136
+      },
+      "screenFrame": {
+        "x": 12,
+        "y": 377,
+        "width": 366,
+        "height": 136
+      },
+      "style": {
+        "fills": [
+          {
+            "type": "Color",
+            "color": "#ffffffff"
+          }
+        ],
+        "corners": {
+          "radii": [
+            20,
+            20,
+            20,
+            20
+          ],
+          "style": 0,
+          "smoothing": 0.6
+        }
+      }
+    },
+    {
+      "id": "B9925278-7394-4BB8-9786-88CBBB36D33C",
+      "type": "Group",
+      "name": "Содержимое / Описание + Выбор",
+      "path": "03а · Режимы — ограничение тарифа/Шторка / Ограничение тарифа/Режим / Авто/Содержимое / Описание + Выбор",
+      "frame": {
+        "x": 16,
+        "y": 44,
+        "width": 334,
+        "height": 80
+      },
+      "screenFrame": {
+        "x": 28,
+        "y": 421,
+        "width": 334,
+        "height": 80
+      },
+      "style": {
+        "corners": {
+          "radii": [],
+          "style": 0,
+          "smoothing": 0.6
+        }
+      }
+    },
+    {
+      "id": "908F8201-DCB4-4663-B0AC-E5C41B27009F",
+      "type": "Text",
+      "name": "Описание режима",
+      "path": "03а · Режимы — ограничение тарифа/Шторка / Ограничение тарифа/Режим / Авто/Содержимое / Описание + Выбор/Описание режима",
+      "frame": {
+        "x": 0,
+        "y": 0,
+        "width": 334,
+        "height": 80
+      },
+      "screenFrame": {
+        "x": 28,
+        "y": 421,
+        "width": 334,
+        "height": 80
+      },
+      "text": "При запуске проверяет доступность обычного ВПН. Если он недоступен, выбирает обход БС. Повторяет проверку при новом подключении.",
+      "style": {
+        "fontFamily": "SF Pro",
+        "fontSize": null,
+        "fontWeight": null,
+        "textColor": "#3c3c4399",
+        "alignment": "left",
+        "lineHeight": 20
+      }
+    },
+    {
+      "id": "7C15876D-BD8E-4643-9A24-5DF244A1422C",
+      "type": "Group",
+      "name": "Заголовок / Название + Подробнее",
+      "path": "03а · Режимы — ограничение тарифа/Шторка / Ограничение тарифа/Режим / Авто/Заголовок / Название + Подробнее",
+      "frame": {
+        "x": 16,
+        "y": 12,
+        "width": 334,
+        "height": 28
+      },
+      "screenFrame": {
+        "x": 28,
+        "y": 389,
+        "width": 334,
+        "height": 28
+      },
+      "style": {
+        "corners": {
+          "radii": [],
+          "style": 0,
+          "smoothing": 0.6
+        }
+      }
+    },
+    {
+      "id": "C9B31769-1C15-4FAA-9372-E65F07A63A82",
+      "type": "Group",
+      "name": "Apple / Подробнее · Быстрый ВПН",
+      "path": "03а · Режимы — ограничение тарифа/Шторка / Ограничение тарифа/Режим / Авто/Заголовок / Название + Подробнее/Apple / Подробнее · Быстрый ВПН",
+      "frame": {
+        "x": 227,
+        "y": 0,
+        "width": 117,
+        "height": 28
+      },
+      "screenFrame": {
+        "x": 255,
+        "y": 389,
+        "width": 117,
+        "height": 28
+      },
+      "style": {
+        "corners": {
+          "radii": [
+            3.402823466385289e+38
+          ],
+          "style": 1,
+          "smoothing": 0.6
+        }
+      }
+    },
+    {
+      "id": "631E94BE-BF44-48C3-A086-E7ED264FA08D",
+      "type": "Text",
+      "name": "Label",
+      "path": "03а · Режимы — ограничение тарифа/Шторка / Ограничение тарифа/Режим / Авто/Заголовок / Название + Подробнее/Apple / Подробнее · Быстрый ВПН/Label",
+      "frame": {
+        "x": 10,
+        "y": 5,
+        "width": 97,
+        "height": 18
+      },
+      "screenFrame": {
+        "x": 265,
+        "y": 394,
+        "width": 97,
+        "height": 18
+      },
+      "text": "В разработке",
+      "style": {
+        "fontFamily": "SF Pro",
+        "fontSize": null,
+        "fontWeight": null,
+        "textColor": "#8e8e93ff",
+        "alignment": "left",
+        "lineHeight": 18
+      }
+    },
+    {
+      "id": "6ABEC8D5-89C6-4CB0-9EFD-7BAE09960F02",
+      "type": "Text",
+      "name": "Название режима",
+      "path": "03а · Режимы — ограничение тарифа/Шторка / Ограничение тарифа/Режим / Авто/Заголовок / Название + Подробнее/Название режима",
+      "frame": {
+        "x": 0,
+        "y": 3,
+        "width": 221,
+        "height": 22
+      },
+      "screenFrame": {
+        "x": 28,
+        "y": 392,
+        "width": 221,
+        "height": 22
+      },
+      "text": "Авто",
+      "style": {
+        "fontFamily": "SF Pro",
+        "fontSize": null,
+        "fontWeight": null,
+        "textColor": "#8e8e93ff",
+        "alignment": "left",
+        "lineHeight": 22
+      }
+    },
+    {
+      "id": "191D4DD8-1209-4E9B-94F9-E0A082203389",
+      "type": "Group",
+      "name": "Режим / Быстрый ВПН",
+      "path": "03а · Режимы — ограничение тарифа/Шторка / Ограничение тарифа/Режим / Быстрый ВПН",
+      "frame": {
+        "x": 12,
+        "y": 12,
+        "width": 366,
+        "height": 136
+      },
+      "screenFrame": {
+        "x": 12,
+        "y": 59,
+        "width": 366,
+        "height": 136
+      },
+      "style": {
+        "fills": [
+          {
+            "type": "Color",
+            "color": "#ffffffff"
+          }
+        ],
+        "corners": {
+          "radii": [
+            20,
+            20,
+            20,
+            20
+          ],
+          "style": 0,
+          "smoothing": 0.6
+        }
+      }
+    },
+    {
+      "id": "B9925278-7394-4BB8-9786-88CBBB36D33C",
+      "type": "Group",
+      "name": "Содержимое / Описание + Выбор",
+      "path": "03а · Режимы — ограничение тарифа/Шторка / Ограничение тарифа/Режим / Быстрый ВПН/Содержимое / Описание + Выбор",
+      "frame": {
+        "x": 16,
+        "y": 44,
+        "width": 334,
+        "height": 80
+      },
+      "screenFrame": {
+        "x": 28,
+        "y": 103,
+        "width": 334,
+        "height": 80
+      },
+      "style": {
+        "corners": {
+          "radii": [],
+          "style": 0,
+          "smoothing": 0.6
+        }
+      }
+    },
+    {
+      "id": "92FAABD2-B428-4313-B6CE-C1EBA87060DE",
+      "type": "Group",
+      "name": "Индикатор выбора",
+      "path": "03а · Режимы — ограничение тарифа/Шторка / Ограничение тарифа/Режим / Быстрый ВПН/Содержимое / Описание + Выбор/Индикатор выбора",
+      "frame": {
+        "x": 306,
+        "y": 26,
+        "width": 28,
+        "height": 28
+      },
+      "screenFrame": {
+        "x": 334,
+        "y": 129,
+        "width": 28,
+        "height": 28
+      },
+      "style": {
+        "corners": {
+          "radii": [],
+          "style": 0,
+          "smoothing": 0.6
+        }
+      }
+    },
+    {
+      "id": "1C84C640-855A-430E-BE8C-DDAE7352AFAA",
+      "type": "ShapePath",
+      "name": "Круг / Контур",
+      "path": "03а · Режимы — ограничение тарифа/Шторка / Ограничение тарифа/Режим / Быстрый ВПН/Содержимое / Описание + Выбор/Индикатор выбора/Круг / Контур",
+      "frame": {
+        "x": 3,
+        "y": 3,
+        "width": 22,
+        "height": 22
+      },
+      "screenFrame": {
+        "x": 337,
+        "y": 132,
+        "width": 22,
+        "height": 22
+      },
+      "style": {
+        "borders": [
+          {
+            "color": "#a61643ff",
+            "thickness": 1.5,
+            "position": "Inside"
+          }
+        ],
+        "corners": {
+          "radii": [],
+          "style": 0,
+          "smoothing": 0.6
+        }
+      }
+    },
+    {
+      "id": "940A3A6B-CDB4-4322-8F17-7B603FD8F6BA",
+      "type": "ShapePath",
+      "name": "Круг / Точка выбора",
+      "path": "03а · Режимы — ограничение тарифа/Шторка / Ограничение тарифа/Режим / Быстрый ВПН/Содержимое / Описание + Выбор/Индикатор выбора/Круг / Точка выбора",
+      "frame": {
+        "x": 9,
+        "y": 9,
+        "width": 10,
+        "height": 10
+      },
+      "screenFrame": {
+        "x": 343,
+        "y": 138,
+        "width": 10,
+        "height": 10
+      },
+      "style": {
+        "fills": [
+          {
+            "type": "Color",
+            "color": "#a61643ff"
+          }
+        ],
+        "corners": {
+          "radii": [],
+          "style": 0,
+          "smoothing": 0.6
+        }
+      }
+    },
+    {
+      "id": "908F8201-DCB4-4663-B0AC-E5C41B27009F",
+      "type": "Text",
+      "name": "Описание режима",
+      "path": "03а · Режимы — ограничение тарифа/Шторка / Ограничение тарифа/Режим / Быстрый ВПН/Содержимое / Описание + Выбор/Описание режима",
+      "frame": {
+        "x": 0,
+        "y": 0,
+        "width": 294,
+        "height": 80
+      },
+      "screenFrame": {
+        "x": 28,
+        "y": 103,
+        "width": 294,
+        "height": 80
+      },
+      "text": "Подключение через обычные VPN-серверы подписки. Подходит для повседневного использования, когда сеть не ограничена белыми списками.",
+      "style": {
+        "fontFamily": "SF Pro",
+        "fontSize": null,
+        "fontWeight": null,
+        "textColor": "#3c3c4399",
+        "alignment": "left",
+        "lineHeight": 20
+      }
+    },
+    {
+      "id": "7C15876D-BD8E-4643-9A24-5DF244A1422C",
+      "type": "Group",
+      "name": "Заголовок / Название + Подробнее",
+      "path": "03а · Режимы — ограничение тарифа/Шторка / Ограничение тарифа/Режим / Быстрый ВПН/Заголовок / Название + Подробнее",
+      "frame": {
+        "x": 16,
+        "y": 12,
+        "width": 334,
+        "height": 28
+      },
+      "screenFrame": {
+        "x": 28,
+        "y": 71,
+        "width": 334,
+        "height": 28
+      },
+      "style": {
+        "corners": {
+          "radii": [],
+          "style": 0,
+          "smoothing": 0.6
+        }
+      }
+    },
+    {
+      "id": "C9B31769-1C15-4FAA-9372-E65F07A63A82",
+      "type": "Group",
+      "name": "Apple / Подробнее · Быстрый ВПН",
+      "path": "03а · Режимы — ограничение тарифа/Шторка / Ограничение тарифа/Режим / Быстрый ВПН/Заголовок / Название + Подробнее/Apple / Подробнее · Быстрый ВПН",
+      "frame": {
+        "x": 243,
+        "y": 0,
+        "width": 101,
+        "height": 28
+      },
+      "screenFrame": {
+        "x": 271,
+        "y": 71,
+        "width": 101,
+        "height": 28
+      },
+      "style": {
+        "corners": {
+          "radii": [
+            3.402823466385289e+38
+          ],
+          "style": 1,
+          "smoothing": 0.6
+        }
+      }
+    },
+    {
+      "id": "631E94BE-BF44-48C3-A086-E7ED264FA08D",
+      "type": "Text",
+      "name": "Label",
+      "path": "03а · Режимы — ограничение тарифа/Шторка / Ограничение тарифа/Режим / Быстрый ВПН/Заголовок / Название + Подробнее/Apple / Подробнее · Быстрый ВПН/Label",
+      "frame": {
+        "x": 10,
+        "y": 5,
+        "width": 81,
+        "height": 18
+      },
+      "screenFrame": {
+        "x": 281,
+        "y": 76,
+        "width": 81,
+        "height": 18
+      },
+      "text": "Подробнее",
+      "style": {
+        "fontFamily": "SF Pro",
+        "fontSize": null,
+        "fontWeight": null,
+        "textColor": "#a61643ff",
+        "alignment": "left",
+        "lineHeight": 18
+      }
+    },
+    {
+      "id": "6ABEC8D5-89C6-4CB0-9EFD-7BAE09960F02",
+      "type": "Text",
+      "name": "Название режима",
+      "path": "03а · Режимы — ограничение тарифа/Шторка / Ограничение тарифа/Режим / Быстрый ВПН/Заголовок / Название + Подробнее/Название режима",
+      "frame": {
+        "x": 0,
+        "y": 3,
+        "width": 221,
+        "height": 22
+      },
+      "screenFrame": {
+        "x": 28,
+        "y": 74,
+        "width": 221,
+        "height": 22
+      },
+      "text": "Обычный ВПН",
+      "style": {
+        "fontFamily": "SF Pro",
+        "fontSize": null,
+        "fontWeight": null,
+        "textColor": "#000000ff",
+        "alignment": "left",
+        "lineHeight": 22
+      }
+    },
+    {
+      "id": "B15DBFE1-1396-4324-9934-8E2EDE64DC95",
+      "type": "Group",
+      "name": "Заголовок / Режим + текущий выбор",
+      "path": "03а · Режимы — ограничение тарифа/Шторка / Ограничение тарифа/Заголовок / Режим + текущий выбор",
+      "frame": {
+        "x": 0,
+        "y": 478,
+        "width": 390,
+        "height": 44
+      },
+      "screenFrame": {
+        "x": 0,
+        "y": 525,
+        "width": 390,
+        "height": 44
+      },
+      "style": {
+        "fills": [
+          {
+            "type": "Color",
+            "color": "#a61643ff"
+          }
+        ],
+        "corners": {
+          "radii": [],
+          "style": 0,
+          "smoothing": 0.6
+        }
+      },
+      "flow": {
+        "targetId": "1F1BCC60-7F60-4353-82E0-24CBA52DEECE",
+        "animationType": "none"
+      }
+    },
+    {
+      "id": "E67878D8-BAC8-471E-9DE8-F2BDB776A7B2",
+      "type": "Group",
+      "name": "Apple / Авто · Вверх",
+      "path": "03а · Режимы — ограничение тарифа/Шторка / Ограничение тарифа/Заголовок / Режим + текущий выбор/Apple / Авто · Вверх",
+      "frame": {
+        "x": 238,
+        "y": 8,
+        "width": 148,
+        "height": 28
+      },
+      "screenFrame": {
+        "x": 238,
+        "y": 533,
+        "width": 148,
+        "height": 28
+      },
+      "style": {
+        "corners": {
+          "radii": [
+            3.402823466385289e+38
+          ],
+          "style": 1,
+          "smoothing": 0.6
+        }
+      },
+      "flow": {
+        "targetId": "1F1BCC60-7F60-4353-82E0-24CBA52DEECE",
+        "animationType": "none"
+      }
+    },
+    {
+      "id": "631E94BE-BF44-48C3-A086-E7ED264FA08D",
+      "type": "Text",
+      "name": "Label",
+      "path": "03а · Режимы — ограничение тарифа/Шторка / Ограничение тарифа/Заголовок / Режим + текущий выбор/Apple / Авто · Вверх/Label",
+      "frame": {
+        "x": 10,
+        "y": 5,
+        "width": 128,
+        "height": 18
+      },
+      "screenFrame": {
+        "x": 248,
+        "y": 538,
+        "width": 128,
+        "height": 18
+      },
+      "text": "Обычный ВПН  􀆇",
+      "style": {
+        "fontFamily": "SF Pro",
+        "fontSize": null,
+        "fontWeight": null,
+        "textColor": "#ffffffff",
+        "alignment": "left",
+        "lineHeight": 18
+      }
+    },
+    {
+      "id": "B81F638B-C788-4A2E-AF25-A6A6DCC3FF5E",
+      "type": "Text",
+      "name": "Режим подключения",
+      "path": "03а · Режимы — ограничение тарифа/Шторка / Ограничение тарифа/Заголовок / Режим + текущий выбор/Режим подключения",
+      "frame": {
+        "x": 16,
+        "y": 11,
+        "width": 210,
+        "height": 22
+      },
+      "screenFrame": {
+        "x": 16,
+        "y": 536,
+        "width": 210,
+        "height": 22
+      },
+      "text": "Режим подключения",
+      "style": {
+        "fontFamily": "SF Pro",
+        "fontSize": null,
+        "fontWeight": null,
+        "textColor": "#ffffffff",
+        "alignment": "left",
+        "lineHeight": 22
+      }
+    },
+    {
+      "id": "4B58B11D-C9F4-486C-A5D4-29F12DC45FF1",
+      "type": "Group",
+      "name": "Обход БС / Недоступен в тарифе",
+      "path": "03а · Режимы — ограничение тарифа/Шторка / Ограничение тарифа/Обход БС / Недоступен в тарифе",
+      "frame": {
+        "x": 12,
+        "y": 160,
+        "width": 366,
+        "height": 158
+      },
+      "screenFrame": {
+        "x": 12,
+        "y": 207,
+        "width": 366,
+        "height": 158
+      },
+      "style": {
+        "fills": [
+          {
+            "type": "Color",
+            "color": "#ffffffff"
+          }
+        ],
+        "corners": {
+          "radii": [
+            20,
+            20,
+            20,
+            20
+          ],
+          "style": 0,
+          "smoothing": 0.6
+        }
+      }
+    },
+    {
+      "id": "31976481-95F1-4692-A241-D9EA700739CF",
+      "type": "Group",
+      "name": "Режим / Обход БС",
+      "path": "03а · Режимы — ограничение тарифа/Шторка / Ограничение тарифа/Обход БС / Недоступен в тарифе/Режим / Обход БС",
+      "frame": {
+        "x": 0,
+        "y": 0,
+        "width": 366,
+        "height": 96
+      },
+      "screenFrame": {
+        "x": 12,
+        "y": 207,
+        "width": 366,
+        "height": 96
+      },
+      "style": {
+        "fills": [
+          {
+            "type": "Color",
+            "color": "#ffffffff"
+          }
+        ],
+        "corners": {
+          "radii": [
+            20,
+            20,
+            20,
+            20
+          ],
+          "style": 0,
+          "smoothing": 0.6
+        }
+      }
+    },
+    {
+      "id": "B9925278-7394-4BB8-9786-88CBBB36D33C",
+      "type": "Group",
+      "name": "Содержимое / Описание + Выбор",
+      "path": "03а · Режимы — ограничение тарифа/Шторка / Ограничение тарифа/Обход БС / Недоступен в тарифе/Режим / Обход БС/Содержимое / Описание + Выбор",
+      "frame": {
+        "x": 16,
+        "y": 44,
+        "width": 334,
+        "height": 40
+      },
+      "screenFrame": {
+        "x": 28,
+        "y": 251,
+        "width": 334,
+        "height": 40
+      },
+      "style": {
+        "corners": {
+          "radii": [],
+          "style": 0,
+          "smoothing": 0.6
+        }
+      }
+    },
+    {
+      "id": "908F8201-DCB4-4663-B0AC-E5C41B27009F",
+      "type": "Text",
+      "name": "Описание режима",
+      "path": "03а · Режимы — ограничение тарифа/Шторка / Ограничение тарифа/Обход БС / Недоступен в тарифе/Режим / Обход БС/Содержимое / Описание + Выбор/Описание режима",
+      "frame": {
+        "x": 0,
+        "y": 0,
+        "width": 334,
+        "height": 40
+      },
+      "screenFrame": {
+        "x": 28,
+        "y": 251,
+        "width": 334,
+        "height": 40
+      },
+      "text": "Для сетей с белыми списками.\\nНедоступно на вашем тарифе.",
+      "style": {
+        "fontFamily": "SF Pro",
+        "fontSize": null,
+        "fontWeight": null,
+        "textColor": "#3c3c4399",
+        "alignment": "left",
+        "lineHeight": 20
+      }
+    },
+    {
+      "id": "7C15876D-BD8E-4643-9A24-5DF244A1422C",
+      "type": "Group",
+      "name": "Заголовок / Название + Подробнее",
+      "path": "03а · Режимы — ограничение тарифа/Шторка / Ограничение тарифа/Обход БС / Недоступен в тарифе/Режим / Обход БС/Заголовок / Название + Подробнее",
+      "frame": {
+        "x": 16,
+        "y": 12,
+        "width": 334,
+        "height": 28
+      },
+      "screenFrame": {
+        "x": 28,
+        "y": 219,
+        "width": 334,
+        "height": 28
+      },
+      "style": {
+        "corners": {
+          "radii": [],
+          "style": 0,
+          "smoothing": 0.6
+        }
+      }
+    },
+    {
+      "id": "C9B31769-1C15-4FAA-9372-E65F07A63A82",
+      "type": "Group",
+      "name": "Apple / Подробнее · Быстрый ВПН",
+      "path": "03а · Режимы — ограничение тарифа/Шторка / Ограничение тарифа/Обход БС / Недоступен в тарифе/Режим / Обход БС/Заголовок / Название + Подробнее/Apple / Подробнее · Быстрый ВПН",
+      "frame": {
+        "x": 229,
+        "y": 0,
+        "width": 115,
+        "height": 28
+      },
+      "screenFrame": {
+        "x": 257,
+        "y": 219,
+        "width": 115,
+        "height": 28
+      },
+      "style": {
+        "corners": {
+          "radii": [
+            3.402823466385289e+38
+          ],
+          "style": 1,
+          "smoothing": 0.6
+        }
+      }
+    },
+    {
+      "id": "631E94BE-BF44-48C3-A086-E7ED264FA08D",
+      "type": "Text",
+      "name": "Label",
+      "path": "03а · Режимы — ограничение тарифа/Шторка / Ограничение тарифа/Обход БС / Недоступен в тарифе/Режим / Обход БС/Заголовок / Название + Подробнее/Apple / Подробнее · Быстрый ВПН/Label",
+      "frame": {
+        "x": 10,
+        "y": 5,
+        "width": 95,
+        "height": 18
+      },
+      "screenFrame": {
+        "x": 267,
+        "y": 224,
+        "width": 95,
+        "height": 18
+      },
+      "text": "Нет в тарифе",
+      "style": {
+        "fontFamily": "SF Pro",
+        "fontSize": null,
+        "fontWeight": null,
+        "textColor": "#8e8e93ff",
+        "alignment": "left",
+        "lineHeight": 18
+      }
+    },
+    {
+      "id": "6ABEC8D5-89C6-4CB0-9EFD-7BAE09960F02",
+      "type": "Text",
+      "name": "Название режима",
+      "path": "03а · Режимы — ограничение тарифа/Шторка / Ограничение тарифа/Обход БС / Недоступен в тарифе/Режим / Обход БС/Заголовок / Название + Подробнее/Название режима",
+      "frame": {
+        "x": 0,
+        "y": 3,
+        "width": 221,
+        "height": 22
+      },
+      "screenFrame": {
+        "x": 28,
+        "y": 222,
+        "width": 221,
+        "height": 22
+      },
+      "text": "Обход БС",
+      "style": {
+        "fontFamily": "SF Pro",
+        "fontSize": null,
+        "fontWeight": null,
+        "textColor": "#8e8e93ff",
+        "alignment": "left",
+        "lineHeight": 22
+      }
+    },
+    {
+      "id": "C07C40F7-718B-41DC-A3FA-34CFEFF598F3",
+      "type": "Group",
+      "name": "Доступ к Обходу БС / Смена тарифа",
+      "path": "03а · Режимы — ограничение тарифа/Шторка / Ограничение тарифа/Обход БС / Недоступен в тарифе/Доступ к Обходу БС / Смена тарифа",
+      "frame": {
+        "x": 0,
+        "y": 96,
+        "width": 366,
+        "height": 62
+      },
+      "screenFrame": {
+        "x": 12,
+        "y": 303,
+        "width": 366,
+        "height": 62
+      },
+      "style": {
+        "fills": [
+          {
+            "type": "Color",
+            "color": "#ffffffff"
+          }
+        ],
+        "corners": {
+          "radii": [],
+          "style": 0,
+          "smoothing": 0.6
+        }
+      }
+    },
+    {
+      "id": "D7A81443-0F79-4331-BA35-228FF511CE86",
+      "type": "Group",
+      "name": "Сменить тариф / Доступ к Обходу БС",
+      "path": "03а · Режимы — ограничение тарифа/Шторка / Ограничение тарифа/Обход БС / Недоступен в тарифе/Доступ к Обходу БС / Смена тарифа/Сменить тариф / Доступ к Обходу БС",
+      "frame": {
+        "x": 16,
+        "y": 0,
+        "width": 334,
+        "height": 50
+      },
+      "screenFrame": {
+        "x": 28,
+        "y": 303,
+        "width": 334,
+        "height": 50
+      },
+      "style": {
+        "fills": [
+          {
+            "type": "Color",
+            "color": "#a61643ff"
+          }
+        ],
+        "corners": {
+          "radii": [
+            3.402823466385289e+38
+          ],
+          "style": 1,
+          "smoothing": 0.6
+        }
+      }
+    },
+    {
+      "id": "3B10D9D8-452D-4D93-A7B2-E9BAFDFA01B9",
+      "type": "Text",
+      "name": "Label",
+      "path": "03а · Режимы — ограничение тарифа/Шторка / Ограничение тарифа/Обход БС / Недоступен в тарифе/Доступ к Обходу БС / Смена тарифа/Сменить тариф / Доступ к Обходу БС/Label",
+      "frame": {
+        "x": 105,
+        "y": 16,
+        "width": 124,
+        "height": 18
+      },
+      "screenFrame": {
+        "x": 133,
+        "y": 319,
+        "width": 124,
+        "height": 18
+      },
+      "text": "Сменить тариф",
+      "style": {
+        "fontFamily": "SF Pro",
+        "fontSize": null,
+        "fontWeight": null,
+        "textColor": "#ffffffff",
+        "alignment": "left",
+        "lineHeight": 18
+      }
+    },
+    {
+      "id": "8E8F091F-7EC2-41FF-85D1-B0D246A6FB20",
+      "type": "SymbolInstance",
+      "name": "iOS / Строка состояния / Светлая",
+      "path": "03а · Режимы — ограничение тарифа/iOS / Строка состояния / Светлая",
+      "frame": {
+        "x": 0,
+        "y": 0,
+        "width": 390,
+        "height": 47
+      },
+      "screenFrame": {
+        "x": 0,
+        "y": 0,
+        "width": 390,
+        "height": 47
+      },
+      "style": {}
+    },
+    {
+      "id": "F0B80F6B-95A7-4734-A618-61934E036E70",
+      "type": "Text",
+      "name": "Время",
+      "path": "03а · Режимы — ограничение тарифа/iOS / Строка состояния / Светлая/Время",
+      "frame": {
+        "x": 40,
+        "y": 16,
+        "width": 47,
+        "height": 20
+      },
+      "screenFrame": {
+        "x": 40,
+        "y": 16,
+        "width": 47,
+        "height": 20
+      },
+      "text": "22:04",
+      "style": {
+        "fontFamily": "SF Pro",
+        "fontSize": null,
+        "fontWeight": null,
+        "textColor": "#000000ff",
+        "alignment": "left",
+        "lineHeight": null
+      }
+    },
+    {
+      "id": "5D793788-9C03-408C-A342-277B94507298",
+      "type": "Group",
+      "name": "Сотовая сеть / Wi-Fi / Аккумулятор",
+      "path": "03а · Режимы — ограничение тарифа/iOS / Строка состояния / Светлая/Сотовая сеть / Wi-Fi / Аккумулятор",
+      "frame": {
+        "x": 284,
+        "y": 16,
+        "width": 78,
+        "height": 18
+      },
+      "screenFrame": {
+        "x": 284,
+        "y": 16,
+        "width": 78,
+        "height": 18
+      },
+      "style": {
+        "corners": {
+          "radii": [],
+          "style": 0,
+          "smoothing": 0.6
+        }
+      }
+    },
+    {
+      "id": "9254D002-4BAE-46A6-9632-3AC5DC169607",
+      "type": "Group",
+      "name": "Group",
+      "path": "03а · Режимы — ограничение тарифа/iOS / Строка состояния / Светлая/Сотовая сеть / Wi-Fi / Аккумулятор/Group",
+      "frame": {
+        "x": 0,
+        "y": 3.5,
+        "width": 77.5,
+        "height": 12
+      },
+      "screenFrame": {
+        "x": 284,
+        "y": 19.5,
+        "width": 77.5,
+        "height": 12
+      },
+      "style": {}
+    },
+    {
+      "id": "CB719377-7105-402A-93A2-47405A553264",
+      "type": "Group",
+      "name": "Group",
+      "path": "03а · Режимы — ограничение тарифа/iOS / Строка состояния / Светлая/Сотовая сеть / Wi-Fi / Аккумулятор/Group/Group",
+      "frame": {
+        "x": 0,
+        "y": 5.5,
+        "width": 20.5,
+        "height": 4
+      },
+      "screenFrame": {
+        "x": 284,
+        "y": 25,
+        "width": 20.5,
+        "height": 4
+      },
+      "style": {}
+    },
+    {
+      "id": "841B6A47-E7F7-485B-B27B-DE4E636A5D43",
+      "type": "ShapePath",
+      "name": "Oval",
+      "path": "03а · Режимы — ограничение тарифа/iOS / Строка состояния / Светлая/Сотовая сеть / Wi-Fi / Аккумулятор/Group/Group/Oval",
+      "frame": {
+        "x": 0,
+        "y": 0,
+        "width": 4,
+        "height": 4
+      },
+      "screenFrame": {
+        "x": 284,
+        "y": 25,
+        "width": 4,
+        "height": 4
+      },
+      "style": {
+        "fills": [
+          {
+            "type": "Color",
+            "color": "#000000ff"
+          }
+        ],
+        "corners": {
+          "radii": [],
+          "style": 0,
+          "smoothing": 0.6
+        }
+      }
+    },
+    {
+      "id": "52D8A041-0009-43E5-B311-9D3574EA1165",
+      "type": "ShapePath",
+      "name": "Oval",
+      "path": "03а · Режимы — ограничение тарифа/iOS / Строка состояния / Светлая/Сотовая сеть / Wi-Fi / Аккумулятор/Group/Group/Oval",
+      "frame": {
+        "x": 5.5,
+        "y": 0,
+        "width": 4,
+        "height": 4
+      },
+      "screenFrame": {
+        "x": 289.5,
+        "y": 25,
+        "width": 4,
+        "height": 4
+      },
+      "style": {
+        "fills": [
+          {
+            "type": "Color",
+            "color": "#000000ff"
+          }
+        ],
+        "corners": {
+          "radii": [],
+          "style": 0,
+          "smoothing": 0.6
+        }
+      }
+    },
+    {
+      "id": "82D5B2AD-3BA7-41DA-8A25-3F02F58CEDEF",
+      "type": "ShapePath",
+      "name": "Oval",
+      "path": "03а · Режимы — ограничение тарифа/iOS / Строка состояния / Светлая/Сотовая сеть / Wi-Fi / Аккумулятор/Group/Group/Oval",
+      "frame": {
+        "x": 11,
+        "y": 0,
+        "width": 4,
+        "height": 4
+      },
+      "screenFrame": {
+        "x": 295,
+        "y": 25,
+        "width": 4,
+        "height": 4
+      },
+      "style": {
+        "fills": [
+          {
+            "type": "Color",
+            "color": "#000000ff"
+          }
+        ],
+        "corners": {
+          "radii": [],
+          "style": 0,
+          "smoothing": 0.6
+        }
+      }
+    },
+    {
+      "id": "7765952F-7EAE-4C6B-A56F-7E0DA4413813",
+      "type": "ShapePath",
+      "name": "Oval",
+      "path": "03а · Режимы — ограничение тарифа/iOS / Строка состояния / Светлая/Сотовая сеть / Wi-Fi / Аккумулятор/Group/Group/Oval",
+      "frame": {
+        "x": 16.5,
+        "y": 0,
+        "width": 4,
+        "height": 4
+      },
+      "screenFrame": {
+        "x": 300.5,
+        "y": 25,
+        "width": 4,
+        "height": 4
+      },
+      "style": {
+        "fills": [
+          {
+            "type": "Color",
+            "color": "#000000ff"
+          }
+        ],
+        "corners": {
+          "radii": [],
+          "style": 0,
+          "smoothing": 0.6
+        }
+      }
+    },
+    {
+      "id": "79A94951-0905-48B0-BE6E-B6B1BC1EE525",
+      "type": "Group",
+      "name": "Group",
+      "path": "03а · Режимы — ограничение тарифа/iOS / Строка состояния / Светлая/Сотовая сеть / Wi-Fi / Аккумулятор/Group/Group",
+      "frame": {
+        "x": 28,
+        "y": 0.14999999999999947,
+        "width": 15,
+        "height": 9.749999999999998
+      },
+      "screenFrame": {
+        "x": 312,
+        "y": 19.65,
+        "width": 15,
+        "height": 9.749999999999998
+      },
+      "style": {}
+    },
+    {
+      "id": "DCDFE6A7-E9D4-4451-8092-E60B0D798AA6",
+      "type": "ShapePath",
+      "name": "Path",
+      "path": "03а · Режимы — ограничение тарифа/iOS / Строка состояния / Светлая/Сотовая сеть / Wi-Fi / Аккумулятор/Group/Group/Path",
+      "frame": {
+        "x": 0,
+        "y": 8.881784197001252e-16,
+        "width": 15,
+        "height": 2.8499999999999996
+      },
+      "screenFrame": {
+        "x": 312,
+        "y": 19.65,
+        "width": 15,
+        "height": 2.8499999999999996
+      },
+      "style": {
+        "borders": [
+          {
+            "color": "#000000ff",
+            "thickness": 2.4,
+            "position": "Center"
+          }
+        ],
+        "corners": {
+          "radii": [],
+          "style": 0,
+          "smoothing": 0.6
+        }
+      }
+    },
+    {
+      "id": "424B293E-8CB7-46FB-ADBE-A5E53099CFC4",
+      "type": "ShapePath",
+      "name": "Path",
+      "path": "03а · Режимы — ограничение тарифа/iOS / Строка состояния / Светлая/Сотовая сеть / Wi-Fi / Аккумулятор/Group/Group/Path",
+      "frame": {
+        "x": 2.8000000000000007,
+        "y": 4.6000000000000005,
+        "width": 9.400000000000002,
+        "height": 1.75
+      },
+      "screenFrame": {
+        "x": 314.8,
+        "y": 24.25,
+        "width": 9.400000000000002,
+        "height": 1.75
+      },
+      "style": {
+        "borders": [
+          {
+            "color": "#000000ff",
+            "thickness": 2.4,
+            "position": "Center"
+          }
+        ],
+        "corners": {
+          "radii": [],
+          "style": 0,
+          "smoothing": 0.6
+        }
+      }
+    },
+    {
+      "id": "A25B1898-26DF-4302-9887-3EC00C210A62",
+      "type": "ShapePath",
+      "name": "Path",
+      "path": "03а · Режимы — ограничение тарифа/iOS / Строка состояния / Светлая/Сотовая сеть / Wi-Fi / Аккумулятор/Group/Group/Path",
+      "frame": {
+        "x": 5.799999999999997,
+        "y": 8.75,
+        "width": 3.4000000000000057,
+        "height": 1
+      },
+      "screenFrame": {
+        "x": 317.8,
+        "y": 28.4,
+        "width": 3.4000000000000057,
+        "height": 1
+      },
+      "style": {
+        "borders": [
+          {
+            "color": "#000000ff",
+            "thickness": 2.4,
+            "position": "Center"
+          }
+        ],
+        "corners": {
+          "radii": [],
+          "style": 0,
+          "smoothing": 0.6
+        }
+      }
+    },
+    {
+      "id": "BE7188C8-5AEE-4AE2-8640-168247DDA608",
+      "type": "ShapePath",
+      "name": "Rectangle",
+      "path": "03а · Режимы — ограничение тарифа/iOS / Строка состояния / Светлая/Сотовая сеть / Wi-Fi / Аккумулятор/Group/Rectangle",
+      "frame": {
+        "x": 51.5,
+        "y": 0,
+        "width": 24,
+        "height": 12
+      },
+      "screenFrame": {
+        "x": 335.5,
+        "y": 19.5,
+        "width": 24,
+        "height": 12
+      },
+      "style": {
+        "borders": [
+          {
+            "color": "#000000ff",
+            "thickness": 1,
+            "position": "Center"
+          }
+        ],
+        "corners": {
+          "radii": [
+            3.2
+          ],
+          "style": 0,
+          "smoothing": 0.6
+        }
+      }
+    },
+    {
+      "id": "344323E7-1DC7-40A8-BC91-3F7ADDB29130",
+      "type": "ShapePath",
+      "name": "Rectangle",
+      "path": "03а · Режимы — ограничение тарифа/iOS / Строка состояния / Светлая/Сотовая сеть / Wi-Fi / Аккумулятор/Group/Rectangle",
+      "frame": {
+        "x": 52.8,
+        "y": 1.2999999999999998,
+        "width": 21.4,
+        "height": 9.4
+      },
+      "screenFrame": {
+        "x": 336.8,
+        "y": 20.8,
+        "width": 21.4,
+        "height": 9.4
+      },
+      "style": {
+        "fills": [
+          {
+            "type": "Color",
+            "color": "#000000ff"
+          }
+        ],
+        "corners": {
+          "radii": [
+            2
+          ],
+          "style": 0,
+          "smoothing": 0.6
+        }
+      }
+    },
+    {
+      "id": "08BA625B-3CDF-400A-9946-6F3C052001BA",
+      "type": "ShapePath",
+      "name": "Path",
+      "path": "03а · Режимы — ограничение тарифа/iOS / Строка состояния / Светлая/Сотовая сеть / Wi-Fi / Аккумулятор/Group/Path",
+      "frame": {
+        "x": 76.5,
+        "y": 3.5,
+        "width": 1,
+        "height": 5
+      },
+      "screenFrame": {
+        "x": 360.5,
+        "y": 23,
+        "width": 1,
+        "height": 5
+      },
+      "style": {
+        "fills": [
+          {
+            "type": "Color",
+            "color": "#000000ff"
+          }
+        ],
+        "borders": [
+          {
+            "color": "#000000ff",
+            "thickness": 1.5,
+            "position": "Center"
+          }
+        ],
+        "corners": {
+          "radii": [],
+          "style": 0,
+          "smoothing": 0.6
+        }
+      }
+    }
+  ]
+}

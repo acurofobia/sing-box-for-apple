@@ -10,6 +10,8 @@ struct PrototypeView: View {
     @State private var tab: PrototypeTab = .connection
     @State private var ready = false
     @State private var inactive = false
+    @State private var connectionTop: CGFloat = 0
+    @State private var rootTop: CGFloat = 0
     @Environment(\.scenePhase) private var scenePhase
     @Environment(\.openURL) private var openURL
 
@@ -20,7 +22,7 @@ struct PrototypeView: View {
     private var sheet: Binding<PrototypePresentationCoordinator.Destination?> {
         Binding(get: {
             switch presentation.destination {
-            case .subscription, .page: return presentation.destination
+            case .subscription, .page, .legal: return presentation.destination
             default: return nil
             }
         }, set: {
@@ -48,6 +50,7 @@ struct PrototypeView: View {
                 } else if model.subscription.isComplete {
                     TabView(selection: $tab) {
                         PrototypeConnectionView(model: model, presentation: presentation, edit: { tab = .profile })
+                            .onGeometryChange(for: CGFloat.self) { $0.frame(in: .global).minY } action: { connectionTop = $0 }
                             .tabItem { Label("Подключение", systemImage: "power") }.tag(PrototypeTab.connection)
                         PrototypeRoutingView(model: model)
                             .tabItem { Label("Роутинг", systemImage: "arrow.triangle.branch") }.tag(PrototypeTab.routing)
@@ -55,7 +58,7 @@ struct PrototypeView: View {
                             .tabItem { Label("Профиль", systemImage: "person") }.tag(PrototypeTab.profile)
                     }
                 } else {
-                    PrototypeSubscriptionForm(model: model, replacing: false)
+                    NavigationStack { PrototypeSubscriptionForm(model: model, replacing: false) }
                 }
             }
             .allowsHitTesting(presentation.destination != .modes && dialog == nil)
@@ -64,6 +67,7 @@ struct PrototypeView: View {
                (tab == .connection && document?.block("block04") != nil) || presentation.destination == .modes
             {
                 PrototypeModeDrawer(model: model, presentation: presentation)
+                    .padding(.top, max(0, connectionTop - rootTop))
                     .zIndex(10)
             }
             if let dialog {
@@ -72,6 +76,7 @@ struct PrototypeView: View {
             }
         }
         .coordinateSpace(name: "prototype.root")
+        .onGeometryChange(for: CGFloat.self) { $0.frame(in: .global).minY } action: { rootTop = $0 }
         .tint(PrototypeStyle.accent)
         .statusBarHidden(false)
         .preferredColorScheme(.light)
@@ -94,6 +99,9 @@ struct PrototypeView: View {
                             .navigationBarTitleDisplayMode(.inline)
                             .toolbar { ToolbarItem(placement: .confirmationAction) { Button("Закрыть") { presentation.dismiss() } } }
                     }
+                case let .legal(document):
+                    PrototypeLegalView(document: document)
+                        .toolbar { ToolbarItem(placement: .confirmationAction) { Button("Закрыть") { presentation.dismiss() } } }
                 default: EmptyView()
                 }
             }
@@ -152,6 +160,7 @@ struct PrototypeSubscriptionForm: View {
     let replacing: Bool
     var saved: () -> Void = {}
     @State private var source = ""
+    @State private var showingHelp = false
     @FocusState private var focused: Bool
 
     var body: some View {
@@ -162,6 +171,10 @@ struct PrototypeSubscriptionForm: View {
                 Text("Вставьте ссылку на подписку, чтобы начать пользоваться VPN.")
                     .font(.system(size: 17)).foregroundStyle(PrototypeStyle.secondary)
                     .fixedSize(horizontal: false, vertical: true).padding(.top, 12)
+                Text("Сервер подписки получит вашу ссылку и технические параметры запроса. При подключении данные передаются выбранным серверам; в режиме VK TURN также используется инфраструктура VK. Журналы сохраняются локально и не отправляются разработчику автоматически.")
+                    .font(.footnote).foregroundStyle(PrototypeStyle.secondary)
+                    .fixedSize(horizontal: false, vertical: true).padding(.top, 16)
+                    .accessibilityIdentifier("prototype.privacy.disclosure")
                 VStack(alignment: .leading, spacing: 0) {
                     Text("Ссылка на подписку").font(.system(size: 15))
                     HStack(spacing: 8) {
@@ -201,7 +214,7 @@ struct PrototypeSubscriptionForm: View {
                     .buttonStyle(PrototypeFlatStyle()).disabled(!canSubmit).padding(.top, 16)
                     .accessibilityIdentifier("prototype.subscription.fetch")
                     if !replacing {
-                        Button("Где взять ссылку?") {}.disabled(true)
+                        Button("Где взять ссылку?") { showingHelp = true }
                             .font(.system(size: 15)).frame(maxWidth: .infinity, minHeight: 44).padding(.top, 16)
                             .accessibilityIdentifier("prototype.subscription.help")
                     }
@@ -211,6 +224,7 @@ struct PrototypeSubscriptionForm: View {
                         Button("Отключить") { model.stop() }.accessibilityIdentifier("prototype.stop")
                         NavigationLink { PrototypeLogView(model: model) } label: { Text("Логи") }.accessibilityIdentifier("prototype.logs")
                     }
+                    PrototypeLegalLinks().padding(.top, 24)
                 }.padding(.top, 54)
             }
             .padding(.horizontal, 22).padding(.top, replacing ? 28 : 72).padding(.bottom, 24)
@@ -221,6 +235,11 @@ struct PrototypeSubscriptionForm: View {
         .toolbar(replacing ? .visible : .hidden, for: .navigationBar)
         .scrollDismissesKeyboard(.interactively)
         .onAppear { source = model.subscription.sourceURL ?? "" }
+        .alert("Где взять ссылку?", isPresented: $showingHelp) {
+            Button("Понятно", role: .cancel) {}
+        } message: {
+            Text("Укажите ссылку со своего или выбранного вами сервера подписки. Приложение является клиентом: разработчик не продаёт подключения и не предоставляет VPN-серверы.")
+        }
     }
 
     private var canSubmit: Bool {
@@ -341,7 +360,8 @@ struct PrototypeConnectionView: View {
                 }
                 .padding(.horizontal, 18).padding(.top, modeRowHeight + cardSpacing)
                 .frame(maxWidth: .infinity, maxHeight: .infinity, alignment: .top)
-                PrototypeVPNCard(model: model, maximumHeight: max(80, geometry.size.height - modeRowHeight - 47 - 12))
+                PrototypeVPNCard(model: model, maximumHeight: max(80, geometry.size.height - modeRowHeight - 47 - 12),
+                                 showPrivacyPolicy: { presentation.show(.legal(.privacy)) })
                     .padding(.horizontal, 18).padding(.bottom, 47)
             }
         }
@@ -449,8 +469,15 @@ struct PrototypeProfileView: View {
                     ForEach(Array(menu.prefix(localIndex)).filter(\.isVisible)) { item in menuRow(item) }
                     NavigationLink { PrototypeLogView(model: model).toolbar(.visible, for: .navigationBar) } label: { row("Логи", last: false) }
                         .accessibilityIdentifier("prototype.logs")
-                    NavigationLink { PrototypeSettingsView() } label: { row("Настройки приложения", last: menu.dropFirst(localIndex).filter(\.isVisible).isEmpty) }
+                    NavigationLink { PrototypeSettingsView() } label: { row("Настройки приложения", last: false) }
                         .accessibilityIdentifier("prototype.settings")
+                    ForEach(PrototypeLegalDocument.allCases) { document in
+                        Button { presentation.show(.legal(document)) } label: {
+                            row(document.title, last: document == .sources && menu.dropFirst(localIndex).filter(\.isVisible).isEmpty)
+                        }
+                        .buttonStyle(.plain)
+                        .accessibilityIdentifier("prototype.legal." + document.rawValue)
+                    }
                     ForEach(Array(menu.dropFirst(localIndex)).filter(\.isVisible)) { item in menuRow(item, last: item.id == menu.last?.id) }
                 }
                 .foregroundStyle(.primary).background(PrototypeStyle.field, in: RoundedRectangle(cornerRadius: 20))
