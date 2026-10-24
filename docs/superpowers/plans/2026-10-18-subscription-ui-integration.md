@@ -1,5 +1,7 @@
 # Subscription UI Integration Implementation Plan
 
+Исторический документ. Старый `subscription-server/` удалён из проекта 25 октября 2026; актуальный сервер разрабатывается в отдельном репозитории `acurofobia/subscription-ui-server`. Исходники Sketch хранятся локально.
+
 > Execute sequentially with superpowers:executing-plans. No commits or publication.
 
 **Goal:** Integrate the approved subscription UI design with one-link provisioning.

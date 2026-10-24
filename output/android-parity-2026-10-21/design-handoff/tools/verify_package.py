@@ -4,7 +4,6 @@ import json
 from pathlib import Path
 import struct
 import sys
-import zipfile
 
 ROOT = Path(__file__).resolve().parents[1]
 
@@ -22,6 +21,8 @@ def main():
             errors.append('Changed file: ' + relative)
     for file in ROOT.rglob('*'):
         if not file.is_file():
+            continue
+        if file.suffix.lower() == '.sketch':
             continue
         relative = file.relative_to(ROOT).as_posix()
         if relative != 'MANIFEST.json' and relative not in expected:
@@ -44,13 +45,10 @@ def main():
             errors.append('Invalid layout: ' + item['layout'])
         if not (ROOT / item['appScreenshot']).is_file():
             errors.append('Missing app reference: ' + item['appScreenshot'])
-    with zipfile.ZipFile(ROOT / 'design/source/sing-vpn-interface.sketch') as source:
-        if source.testzip() is not None:
-            errors.append('Sketch ZIP CRC error')
     if errors:
         print('\n'.join(errors))
         return 1
-    print('OK: %d files, 11 screens at 1x and 2x, resolved layouts, JSON and Sketch integrity.' % len(expected))
+    print('OK: %d files, 11 screens at 1x and 2x, resolved layouts and JSON integrity.' % len(expected))
     return 0
 
 if __name__ == '__main__':

@@ -31,3 +31,12 @@ __pycache__/
 
 # Downloaded reference library; keep local rather than upload to GitHub.
 /output/design/apple-ios-library/
+
+# Private design sources and exports that contain them stay local.
+*.[sS][kK][eE][tT][cC][hH]
+/output/android-handoff-2026-10-20.zip
+/output/android-parity-2026-10-21.zip
+/output/android-parity-2026-10-21.zip.sha256
+
+# Include the published handoff instructions, keeping local agent settings ignored.
+!/output/android-parity-2026-10-21/design-handoff/AGENTS.md

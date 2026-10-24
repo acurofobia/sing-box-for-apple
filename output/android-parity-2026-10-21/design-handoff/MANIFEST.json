@@ -17,13 +17,13 @@
     },
     {
       "path": "README.md",
-      "bytes": 3138,
-      "sha256": "4d819dbd22a72c952b7bb1ab81ea1e5e1a49ca912c6be2aa985b57b5f1faeb33"
+      "bytes": 3192,
+      "sha256": "8b2b9d3b4efe15f2c7c4851c6e965f6988925dc2ad5a07d8784c55cb02370fd1"
     },
     {
       "path": "START_HERE.html",
-      "bytes": 10657,
-      "sha256": "6384385af6aec258e16ff811d7a3c38114219e67380f2921db6d6e797504bdbd"
+      "bytes": 10580,
+      "sha256": "3a262ac48c189f05501d9973dd266515727b21fd80e8ba9e42e8b43a8ceccc7f"
     },
     {
       "path": "design/CONTACT_SHEET.png",
@@ -181,11 +181,6 @@
       "sha256": "4abdd0ae6514b2bdb64ba1ccc5a7f75a80743dc74af4af65a00f7fc7351bad68"
     },
     {
-      "path": "design/source/sing-vpn-interface.sketch",
-      "bytes": 24694228,
-      "sha256": "bf59f35b8080d43467e42f4bfbebaad56305022e0f0fa04a4de5b3c1b4a338a4"
-    },
-    {
       "path": "design/spec/layouts/00-onboarding-empty.json",
       "bytes": 23131,
       "sha256": "aded5e601553bc4a222b393ad5bad054b6b3dc34f9611be27a223aa689cd5b21"
@@ -277,8 +272,8 @@
     },
     {
       "path": "docs/CONTENTS.md",
-      "bytes": 3404,
-      "sha256": "84a1294d97fe03612223ffb09f2c4bd765738a2c976e37046f2a01b82d692801"
+      "bytes": 3332,
+      "sha256": "2f5669b8e91c37895b7111f973b81b27a50aff183d60e8bb14e8145fa47de6ff"
     },
     {
       "path": "docs/PACKAGING_CHECKS.json",
@@ -287,8 +282,8 @@
     },
     {
       "path": "docs/PROVENANCE.md",
-      "bytes": 3395,
-      "sha256": "3ca56ade6b9af6aa817c8a280901075dec974775dcc61576cdea8f4e96b7dca8"
+      "bytes": 3678,
+      "sha256": "90dfbd418dcdc69ec9ba84a5a951befabbe3a7abb3a90e25962894ceece2ae8a"
     },
     {
       "path": "fixtures/config-vless.json",
@@ -632,8 +627,8 @@
     },
     {
       "path": "tools/verify_package.py",
-      "bytes": 2522,
-      "sha256": "4e10b27b18be2674531e74220c1bc1dac268d7135667472eec5cf77e222d37a8"
+      "bytes": 2388,
+      "sha256": "0e630cbafd875ca6feedf761e54b112158fd46d2aa479200b485f77126a346bc"
     }
   ]
 }

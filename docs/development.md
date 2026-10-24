@@ -19,6 +19,11 @@
 Go module VK TURN сохраняет исходное имя `github.com/cacggghp/vk-turn-proxy`; локальный
 `replace` ядра по-прежнему указывает на `../../ThirdParty/VKTurnProxy`.
 
+Сервер подписок разрабатывается отдельно в
+[subscription-ui-server](https://github.com/acurofobia/subscription-ui-server).
+Старый локальный `subscription-server/` удалён. Исходники Sketch и содержащие их
+ZIP-экспорты хранятся локально и не публикуются в GitHub.
+
 ## Новая рабочая копия
 
 ```sh
@@ -114,7 +119,6 @@ git -C ThirdParty/VKTurnProxy merge <upstream-release-or-commit>
 
 ```sh
 python3 -m unittest discover -s scripts/tests -v
-python3 -m unittest discover -s subscription-server/tests -v
 (cd ThirdParty/VKTurnProxy && go test -race ./pkg/proxy)
 (cd upstream/sing-box && go test -race -ldflags=-checklinkname=0 \
   -tags with_wireguard,with_gvisor,badlinkname,tfogo_checklinkname0 \
