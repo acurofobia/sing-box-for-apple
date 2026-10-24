@@ -17,6 +17,12 @@ AGENTS.md
 /fastlane/.bundle/
 /fastlane/.cache/
 
+# Local environment files and Python caches.
+.env
+.env.*
+!.env.example
+__pycache__/
+
 # Private test node copied from the local subscription configuration.
 /PrototypeApp/vless-outbound.json
 /PrototypeApp/.vless-*
