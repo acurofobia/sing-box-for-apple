@@ -4,8 +4,8 @@
 [submodule "upstream/sing-box"]
 	path = upstream/sing-box
 	url = https://github.com/acurofobia/sing-box.git
-	branch = codex/vk-turn-routing-prototype
+	branch = main
 [submodule "ThirdParty/VKTurnProxy"]
 	path = ThirdParty/VKTurnProxy
 	url = https://github.com/acurofobia/vk-turn-proxy-ios.git
-	branch = codex/sing-integration
+	branch = main

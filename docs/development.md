@@ -10,8 +10,8 @@
 | Компонент | Наш репозиторий и ветка | Источник обновлений |
 | --- | --- | --- |
 | Приложение | `acurofobia/sing-box-for-apple`, `main` | `SagerNet/sing-box-for-apple` |
-| Ядро, `upstream/sing-box` | `acurofobia/sing-box`, `codex/vk-turn-routing-prototype` | `SagerNet/sing-box` |
-| TURN, `ThirdParty/VKTurnProxy` | `acurofobia/vk-turn-proxy-ios`, `codex/sing-integration` | `anton48/vk-turn-proxy-ios` |
+| Ядро, `upstream/sing-box` | `acurofobia/sing-box`, `main` | `SagerNet/sing-box` |
+| TURN, `ThirdParty/VKTurnProxy` | `acurofobia/vk-turn-proxy-ios`, `main` | `anton48/vk-turn-proxy-ios` |
 
 `origin` обозначает наш репозиторий, `upstream` — репозиторий автора.
 Сабмодули закреплены конкретными коммитами. Обычный `git submodule update --init --recursive`
@@ -34,8 +34,8 @@ git -C ThirdParty/VKTurnProxy remote add upstream https://github.com/anton48/vk-
 Перед редактированием выберите соответствующую ветку:
 
 ```sh
-git -C upstream/sing-box switch codex/vk-turn-routing-prototype
-git -C ThirdParty/VKTurnProxy switch codex/sing-integration
+git -C upstream/sing-box switch main
+git -C ThirdParty/VKTurnProxy switch main
 ```
 
 ## Обычная задача приложения
@@ -65,7 +65,7 @@ git push -u origin HEAD
 ссылку на новый коммит в приложении. Пример для VK TURN:
 
 ```sh
-git -C ThirdParty/VKTurnProxy switch codex/sing-integration
+git -C ThirdParty/VKTurnProxy switch main
 # Edit the dependency and run its tests.
 git -C ThirdParty/VKTurnProxy add <changed-files>
 git -C ThirdParty/VKTurnProxy commit -m "Describe the TURN change"
@@ -77,7 +77,7 @@ git push
 ```
 
 Для ядра порядок такой же с путём `upstream/sing-box` и веткой
-`codex/vk-turn-routing-prototype`. При работе в ветке задачи приложения её push
+`main`. При работе в ветке задачи приложения её push
 остаётся направленным в эту ветку, а PR объединяет изменение с `main`.
 
 ## Обновление из источников
@@ -88,7 +88,7 @@ git push
 
 ```sh
 git -C ThirdParty/VKTurnProxy fetch upstream --tags
-git -C ThirdParty/VKTurnProxy switch codex/sing-integration
+git -C ThirdParty/VKTurnProxy switch main
 git -C ThirdParty/VKTurnProxy switch -c codex/update-vk-turn
 # Replace <upstream-release-or-commit> with the selected real revision.
 git -C ThirdParty/VKTurnProxy merge <upstream-release-or-commit>
@@ -97,10 +97,10 @@ git -C ThirdParty/VKTurnProxy merge <upstream-release-or-commit>
 Разберите конфликты, сохранив наши изменения. Обновите `UPSTREAM.txt` в зависимости:
 `Revision` обозначает последнюю интегрированную ревизию anton48. Запустите тесты и
 пересоберите приложение. Отправьте ветку зависимости и объедините её PR в
-`codex/sing-integration`, затем зафиксируйте проверенный итоговый коммит в приложении.
+`main`, затем зафиксируйте проверенный итоговый коммит в приложении.
 
 Для sing-box используйте тот же порядок: путь `upstream/sing-box`, базовая ветка
-`codex/vk-turn-routing-prototype`, источник `SagerNet/sing-box`. Текущая основа ядра —
+`main`, источник `SagerNet/sing-box`. Текущая основа ядра —
 `v1.14.2`. При обновлении проверьте Go toolchain, build tags, мост Libbox и строку версии
 в `scripts/build_vk_turn_prototype.sh`. Наши изменения уже находятся в Git-коммитах;
 повторно накатывать сохранённые `patches/*.patch` после merge не нужно.
