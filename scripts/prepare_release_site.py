@@ -6,7 +6,7 @@ from pathlib import Path
 import shutil
 
 ROOT = Path(__file__).resolve().parents[1]
-SOURCE_URL = 'https://github.com/acurofobia/sing-box-for-apple/releases/tag/vipin-1.14.6-2'
+SOURCE_URL = 'https://github.com/acurofobia/sing-box-for-apple/releases/tag/vipin-1.14.6-4'
 
 
 def generate(output):
