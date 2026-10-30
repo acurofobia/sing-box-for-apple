@@ -14,7 +14,7 @@ struct PrototypeVPNCard: View {
     @State private var noticeHeight: CGFloat = 0
     @ScaledMetric(relativeTo: .body) private var rowHeight: CGFloat = 44
     @State private var testingPing = false
-    @StateObject private var client = CommandClient([.status, .outbounds], localOnly: true)
+    @StateObject private var client = CommandClient([.outbounds], localOnly: true)
     @State private var expanded = false
     @GestureState private var dragging = false
     @State private var expansion: CGFloat = 0
@@ -26,22 +26,6 @@ struct PrototypeVPNCard: View {
     @State private var cardOpacity: Double = 1
     @Environment(\.accessibilityReduceMotion) private var reduceMotion
     @Environment(\.scenePhase) private var scenePhase
-
-    private var totalUpload: String {
-        client.status.map { ByteCountFormatter.string(fromByteCount: $0.uplinkTotal, countStyle: .binary) } ?? "—"
-    }
-
-    private var totalDownload: String {
-        client.status.map { ByteCountFormatter.string(fromByteCount: $0.downlinkTotal, countStyle: .binary) } ?? "—"
-    }
-
-    private var upload: String {
-        client.status.map { ByteCountFormatter.string(fromByteCount: $0.uplink, countStyle: .binary) + "/с" } ?? "—"
-    }
-
-    private var download: String {
-        client.status.map { ByteCountFormatter.string(fromByteCount: $0.downlink, countStyle: .binary) + "/с" } ?? "—"
-    }
 
     private var revealedDetailsHeight: CGFloat {
         detailsHeight * expansion
@@ -102,7 +86,10 @@ struct PrototypeVPNCard: View {
                                             defer { try? command.disconnect() }
                                             try command.urlTest(tag)
                                         }.value
-                                    } catch { model.error = String(localized: "Не удалось проверить пинг.") }
+                                    } catch {
+                                        VPNDiagnostics.applicationError("check outbound latency", error: error)
+                                        model.error = String(localized: "Не удалось проверить пинг.")
+                                    }
                                 }
                             } label: {
                                 if testingPing {
@@ -117,15 +104,17 @@ struct PrototypeVPNCard: View {
                             Text(verbatim: ping).foregroundStyle(PrototypeStyle.secondary)
                         }.padding(.horizontal, 16).frame(minHeight: rowHeight)
                         separator
-                        metric("Память", value: model.canStop ? model.footprint : "—")
+                        PrototypeTrafficQuota(block: model.subscription.uiDocument?.block("block06"))
+                        separator
                     }
                     .onGeometryChange(for: CGFloat.self) { $0.size.height } action: { metricsHeight = $0 }
                     VStack(spacing: 0) {
-                        metric("Сервер", value: server)
+                        servers
+                            .accessibilityElement(children: .contain)
+                            .accessibilityIdentifier("prototype.vpn.server")
+                        separator
+                        metric("Память", value: model.canStop ? model.footprint : "—")
                         metric("Маршрут", value: model.routingMode.title)
-                        metric("Трафик", value: model.canStop && client.status != nil ? totalDownload + " ↓ · " + totalUpload + " ↑" : "—")
-                        metric("Скачивание", value: model.canStop ? download : "—")
-                        metric("Отправка", value: model.canStop ? upload : "—")
                     }
                     .fixedSize(horizontal: false, vertical: true)
                     .onGeometryChange(for: CGFloat.self) { $0.size.height } action: { detailsHeight = $0 }
@@ -220,6 +209,9 @@ struct PrototypeVPNCard: View {
                 }
             }
         }
+        .onReceive(client.$lastError.removeDuplicates()) { error in
+            if let error { VPNDiagnostics.applicationError("status command channel \(error.kind): \(error.message)") }
+        }
         .task(id: scenePhase) {
             defer { client.disconnect() }
             guard scenePhase == .active else { return }
@@ -245,13 +237,16 @@ struct PrototypeVPNCard: View {
         PrototypeStyle.separator.frame(height: 0).overlay(alignment: .bottom) { PrototypeStyle.separator.frame(height: 1) }
     }
 
-    private func metric(_ title: String, value: String) -> some View {
+    private func metric(_ title: String, value: String, multiline: Bool = false) -> some View {
         VStack(spacing: 0) {
             HStack {
                 Text(verbatim: title)
                 Spacer()
-                Text(verbatim: value).foregroundStyle(PrototypeStyle.secondary).lineLimit(1).minimumScaleFactor(0.7)
-            }.padding(.horizontal, 16).frame(minHeight: rowHeight)
+                Text(verbatim: value).foregroundStyle(PrototypeStyle.secondary)
+                    .lineLimit(multiline ? 3 : 1).minimumScaleFactor(0.7)
+                    .multilineTextAlignment(.trailing)
+                    .fixedSize(horizontal: false, vertical: multiline)
+            }.padding(.horizontal, 16).padding(.vertical, multiline ? 8 : 0).frame(minHeight: rowHeight)
             separator
         }
     }
@@ -316,16 +311,125 @@ struct PrototypeVPNCard: View {
 
     /// Only a matching outbound from the running core is evidence of server/ping.
     private var outbound: LibboxOutboundGroupItem? {
-        guard model.canStop else { return nil }
-        return client.outbounds?.first { $0.type.lowercased() == "vless" && model.connectionMode == .vless }
+        guard model.canStop, model.connectionMode == .vless else { return nil }
+        let candidates = client.outbounds?.filter { $0.type.lowercased() == "vless" } ?? []
+        if let selected = model.failoverStatus?.selected {
+            return candidates.first { $0.tag == selected }
+        }
+        return candidates.count == 1 ? candidates.first : nil
     }
 
-    private var server: String {
-        outbound?.tag ?? "—"
+    private var serverTags: [String] {
+        if model.connectionMode == .vless {
+            if let policy = model.subscription.vlessProvisioning?.failover {
+                return [policy.primary] + policy.backups
+            }
+            if let data = model.subscription.vlessOutbound,
+               let node = try? JSONSerialization.jsonObject(with: data) as? [String: Any],
+               let tag = node["tag"] as? String { return [tag] }
+            return []
+        }
+        return model.hasLink ? ["VK TURN"] : []
+    }
+
+    private func serverState(_ tag: String) -> PriorityFailoverStatus.ServerState? {
+        guard model.canStop else { return nil }
+        if let failover = model.failoverStatus {
+            return failover.state(for: tag, connected: model.vpnState == .connected)
+        }
+        guard serverTags.count == 1 else { return nil }
+        if model.vpnState == .connected, model.status == String(localized: "Подключено") { return .connected }
+        if model.status == String(localized: "Сервер недоступен") { return .unavailable }
+        return .checking
+    }
+
+    private func serverColor(_ state: PriorityFailoverStatus.ServerState?) -> Color {
+        switch state {
+        case .connected: return Color(red: 0.1, green: 0.63, blue: 0.32)
+        case .unavailable: return .red
+        case .checking: return .orange
+        default: return PrototypeStyle.secondary
+        }
+    }
+
+    private var servers: some View {
+        VStack(spacing: 0) {
+            HStack {
+                Text("Серверы")
+                Spacer()
+                if serverTags.count > 1 { Text(verbatim: "\(serverTags.count) failover") }
+            }
+            .font(.system(size: 12)).foregroundStyle(PrototypeStyle.secondary)
+            .padding(.horizontal, 16).frame(minHeight: 20)
+            ForEach(serverTags, id: \.self) { tag in
+                let state = serverState(tag)
+                HStack(spacing: 8) {
+                    Circle().fill(state == .reserve || state == nil ? Color(white: 0.78) : serverColor(state)).frame(width: 6, height: 6)
+                        .accessibilityHidden(true)
+                    Text(verbatim: tag).font(.system(size: 13)).lineLimit(2)
+                    Spacer(minLength: 8)
+                    Text(verbatim: state?.title ?? "—").font(.system(size: 11)).fixedSize(horizontal: true, vertical: false)
+                }
+                .foregroundStyle(serverColor(state)).padding(.horizontal, 16).padding(.vertical, 4).frame(minHeight: 28)
+                .accessibilityElement(children: .combine)
+                .accessibilityIdentifier("prototype.vpn.server." + tag)
+            }
+            if serverTags.isEmpty {
+                Text("—").foregroundStyle(PrototypeStyle.secondary).frame(maxWidth: .infinity, minHeight: 28)
+            }
+        }
     }
 
     private var ping: String {
         guard let outbound, outbound.urlTestDelay > 0 else { return "—" }
         return String(outbound.urlTestDelay) + " мс"
+    }
+}
+
+struct PrototypeTrafficQuota: View {
+    let block: PrototypeUIBlock?
+
+    private var title: String {
+        switch block?.period {
+        case "week": return String(localized: "Трафик за неделю")
+        case "month": return String(localized: "Трафик за месяц")
+        case "total": return String(localized: "Трафик всего")
+        default: return String(localized: "Трафик на сегодня")
+        }
+    }
+
+    private func formatted(_ value: Int64) -> String {
+        if block?.unit == "bytes" {
+            return (Double(value) / 1_000_000_000).formatted(.number.locale(Locale(identifier: "ru_RU")).precision(.fractionLength(0 ... 1))) + " ГБ"
+        }
+        return value.formatted() + (block?.unit == "percent" ? "%" : "")
+    }
+
+    var body: some View {
+        let maximum = block?.maximum ?? 0
+        let remaining = max(0, maximum - (block?.value ?? 0))
+        VStack(spacing: 6) {
+            HStack(spacing: 8) {
+                Text(verbatim: title).foregroundStyle(PrototypeStyle.secondary)
+                Spacer(minLength: 0)
+                if block != nil, maximum > 0 {
+                    Text("Осталось \(formatted(remaining)) из \(formatted(maximum))")
+                        .lineLimit(1).minimumScaleFactor(0.7)
+                } else {
+                    Text("—").foregroundStyle(PrototypeStyle.secondary)
+                }
+            }
+            .font(.system(size: 13))
+            GeometryReader { geometry in
+                Capsule().fill(PrototypeStyle.accent.opacity(0.1))
+                    .overlay(alignment: .leading) {
+                        Capsule().fill(PrototypeStyle.accent)
+                            .frame(width: geometry.size.width * min(1, Double(remaining) / Double(max(1, maximum))))
+                    }
+            }.frame(height: 4).accessibilityHidden(true)
+        }
+        .padding(.horizontal, 16).padding(.vertical, 9).frame(minHeight: 44)
+        .accessibilityElement(children: .combine)
+        .accessibilityIdentifier("prototype.vpn.quota")
     }
 }

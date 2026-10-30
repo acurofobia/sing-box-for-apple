@@ -2,10 +2,17 @@ vipin — software licenses and notices
 
 This application includes open-source software. Copyright and license notices follow.
 
+Development repositories for the modified client, core and VK TURN transport:
+https://github.com/acurofobia/sing-box-for-apple
+https://github.com/acurofobia/sing-box
+https://github.com/acurofobia/vk-turn-proxy-ios
+
+Upstream module names and original copyright notices below identify their respective authors and remain applicable to the modified components.
+
 ==============================================================================
 vipin application
 Version: working source tree
-Source: repository:.
+Source: https://github.com/acurofobia/sing-box-for-apple
 
 --- notice-file ---
 LICENSE

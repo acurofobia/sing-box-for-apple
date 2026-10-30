@@ -156,6 +156,7 @@ open class ExtensionProvider: NEPacketTunnelProvider {
 
         options.logMaxLines = 3000
         options.debug = Variant.inDebug
+        options.diagnosticLogEnabled = true
         options.crashReportSource = "NetworkExtension"
         options.appVersion = Bundle.application.versionNumber
         options.appMarketingVersion = Bundle.application.version
@@ -278,6 +279,7 @@ open class ExtensionProvider: NEPacketTunnelProvider {
     #endif
 
     func stopService() {
+        VPNDiagnostics.event("core service stop requested")
         do {
             try commandServer?.closeService()
         } catch {
@@ -287,6 +289,7 @@ open class ExtensionProvider: NEPacketTunnelProvider {
     }
 
     func reloadService() async throws {
+        VPNDiagnostics.event("core service reload requested")
         writeMessage("(packet-tunnel) reloading service")
         reasserting = true
         defer {
@@ -296,6 +299,7 @@ open class ExtensionProvider: NEPacketTunnelProvider {
     }
 
     override open func stopTunnel(with reason: NEProviderStopReason) async {
+        VPNDiagnostics.event("stopTunnel reason=\(VPNDiagnostics.stopReason(reason.rawValue))")
         writeMessage("(packet-tunnel) stopping, reason: \(reason)")
         stopService()
         if let server = commandServer {
@@ -337,12 +341,14 @@ open class ExtensionProvider: NEPacketTunnelProvider {
     }
 
     override open func sleep() async {
+        VPNDiagnostics.event("system sleep")
         if let commandServer {
             commandServer.pause()
         }
     }
 
     override open func wake() {
+        VPNDiagnostics.event("system wake")
         if let commandServer {
             commandServer.wake()
         }

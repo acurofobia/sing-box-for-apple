@@ -1,8 +1,13 @@
 import Foundation
+import Library
 
 /// One ephemeral session per transaction; native app tokens stay on its origin.
 enum PrototypeSubscriptionLoader {
-    static func download(_ source: String) async throws -> PrototypeSubscription {
+    static func download(_ source: String, deviceHeaders: [String: String]? = nil, accessStore: SubscriptionDeviceAccessStore? = nil) async throws -> PrototypeSubscription {
+        let headers = try deviceHeaders ?? SubscriptionDeviceIdentity.headers()
+        func request(_ url: URL) -> URLRequest {
+            SubscriptionDeviceRequest.request(url, deviceHeaders: SubscriptionDeviceRequest.sameOrigin(source, url.absoluteString) ? headers : [:])
+        }
         let url = try PrototypeSubscription.validatedURL(source)
         let configuration = URLSessionConfiguration.ephemeral
         configuration.timeoutIntervalForRequest = 35
@@ -13,9 +18,22 @@ enum PrototypeSubscriptionLoader {
         let session = URLSession(configuration: configuration, delegate: PrototypeSubscriptionRedirects(), delegateQueue: nil)
         defer { session.invalidateAndCancel() }
         let (payload, response) = try await data(request(url), limit: 8 * 1024 * 1024, session: session)
+        let native = response.value(forHTTPHeaderField: "X-Subscription-Format") == "vipin-v1"
+        let decision: SubscriptionDeviceAccessDecision?
+        if let root = try JSONSerialization.jsonObject(with: payload) as? [String: Any],
+           let access = root["device_access"], !(access is NSNull) {
+            guard native, let raw = access as? [String: Any], let hwid = headers["x-hwid"] else {
+                throw SubscriptionDeviceAccessError.invalidResponse
+            }
+            let incoming = try SubscriptionDeviceAccessDecision.decode(JSONSerialization.data(withJSONObject: raw), hwid: hwid)
+            decision = try accessStore?.record(incoming, source: source) ?? incoming
+            // Apply revocation even if unrelated manifest fields or downloads subsequently fail.
+            if decision?.state.isDenied == true { try accessStore?.purgeRuntimeIfDenied(source: source) }
+        } else {
+            decision = nil
+        }
         var result = try PrototypeSubscription.decode(payload)
         guard let uiSource = result.uiURL else { throw PrototypeSubscriptionError.serverUpdateRequired }
-        let native = response.value(forHTTPHeaderField: "X-Subscription-Format") == "vipin-v1"
         if native {
             guard result.uiToken != nil else { throw PrototypeSubscriptionError.invalidResponse }
             try validateNativeDestination(PrototypeSubscription.validatedURL(uiSource), origin: url)
@@ -23,6 +41,8 @@ enum PrototypeSubscriptionLoader {
                 try validateNativeDestination(PrototypeSubscription.validatedURL(configSource), origin: url)
             }
         }
+        result.wdttAccessState = decision?.state
+        if decision?.state.isDenied == true { result.vkTurnLink = nil }
         if let configSource = result.singBoxURL {
             var configRequest = try request(PrototypeSubscription.validatedURL(configSource))
             if native, let token = result.uiToken {
@@ -49,16 +69,10 @@ enum PrototypeSubscriptionLoader {
         try Task.checkCancellation()
         result.sourceURL = source
         result.updatedAt = Date()
+        if let accessStore {
+            return try JSONDecoder().decode(PrototypeSubscription.self, from: accessStore.sanitizedSnapshot(JSONEncoder().encode(result)))
+        }
         return result
-    }
-
-    private static func request(_ url: URL) -> URLRequest {
-        var request = URLRequest(url: url)
-        let version = Bundle.main.object(forInfoDictionaryKey: "CFBundleShortVersionString") as? String ?? "1.0"
-        request.setValue("VipinApp/" + version + " (iOS)", forHTTPHeaderField: "User-Agent")
-        request.setValue("vipin-v1", forHTTPHeaderField: "X-Subscription-Format")
-        request.setValue("vless-failover-v1", forHTTPHeaderField: "X-Subscription-Capabilities")
-        return request
     }
 
     private static func validateNativeDestination(_ destination: URL, origin: URL) throws {

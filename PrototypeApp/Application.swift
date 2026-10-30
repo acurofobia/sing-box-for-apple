@@ -33,7 +33,9 @@ struct PrototypeApplication: App {
 @MainActor
 final class PrototypeModel: ObservableObject {
     @Published var status = "Отключено"
-    @Published var error: String?
+    @Published var error: String? {
+        didSet { if let error, error != oldValue { VPNDiagnostics.applicationError(error) } }
+    }
     @Published var footprint = "—"
     private let connections = 30
     @Published var busy = true
@@ -53,10 +55,14 @@ final class PrototypeModel: ObservableObject {
 
     @Published private(set) var subscriptionLoading = false
     @Published private(set) var replacingSubscription = false
-    @Published private(set) var subscriptionError: String?
+    @Published private(set) var resetting = false
+    @Published private(set) var subscriptionError: String? {
+        didSet { if let subscriptionError, subscriptionError != oldValue { VPNDiagnostics.applicationError("subscription: " + subscriptionError) } }
+    }
     @Published private(set) var hasSelectedMode = false
     @Published private(set) var vpnState: NEVPNStatus = .disconnected
     @Published private(set) var connectedAt: Date?
+    @Published private(set) var failoverStatus: PriorityFailoverStatus?
     @Published private(set) var retainedModeTitle: String?
     private var loaded = false
     private var connectionGeneration: UInt64 = 0
@@ -73,6 +79,9 @@ final class PrototypeModel: ObservableObject {
     }()
 
     private lazy var store = PrototypeSubscriptionStore(cacheURL: cacheURL)
+    private var deviceAccessStore: SubscriptionDeviceAccessStore {
+        SubscriptionDeviceAccessStore(cacheURL: cacheURL)
+    }
     private var cacheURL: URL {
         #if DEBUG && targetEnvironment(simulator)
             if ProcessInfo.processInfo.environment["PROTOTYPE_UI_TESTING"] == "1" {
@@ -105,10 +114,46 @@ final class PrototypeModel: ObservableObject {
     @Published private(set) var connectionMode: PrototypeConnectionMode = .vkTurn
     @Published private(set) var routingMode: PrototypeRoutingMode = .enabled
     private var manager: NETunnelProviderManager?
+    private var lastDiagnosticState: NEVPNStatus?
+    private var disconnectDiagnosticTask: Task<Void, Never>?
+
+    func recordVPNState(force: Bool = false) {
+        guard !resetting else { return }
+        guard let connection = manager?.connection else { return }
+        let state = connection.status
+        guard force || state != lastDiagnosticState else { return }
+        lastDiagnosticState = state
+        VPNDiagnostics.observeConnection(disconnected: state == .disconnected || state == .invalid)
+        VPNDiagnostics.app("VPN status=\(state.rawValue) (\(state)) connectedAt=\(connection.connectedDate?.ISO8601Format() ?? "none") enabled=\(manager?.isEnabled ?? false) onDemand=\(manager?.isOnDemandEnabled ?? false) disconnectOnSleep=\(manager?.protocolConfiguration?.disconnectOnSleep ?? false)")
+        if force || state == .disconnected, #available(iOS 16.0, *) {
+            let generation = connectionGeneration
+            disconnectDiagnosticTask?.cancel()
+            disconnectDiagnosticTask = Task {
+                do {
+                    try await connection.fetchLastDisconnectError()
+                    guard !Task.isCancelled, generation == connectionGeneration else { return }
+                    VPNDiagnostics.app("iOS returned no last disconnect error; termination cause is unknown")
+                } catch {
+                    guard !Task.isCancelled, generation == connectionGeneration else { return }
+                    let error = error as NSError
+                    VPNDiagnostics.applicationError("last VPN disconnect error", error: error)
+                    VPNDiagnostics.app("last disconnect error domain=\(error.domain) code=\(error.code) description=\(error.localizedDescription)")
+                }
+            }
+        }
+    }
+
+    func collectDiagnostics() async {
+        recordVPNState(force: true)
+        await disconnectDiagnosticTask?.value
+        let crashes = CrashReportManager()
+        await crashes.refresh()
+    }
 
     func load() async {
         guard !loaded else { return }
         loaded = true
+        VPNDiagnostics.app("application loaded \(VPNDiagnostics.environment)")
         busy = true
         defer { busy = false }
         #if DEBUG && targetEnvironment(simulator)
@@ -146,7 +191,10 @@ final class PrototypeModel: ObservableObject {
                 hasSelectedMode = true
             }
             await refresh()
-        } catch { self.error = String(localized: "Не удалось загрузить сохранённое состояние приложения.") }
+        } catch {
+            VPNDiagnostics.applicationError("load application state", error: error)
+            self.error = String(localized: "Не удалось загрузить сохранённое состояние приложения.")
+        }
     }
 
     private func ensureStopped() throws {
@@ -174,15 +222,41 @@ final class PrototypeModel: ObservableObject {
         }
     }
 
-    func refreshSubscription() async {
-        guard let source = subscription.sourceURL, !store.isLoading else { return }
-        await fetchSubscription(source, replacing: false)
+    func refreshSubscription(force: Bool = false) async {
+        guard !resetting, let source = subscription.sourceURL, !store.isLoading else { return }
+        await fetchSubscription(source, replacing: false, automatic: !force)
+    }
+
+    private func synchronizeDeviceAccess() {
+        guard !resetting, let source = subscription.sourceURL,
+              let decision = try? deviceAccessStore.decision(forSource: source), decision.state.isDenied else { return }
+        // Invalidate queued WDTT starts before touching persistence or awaiting shutdown.
+        let runningMode = (manager?.protocolConfiguration as? NETunnelProviderProtocol)?.providerConfiguration?["mode"] as? String
+        if connectionMode == .vkTurn || runningMode == "vk-turn" {
+            connectionGeneration &+= 1
+            if canStop, runningMode != "vless" {
+                VPNDiagnostics.expectStop()
+                manager?.connection.stopVPNTunnel()
+            }
+        }
+        do {
+            try deviceAccessStore.purgeRuntimeIfDenied(source: source)
+            try store.load()
+            subscription = store.snapshot
+        } catch {
+            // Keep the mode blocked in memory even if protected storage is unavailable.
+            subscription.vkTurnLink = nil
+            subscription.wdttAccessState = decision.state
+            subscriptionError = String(localized: "Доступ отозван. Не удалось полностью удалить сохранённую конфигурацию.")
+        }
     }
 
     @discardableResult func replaceSubscription(_ source: String) async -> Bool {
+        guard !resetting else { return false }
         do {
             try ensureStopped()
         } catch {
+            VPNDiagnostics.applicationError("replace subscription while VPN is active", error: error)
             subscriptionError = PrototypeSubscriptionError.stopBeforeImport.localizedDescription; return false
         }
         return await fetchSubscription(source.trimmingCharacters(in: .whitespacesAndNewlines), replacing: true)
@@ -195,7 +269,8 @@ final class PrototypeModel: ObservableObject {
         subscriptionLoading = false
     }
 
-    @discardableResult private func fetchSubscription(_ source: String, replacing: Bool) async -> Bool {
+    @discardableResult private func fetchSubscription(_ source: String, replacing: Bool, automatic: Bool = false) async -> Bool {
+        defer { synchronizeDeviceAccess() }
         subscriptionLoading = true
         replacingSubscription = replacing
         subscriptionError = nil
@@ -206,7 +281,7 @@ final class PrototypeModel: ObservableObject {
             }
         }
         do {
-            let updated = try await store.update(source, replacing: replacing) {
+            let updated = try await store.update(source, replacing: replacing, automatic: automatic) {
                 if replacing {
                     try self.ensureStopped()
                 }
@@ -214,17 +289,101 @@ final class PrototypeModel: ObservableObject {
             guard let updated else { return false }
             retainedModeTitle = modeTitle
             subscription = updated
+            for warning in updated.warnings { VPNDiagnostics.applicationError("subscription warning: " + warning) }
             chooseInitialMode()
             return true
         } catch let issue as PrototypeSubscriptionError {
+            VPNDiagnostics.applicationError("update subscription", error: issue)
             subscriptionError = issue.localizedDescription
-        } catch is PrototypeUIError {
+        } catch let issue as PrototypeUIError {
+            VPNDiagnostics.applicationError("decode subscription UI", error: issue)
             subscriptionError = PrototypeUIError.invalidDocument.localizedDescription
         } catch {
             // System/network errors can include the credential-bearing URL.
+            VPNDiagnostics.applicationError("update subscription", error: error)
             subscriptionError = String(localized: "Не удалось обновить подписку. Проверьте сеть и сервер. Сохранённые данные не изменены.")
         }
         return false
+    }
+
+    func resetApplication() async {
+        guard !busy, !resetting else { return }
+        resetting = true
+        busy = true
+        error = nil
+        connectionGeneration &+= 1
+        store.cancel()
+        defer { busy = false; resetting = false }
+        do {
+            disconnectDiagnosticTask?.cancel()
+            await disconnectDiagnosticTask?.value
+            disconnectDiagnosticTask = nil
+            var managers: [NETunnelProviderManager] = []
+            #if !targetEnvironment(simulator)
+                managers = try await NETunnelProviderManager.loadAllFromPreferences().filter {
+                    guard let identifier = ($0.protocolConfiguration as? NETunnelProviderProtocol)?.providerBundleIdentifier else { return false }
+                    return [AppConfiguration.extensionBundleID, AppConfiguration.vkTurnExtensionBundleID].contains(identifier)
+                }
+            #endif
+            VPNDiagnostics.expectStop()
+            for manager in managers {
+                manager.isOnDemandEnabled = false
+                try await manager.saveToPreferences()
+                manager.connection.stopVPNTunnel()
+            }
+            let deadline = ContinuousClock.now.advanced(by: .seconds(15))
+            while managers.contains(where: { $0.connection.status != .disconnected && $0.connection.status != .invalid }) {
+                guard ContinuousClock.now < deadline else {
+                    throw NSError(domain: "Prototype", code: 3, userInfo: [NSLocalizedDescriptionKey: "VPN не отключился. Повторите сброс после отключения."])
+                }
+                try await Task.sleep(for: .milliseconds(100))
+            }
+            for manager in managers { try await manager.removeFromPreferences() }
+            try await store.reset()
+            subscription = PrototypeSubscription()
+            try VKTurnConfigurationStore.clear()
+            try VPNDiagnostics.reset()
+            let fm = FileManager.default
+            var directories = [FilePath.sharedDirectory.appendingPathComponent("Library/Caches"),
+                               FilePath.sharedDirectory.appendingPathComponent("Library/Application Support")]
+            directories += fm.urls(for: .cachesDirectory, in: .userDomainMask)
+            directories += fm.urls(for: .applicationSupportDirectory, in: .userDomainMask)
+            directories += fm.urls(for: .documentDirectory, in: .userDomainMask)
+            for file in try fm.contentsOfDirectory(at: FilePath.sharedDirectory, includingPropertiesForKeys: nil)
+                where file.lastPathComponent != "Library" && file.lastPathComponent != "device-access.lock"
+                    && file.lastPathComponent != ".com.apple.mobile_container_manager.metadata.plist"
+                    && !(file.lastPathComponent.hasPrefix("device-access-") && file.pathExtension == "json") {
+                try fm.removeItem(at: file)
+            }
+            for directory in directories where fm.fileExists(atPath: directory.path) { try fm.removeItem(at: directory) }
+            try ServiceSetup.apply(crashReportSource: "PrototypeApplication")
+            URLCache.shared.removeAllCachedResponses()
+            for cookie in HTTPCookieStorage.shared.cookies ?? [] { HTTPCookieStorage.shared.deleteCookie(cookie) }
+            if let identifier = Bundle.main.bundleIdentifier { UserDefaults.standard.removePersistentDomain(forName: identifier) }
+            UserDefaults(suiteName: AppConfiguration.appGroupID)?.removePersistentDomain(forName: AppConfiguration.appGroupID)
+            #if DEBUG && targetEnvironment(simulator)
+                if ProcessInfo.processInfo.environment["PROTOTYPE_UI_TESTING"] == "1" {
+                    preferences.removePersistentDomain(forName: "PrototypeUITests")
+                }
+            #endif
+            manager = nil
+            subscription = PrototypeSubscription()
+            subscriptionError = nil
+            subscriptionLoading = false
+            replacingSubscription = false
+            hasSelectedMode = false
+            hasInitializedSelection = false
+            connectionMode = .vkTurn
+            routingMode = .enabled
+            retainedModeTitle = nil
+            failoverStatus = nil
+            connectedAt = nil
+            vpnState = .disconnected
+            status = "Отключено"
+            footprint = "—"
+        } catch {
+            self.error = String(localized: "Не удалось полностью сбросить приложение: \(error.localizedDescription)")
+        }
     }
 
     func setRoutingMode(_ mode: PrototypeRoutingMode) async {
@@ -251,7 +410,10 @@ final class PrototypeModel: ObservableObject {
             if restart {
                 await startConnection()
             }
-        } catch { self.error = error.localizedDescription }
+        } catch {
+            VPNDiagnostics.applicationError("change routing mode", error: error)
+            self.error = error.localizedDescription
+        }
     }
 
     private func prepareRouting(_ mode: PrototypeRoutingMode) throws -> Data {
@@ -309,10 +471,15 @@ final class PrototypeModel: ObservableObject {
             if restart {
                 await startConnection()
             }
-        } catch { self.error = error.localizedDescription }
+        } catch {
+            VPNDiagnostics.applicationError("change VPN mode", error: error)
+            self.error = error.localizedDescription
+        }
     }
 
     private func stopForModeChange() async throws {
+        VPNDiagnostics.expectStop()
+        VPNDiagnostics.app("stop requested to change mode/routing")
         manager?.connection.stopVPNTunnel()
         let deadline = ContinuousClock.now.advanced(by: .seconds(15))
         while let state = manager?.connection.status, state != .disconnected, state != .invalid {
@@ -330,6 +497,7 @@ final class PrototypeModel: ObservableObject {
     }
 
     private func startConnection() async {
+        VPNDiagnostics.app("user start requested mode=\(connectionMode.rawValue)")
         let generation = connectionGeneration
         busy = true; error = nil
         defer { busy = false }
@@ -344,7 +512,7 @@ final class PrototypeModel: ObservableObject {
                 try FileManager.default.removeItem(at: statusURL)
             }
             try removeRuntimeVLESS()
-            try VKTurnConfigurationStore.clear()
+            try deviceAccessStore.withLock { try VKTurnConfigurationStore.clear() }
             if connectionMode == .vless {
                 try subscription.validateVLESS()
                 let node: Data
@@ -357,7 +525,9 @@ final class PrototypeModel: ObservableObject {
                 }
                 try node.write(to: directory.appendingPathComponent("prototype-vless.json"), options: [.atomic, .completeFileProtectionUntilFirstUserAuthentication])
             } else if let link = subscription.vkTurnLink {
-                try VKTurnConfigurationStore.save(VKTurnConfiguration.importLink(link))
+                try deviceAccessStore.withAllowedWDTT(source: subscription.sourceURL) {
+                    try VKTurnConfigurationStore.save(VKTurnConfiguration.importLink(link))
+                }
             }
             let manager = manager ?? NETunnelProviderManager()
             let configuration = NETunnelProviderProtocol()
@@ -373,20 +543,33 @@ final class PrototypeModel: ObservableObject {
             guard generation == connectionGeneration else { return }
             guard isAvailable(connectionMode) else { throw PrototypeSubscriptionError.missingConfiguration }
             try manager.connection.startVPNTunnel()
-        } catch { self.error = error.localizedDescription }
+        } catch {
+            VPNDiagnostics.applicationError("start VPN", error: error)
+            self.error = error.localizedDescription
+        }
     }
 
     func stop() {
+        VPNDiagnostics.expectStop()
+        VPNDiagnostics.app("user stop requested")
         connectionGeneration &+= 1
         manager?.connection.stopVPNTunnel()
     }
 
     func refresh() async {
+        guard !resetting else { return }
+        #if DEBUG
+            defer { PrototypeNetworkAcceptanceDiagnostics.export() }
+        #endif
         footprint = "—"
+        failoverStatus = nil
         #if DEBUG && targetEnvironment(simulator)
             if ProcessInfo.processInfo.environment["PROTOTYPE_UI_CONNECTED"] == "1" {
                 vpnState = .connected
                 status = ProcessInfo.processInfo.environment["PROTOTYPE_UI_STATUS"] ?? "Подключено"
+                if let snapshot = ProcessInfo.processInfo.environment["PROTOTYPE_UI_FAILOVER"] {
+                    failoverStatus = try? JSONDecoder().decode(PriorityFailoverStatus.self, from: Data(snapshot.utf8))
+                }
                 return
             }
         #endif
@@ -402,13 +585,12 @@ final class PrototypeModel: ObservableObject {
         }
         let directory = FilePath.sharedDirectory
         if let data = try? Data(contentsOf: directory.appendingPathComponent("prototype-status.json")) {
-            struct Failover: Decodable { let mode: String; let selected: String?; let primaryHealth: String?; let allDown: Bool }
             struct CaptureStatus: Decodable {
                 let footprintBytes: UInt64
                 let phase: String
                 let error: String?
                 let updatedAt: Date
-                let failover: Failover?
+                let failover: PriorityFailoverStatus?
                 let health: Bool?
                 let healthUpdatedAt: Date?
             }
@@ -418,6 +600,11 @@ final class PrototypeModel: ObservableObject {
                    connectedAt.map({ capture.updatedAt >= $0 }) ?? true
                 {
                     footprint = String(format: "%.1f МиБ", Double(capture.footprintBytes) / 1_048_576)
+                    if connectionMode == .vless, capture.phase.hasPrefix("vless"),
+                       manager.connection.status != .disconnecting, capture.failover?.mode != "disabled"
+                    {
+                        failoverStatus = capture.failover
+                    }
                     if manager.connection.status == .connected,
                        ["vless", "combined"].contains(capture.phase),
                        let healthy = capture.health, let checkedAt = capture.healthUpdatedAt,

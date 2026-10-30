@@ -1,4 +1,5 @@
 """Run the production Swift importer and HTTP client with synthetic credentials."""
+from test_device_access import shared_sources
 from http.server import BaseHTTPRequestHandler, ThreadingHTTPServer
 import json
 import os
@@ -21,6 +22,13 @@ HARNESS = r'''
 struct Checks {
     static func main() async throws {
         let result: PrototypeSubscription
+        if CommandLine.arguments[1] == "deeplink" {
+            do {
+                guard let link = URL(string: CommandLine.arguments[2]) else { exit(1) }
+                print(try PrototypeDeepLink.subscriptionSource(from: link))
+            } catch { print("invalid"); exit(1) }
+            return
+        }
         if CommandLine.arguments[1] == "policy" {
             let doc = try PrototypeUIDocument.decode(Data(contentsOf: URL(fileURLWithPath: CommandLine.arguments[2])))
             let snapshot = PrototypeSubscription(uiURL: "http://localhost/ui", uiDocument: doc, updatedAt: Date(), sourceURL: "synthetic", vlessOutbound: Data(), vkTurnLink: "synthetic")
@@ -34,7 +42,7 @@ struct Checks {
             return
         }
         if CommandLine.arguments[1] == "download" {
-            result = try await PrototypeSubscription.download(CommandLine.arguments[2])
+            result = try await PrototypeSubscriptionLoader.download(CommandLine.arguments[2], deviceHeaders: ["x-hwid": String(repeating: "a", count: 64), "x-device-os": "iOS", "x-ver-os": "27.0", "x-device-model": "iPhone14,5"])
         } else {
             let data = try Data(contentsOf: URL(fileURLWithPath: CommandLine.arguments[2]))
             if CommandLine.arguments[1] == "outbound" {
@@ -62,7 +70,7 @@ class SubscriptionTests(unittest.TestCase):
         importer = (ROOT / 'PrototypeApp/Subscription.swift').read_text().replace('import Library\n', '')
         vk = (ROOT / 'Library/Network/VKTurnConfiguration.swift').read_text()
         source = directory / 'checks.swift'
-        source.write_text(vk + (ROOT / 'PrototypeApp/SubscriptionUIDocument.swift').read_text() + (ROOT / 'PrototypeApp/SubscriptionLoader.swift').read_text() + importer + HARNESS)
+        source.write_text(vk + shared_sources() + (ROOT / 'PrototypeApp/SubscriptionUIDocument.swift').read_text() + (ROOT / 'PrototypeApp/SubscriptionLoader.swift').read_text().replace('import Library\n', '') + importer + (ROOT / 'PrototypeApp/PrototypeDeepLink.swift').read_text() + HARNESS)
         cls.executable = directory / 'checks'
         result = subprocess.run(['xcrun', 'swiftc', '-parse-as-library', '-module-cache-path', str(directory / 'modules'),
                                  str(source), '-o', str(cls.executable)], capture_output=True, text=True)
@@ -78,6 +86,37 @@ class SubscriptionTests(unittest.TestCase):
             self.assertEqual(result.returncode, 0, result.stderr)
             return json.loads(result.stdout)
         self.assertNotEqual(result.returncode, 0)
+
+    def test_subscription_deep_link_decodes_url_once_and_preserves_its_query(self):
+        from urllib.parse import quote
+        for source in ['https://example.org/subscription/synthetic-token',
+                       'https://example.org/sub?token=a+b%2Fc&device=phone',
+                       'http://localhost:18081/subscription/both']:
+            with self.subTest(source=source):
+                link = 'vipin://add-subscription?url=' + quote(source, safe='')
+                result = subprocess.run([str(self.executable), 'deeplink', link], capture_output=True, text=True)
+                self.assertEqual(result.returncode, 0, result.stderr)
+                self.assertEqual(result.stdout.strip(), source)
+
+    def test_subscription_deep_link_rejects_unknown_actions_and_invalid_sources(self):
+        from urllib.parse import quote
+        links = ['vipin://add-subscription', 'vipin://add-subscription?url=',
+                 'vipin://connect?url=https%3A%2F%2Fexample.org',
+                 'other://add-subscription?url=https%3A%2F%2Fexample.org',
+                 'vipin://add-subscription/path?url=https%3A%2F%2Fexample.org',
+                 'vipin://user@add-subscription?url=https%3A%2F%2Fexample.org',
+                 'vipin://add-subscription:123?url=https%3A%2F%2Fexample.org',
+                 'vipin://add-subscription?url=https%3A%2F%2Fexample.org#fragment',
+                 'vipin://add-subscription?url=https%3A%2F%2Fexample.org&url=https%3A%2F%2Fother.org',
+                 'vipin://add-subscription?url=https%3A%2F%2Fexample.org&extra=value']
+        for source in ['file:///tmp/config', 'javascript:alert(1)', 'https://',
+                       'https://user:password@example.org/sub', 'https://example.org/sub#fragment',
+                       'https://example.org/sub\nheader', 'https://example.org/a b']:
+            links.append('vipin://add-subscription?url=' + quote(source, safe=''))
+        for link in links:
+            with self.subTest(link=link):
+                result = subprocess.run([str(self.executable), 'deeplink', link], capture_output=True, text=True)
+                self.assertNotEqual(result.returncode, 0)
 
     def test_four_node_provisioning_validation(self):
         import copy
@@ -410,7 +449,7 @@ func main() {
         events = []
         class Handler(BaseHTTPRequestHandler):
             def do_GET(self):
-                events.append((self.path, self.headers.get('User-Agent'), self.headers.get('X-Subscription-Format'), self.headers.get('Authorization'), self.headers.get('X-Subscription-Capabilities')))
+                events.append((self.path, self.headers.get('User-Agent'), self.headers.get('X-Subscription-Format'), self.headers.get('Authorization'), self.headers.get('X-Subscription-Capabilities'), self.headers.get('x-hwid')))
                 if self.path == '/api/sub/key':
                     payload = dict(PAYLOAD, sing_box_url=base + '/api/sub/key/app/v1/config', ui_url=base + '/api/sub/key/app/v1/ui')
                 elif self.path.endswith('/config'): payload = CONFIG
@@ -430,8 +469,9 @@ func main() {
             self.assertEqual(result.returncode, 0, result.stderr)
             self.assertTrue(json.loads(result.stdout)['complete'])
             self.assertEqual(len(events), 3)
-            for path, agent, fmt, auth, capabilities in events:
-                self.assertEqual(capabilities, "vless-failover-v1")
+            for path, agent, fmt, auth, capabilities, hwid in events:
+                self.assertRegex(hwid or "", r"^[a-zA-Z0-9=-]{10,64}$")
+                self.assertEqual(capabilities, "vless-failover-v1 device-access-v1")
                 self.assertTrue(agent.startswith('VipinApp/'), events)
                 self.assertEqual(fmt, 'vipin-v1')
                 self.assertEqual(auth, None if path == '/api/sub/key' else 'Bearer synthetic_ui_token_123')

@@ -1,14 +1,14 @@
 {
   "name": "vipin",
   "version": "1.14.6",
-  "build": "4",
+  "build": "9",
   "bundle_id": "ru.acurofobia.singbox.vkprototype",
   "extension_bundle_id": "ru.acurofobia.singbox.vkprototype.extension",
   "team_id": "YG7A3W5844",
   "primary_locale": "ru",
   "privacy_policy_url": "https://vipin.eagerdell32.chatgpt.site/",
   "support_url": "https://vipin.eagerdell32.chatgpt.site/",
-  "source_release_url": "https://github.com/acurofobia/sing-box-for-apple/releases/tag/vipin-1.14.6-4",
+  "source_release_url": "https://github.com/acurofobia/sing-box-for-apple/releases/tag/vipin-1.14.6-9",
   "feedback_email": "fusedased@gmail.com",
   "review_contact": {
     "first_name": "Sergey",

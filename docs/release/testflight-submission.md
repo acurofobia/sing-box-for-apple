@@ -5,38 +5,37 @@ The owner has accepted the earlier licensing, account-model, and reused-material
 ## Release identity
 
 - App Store name and device display name: **vipin**.
-- Version/build: **1.14.6 (4)** for both the app and packet tunnel extension.
+- Version/build: **1.14.6 (9)** for both the app and packet tunnel extension.
 - Minimum iOS: **18.0** for the app and its UI test runner. Existing extension/core minimums remain at or below this version.
-- Build 3 was uploaded with iOS 27.0 as its minimum; use build 4 for the expanded OS support.
+- Build 3 was uploaded with iOS 27.0 as its minimum; build 9 retains the expanded OS support.
 - App ID: `ru.acurofobia.singbox.vkprototype`.
 - Extension: `ru.acurofobia.singbox.vkprototype.extension`.
 - Team: `YG7A3W5844`; App Group: `group.ru.acurofobia.singbox.vkprototype`.
 - Contact: Sergey Mikhailov, `fusedased@gmail.com`.
 - Privacy/support URL: <https://vipin.eagerdell32.chatgpt.site/>.
-- Matching source release: <https://github.com/acurofobia/sing-box-for-apple/releases/tag/vipin-1.14.6-4>.
+- Matching source release: <https://github.com/acurofobia/sing-box-for-apple/releases/tag/vipin-1.14.6-9>.
 
 The app icon is the pinned Lucide shield-check icon. Its SVG, upstream license, revision, and reproducible renderer are in `docs/release/branding`. Notices are included in the app's license screen.
 
 ## Archive and export
 
-Release build 4 must include the 2026-10-24 active-outbound health checks in
-both Swift and the rebuilt Go core. The base application revision is
-`6b6000e`; the core revision is `694bca22`. Version and source-link edits for
-build 4 are applied on top of these revisions and recorded in its source manifest.
-The archive and IPA for build 2 were produced on 2026-10-22 and must not be used
-for this submission. Keep build 4 in separate artifact paths.
+Release build 9 includes the current subscription and device-access changes,
+subscription deep links, routing drawer and failover status updates, persistent
+local VPN diagnostics, and the Go core wake fix. Rebuild the core from the
+recorded submodule revision before archiving. Keep build 9 in separate artifact
+paths; previous archives and IPAs do not include all of these changes.
 
 ```sh
 xcodebuild archive -project sing-box.xcodeproj -scheme VKTurnPrototype \
   -configuration Release -destination 'generic/platform=iOS' \
-  -archivePath build/vipin-1.14.6-4.xcarchive \
+  -archivePath build/vipin-1.14.6-9.xcarchive \
   -derivedDataPath build/DerivedDataReleasePreparation \
   -clonedSourcePackagesDirPath build/DerivedData/SourcePackages \
   -disableAutomaticPackageResolution -skipPackagePluginValidation \
   -allowProvisioningUpdates DISABLE_SWIFTLINT=1
 
-xcodebuild -exportArchive -archivePath build/vipin-1.14.6-4.xcarchive \
-  -exportPath build/release/vipin-1.14.6-4/app-store \
+xcodebuild -exportArchive -archivePath build/vipin-1.14.6-9.xcarchive \
+  -exportPath build/release/vipin-1.14.6-9/app-store \
   -exportOptionsPlist docs/release/export-options.plist -allowProvisioningUpdates
 ```
 

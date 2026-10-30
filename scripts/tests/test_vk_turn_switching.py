@@ -7,6 +7,11 @@ import unittest
 ROOT = Path(__file__).resolve().parents[2]
 HARNESS = r"""
 import Foundation
+private enum VPNDiagnostics {
+ static func app(_ message: String) {}
+ static func expectStop() {}
+ static func applicationError(_ message: String, error: Error? = nil) {}
+}
 
 private enum ConnectionStatus { case connected, disconnected, invalid, connecting, disconnecting, reasserting }
 private var events: [String] = []
@@ -164,7 +169,7 @@ class SwitchingTests(unittest.TestCase):
         routing_source = (ROOT / 'Library/Network/PrototypeRouting.swift').read_text()
         routing_mode = routing_source.split('public enum PrototypeRouting {', 1)[0]
         routing = '    func setRoutingMode' + app.split('    func setRoutingMode', 1)[1].split('    private func prepareRouting', 1)[0]
-        initial = '    private func chooseInitialMode() {' + app.split('    private func chooseInitialMode() {', 1)[1].split('    func refreshSubscription()', 1)[0]
+        initial = '    private func chooseInitialMode() {' + app.split('    private func chooseInitialMode() {', 1)[1].split('    func refreshSubscription(', 1)[0]
         initial = initial.replace('private func chooseInitialMode', 'func chooseInitialMode')
         stop = '    func stop() {' + app.split('    func stop() {', 1)[1].split('    func refresh()', 1)[0]
         model = r"""

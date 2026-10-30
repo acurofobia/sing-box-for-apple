@@ -59,7 +59,7 @@ struct PrototypeSubscription: Codable, Sendable {
               item.isVisible, item.state == .available else { return false }
         switch optionID {
         case "option01": return vlessOutbound != nil || vlessProvisioning?.isAvailable == true
-        case "option02": return vkTurnLink != nil
+        case "option02": return vkTurnLink != nil && wdttAccessState?.isDenied != true
         default: return false
         }
     }
@@ -70,6 +70,7 @@ struct PrototypeSubscription: Codable, Sendable {
     var vlessProvisioning: PrototypeVLESSProvisioning?
     var vkTurnLink: String?
     var warnings: [String] = []
+    var wdttAccessState: SubscriptionDeviceAccessState?
 
     func validateVLESS() throws {
         guard vlessOutbound == nil || vlessProvisioning == nil else { throw PrototypeSubscriptionError.invalidVLESS }

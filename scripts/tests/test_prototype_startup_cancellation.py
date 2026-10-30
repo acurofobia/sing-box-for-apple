@@ -25,7 +25,13 @@ class StartupCancellationTests(unittest.TestCase):
         prepare = method(source, '    override func prepareServiceStart(')
         harness = r'''
 import Foundation
-private enum NEProviderStopReason { case userInitiated }
+private enum NEProviderStopReason: Int { case userInitiated = 1 }
+private enum VPNDiagnostics {
+ static func event(_ message: String) {}
+ static func termination(_ message: String) {}
+ static func stopRequested(_ reason: Int) {}
+ static func stopReason(_ value: Int) -> String { String(value) }
+}
 private final class LibboxCommandServer: @unchecked Sendable {
  let lock = NSLock()
  var cancelled = false

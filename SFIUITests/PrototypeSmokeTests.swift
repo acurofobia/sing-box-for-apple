@@ -3,6 +3,251 @@ import XCTest
 
 @MainActor
 final class PrototypeSmokeTests: XCTestCase {
+    func testSystemDeepLinksUpdateAlreadyOpenSubscriptionForm() throws {
+        let system = XCUIApplication(bundleIdentifier: "com.apple.springboard")
+        let safari = XCUIApplication(bundleIdentifier: "com.apple.mobilesafari")
+        let openTitle = NSPredicate(format: "label IN %@", ["Открыть", "Open"])
+        let open = system.buttons.matching(openTitle).firstMatch
+        let safariOpen = safari.buttons.matching(openTitle).firstMatch
+        if safariOpen.exists { safariOpen.tap() }
+        if open.exists { open.tap() }
+        let app = launch()
+        addSubscription(app)
+        app.buttons["prototype.mode"].tap()
+        XCTAssertTrue(app.buttons["prototype.mode.close"].waitForExistence(timeout: 5))
+        for variant in ["changed", "restricted"] {
+            safari.open(try XCTUnwrap(URL(string: "http://localhost:18081/deeplink/" + variant)))
+            let link = safari.links["Open vipin"]
+            XCTAssertTrue(link.waitForExistence(timeout: 10))
+            link.tap()
+            if safariOpen.waitForExistence(timeout: 3) { safariOpen.tap() }
+            let input = app.textFields["prototype.subscription.url"]
+            XCTAssertTrue(input.waitForExistence(timeout: 10))
+            XCTAssertEqual(input.value as? String, "http://localhost:18081/subscription/" + variant)
+        }
+        capture(app, "System deep link updates existing draft")
+        app.buttons["Отмена"].tap()
+        XCTAssertTrue(app.buttons["prototype.mode"].waitForExistence(timeout: 5))
+    }
+
+    func testDeepLinkPrefillsSubscriptionAndKeepsFirstImportOnboarding() throws {
+        let app = launch()
+        let source = "http://localhost:18081/subscription/both"
+        try openSubscriptionLink(source, in: app)
+        let input = app.textFields["prototype.subscription.url"]
+        XCTAssertTrue(input.waitForExistence(timeout: 5))
+        XCTAssertEqual(input.value as? String, source)
+        XCTAssertFalse(tabButton(app, "Профиль").exists)
+        capture(app, "Deep link subscription draft")
+        app.buttons["prototype.subscription.fetch"].tap()
+        XCTAssertTrue(app.staticTexts["prototype.mode.onboarding.title"].waitForExistence(timeout: 20))
+    }
+
+    func testDeepLinkReplacementCanBeCancelledAndAnotherLinkChangesTheDraft() throws {
+        let app = launch()
+        addSubscription(app)
+        app.buttons["prototype.mode"].tap()
+        XCTAssertTrue(app.buttons["prototype.mode.close"].waitForExistence(timeout: 5))
+        try openSubscriptionLink("http://localhost:18081/subscription/changed", in: app)
+        let input = app.textFields["prototype.subscription.url"]
+        XCTAssertTrue(input.waitForExistence(timeout: 5))
+        XCTAssertEqual(input.value as? String, "http://localhost:18081/subscription/changed")
+        try openSubscriptionLink("http://localhost:18081/subscription/restricted", in: app)
+        XCTAssertEqual(input.value as? String, "http://localhost:18081/subscription/restricted")
+        app.buttons["Отмена"].tap()
+        XCTAssertTrue(app.buttons["prototype.mode"].waitForExistence(timeout: 5))
+        XCTAssertTrue(app.staticTexts["Обзор"].exists)
+        XCTAssertFalse(app.staticTexts["Обновлённый обзор"].exists)
+    }
+
+    func testDeepLinkSurvivesColdLaunchWithSavedSubscription() throws {
+        let app = launch()
+        addSubscription(app)
+        app.launchEnvironment["PROTOTYPE_UI_RESET"] = "0"
+        app.terminate()
+        let source = "http://localhost:18081/subscription/changed"
+        try openSubscriptionLink(source, in: app)
+        let input = app.textFields["prototype.subscription.url"]
+        XCTAssertTrue(input.waitForExistence(timeout: 15))
+        XCTAssertEqual(input.value as? String, source)
+        app.buttons["prototype.subscription.fetch"].tap()
+        XCTAssertTrue(app.staticTexts["Обновлённый обзор"].waitForExistence(timeout: 20))
+        XCTAssertFalse(app.staticTexts["prototype.mode.onboarding.title"].exists)
+    }
+
+    func testUnsupportedDeepLinkKeepsSavedSubscription() throws {
+        let app = launch()
+        addSubscription(app)
+        app.launchEnvironment["PROTOTYPE_UI_RESET"] = "0"
+        app.open(try XCTUnwrap(URL(string: "vipin://connect?url=https%3A%2F%2Fexample.org")))
+        XCTAssertTrue(app.staticTexts["Не удалось открыть ссылку добавления подписки."].waitForExistence(timeout: 5))
+        XCTAssertTrue(app.staticTexts["Обзор"].exists)
+        XCTAssertFalse(app.textFields["prototype.subscription.url"].exists)
+    }
+
+    private func openSubscriptionLink(_ source: String, in app: XCUIApplication) throws {
+        var link = URLComponents()
+        link.scheme = "vipin"
+        link.host = "add-subscription"
+        link.queryItems = [URLQueryItem(name: "url", value: source)]
+        // XCTest relaunches the application when opening a URL.
+        app.launchEnvironment["PROTOTYPE_UI_RESET"] = "0"
+        app.open(try XCTUnwrap(link.url))
+    }
+
+    func testSubscriptionOnboardingOpensModesAndEndsAfterSelection() {
+        let app = launch()
+        addSubscription(app, dismissOnboarding: false)
+        let hint = app.staticTexts["prototype.mode.onboarding.title"]
+        XCTAssertTrue(hint.waitForExistence(timeout: 5))
+        XCTAssertTrue(app.buttons["prototype.mode.close"].isHittable)
+        capture(app, "Mode onboarding")
+        app.buttons["prototype.ui.option02"].tap()
+        XCTAssertTrue(app.buttons["prototype.mode"].waitForExistence(timeout: 5))
+        XCTAssertEqual(app.buttons["prototype.mode"].value as? String, "Обход БС")
+        XCTAssertFalse(hint.exists)
+        app.buttons["prototype.subscription.refresh"].tap()
+        app.buttons["prototype.mode"].tap()
+        XCTAssertTrue(app.buttons["prototype.ui.option01"].waitForExistence(timeout: 5))
+        XCTAssertFalse(hint.exists)
+        app.terminate()
+        let restored = launch(reset: false)
+        XCTAssertTrue(restored.buttons["prototype.mode"].waitForExistence(timeout: 10))
+        XCTAssertFalse(restored.staticTexts["prototype.mode.onboarding.title"].exists)
+    }
+
+    func testSubscriptionOnboardingCanBeDismissedWithLargeText() {
+        let app = launch(largeText: true)
+        addSubscription(app, dismissOnboarding: false)
+        let done = app.buttons["prototype.mode.onboarding.done"]
+        XCTAssertTrue(done.waitForExistence(timeout: 5))
+        capture(app, "Mode onboarding large text")
+        done.tap()
+        XCTAssertTrue(app.buttons["prototype.mode"].waitForExistence(timeout: 5))
+        XCTAssertTrue(tabButton(app, "Профиль").isHittable)
+        app.buttons["prototype.mode"].tap()
+        XCTAssertTrue(app.buttons["prototype.ui.option01"].waitForExistence(timeout: 5))
+        XCTAssertFalse(done.exists)
+    }
+
+    func testSubscriptionWithoutModesDoesNotShowOnboarding() {
+        let app = launch()
+        addSubscription(app, name: "empty-lists", dismissOnboarding: false)
+        XCTAssertTrue(app.buttons["prototype.mode"].waitForExistence(timeout: 5))
+        XCTAssertFalse(app.staticTexts["prototype.mode.onboarding.title"].exists)
+        XCTAssertTrue(tabButton(app, "Профиль").isHittable)
+    }
+
+    func testRevokedWDTTDisablesOnlyThatModeAndSurvivesRelaunch() async throws {
+        let setup = launch()
+        addSubscription(setup, name: "device-access")
+        setup.buttons["prototype.mode"].tap()
+        XCTAssertTrue(setup.buttons["prototype.ui.option02"].isEnabled)
+        setup.terminate()
+        let app = launch(reset: false)
+        XCTAssertTrue(app.buttons["prototype.subscription.refresh"].waitForExistence(timeout: 10))
+        try await control("device-revoked")
+        app.buttons["prototype.subscription.refresh"].tap()
+        app.buttons["prototype.mode"].tap()
+        let denied = app.buttons["prototype.ui.option02"]
+        XCTAssertTrue(denied.waitForExistence(timeout: 10))
+        let revoked = expectation(for: NSPredicate(format: "enabled == false"), evaluatedWith: denied)
+        await fulfillment(of: [revoked], timeout: 10)
+        XCTAssertFalse(denied.isEnabled)
+        XCTAssertTrue(app.staticTexts["Доступ для этого устройства отозван"].exists)
+        XCTAssertTrue(app.buttons["prototype.ui.option01"].isEnabled)
+        capture(app, "Device access revoked")
+        app.terminate()
+        let restored = launch(reset: false)
+        XCTAssertTrue(restored.buttons["prototype.mode"].waitForExistence(timeout: 10))
+        restored.buttons["prototype.mode"].tap()
+        XCTAssertFalse(restored.buttons["prototype.ui.option02"].isEnabled)
+        XCTAssertTrue(restored.staticTexts["Доступ для этого устройства отозван"].exists)
+        let identityURL = try XCTUnwrap(URL(string: "http://localhost:18081/identity"))
+        let (identityData, _) = try await URLSession.shared.data(from: identityURL)
+        let identity = try XCTUnwrap(JSONSerialization.jsonObject(with: identityData) as? [String: [String]])
+        let hwids = try XCTUnwrap(identity["hwids"])
+        XCTAssertEqual(hwids.count, 1, "HWID changed between requests or app launches")
+        XCTAssertEqual(hwids.first?.count, 64)
+    }
+
+    func testFailoverDrawerShowsLiveServerStates() {
+        let setup = launch()
+        addSubscription(setup, name: "failover")
+        setup.terminate()
+        let snapshot = #"{"mode":"automatic","allDown":false,"selected":"node-2","selectedHealth":"up","selectedIndex":2,"total":4,"checking":"node-4","checkingIndex":4,"servers":[{"tag":"node-1","health":"down"},{"tag":"node-2","health":"up"},{"tag":"node-3","health":"unknown"},{"tag":"node-4","health":"down"}]}"#
+        let app = launch(reset: false, connected: true, failover: snapshot)
+        app.buttons["prototype.vpn.details"].tap()
+        for (tag, state) in [("node-1", "Недоступен"), ("node-2", "Подключён"), ("node-3", "Резерв"), ("node-4", "Проверка…")] {
+            let row = app.descendants(matching: .any)["prototype.vpn.server." + tag]
+            XCTAssertTrue(row.waitForExistence(timeout: 5))
+            XCTAssertTrue(row.label.contains(state), row.label)
+        }
+        capture(app, "sketch-new-failover")
+    }
+
+    func testDrawerQuotaRoutingAndFullReset() {
+        let app = launch()
+        addSubscription(app)
+        let quota = app.descendants(matching: .any)["prototype.vpn.quota"]
+        XCTAssertTrue(quota.waitForExistence(timeout: 5))
+        XCTAssertTrue(quota.label.contains("Трафик на сегодня"))
+        XCTAssertTrue(quota.label.contains("Осталось 2 ГБ из 2 ГБ"))
+        XCTAssertFalse(app.staticTexts["Память"].isHittable)
+        app.buttons["prototype.vpn.details"].tap()
+        XCTAssertTrue(app.staticTexts["Серверы"].waitForExistence(timeout: 5))
+        XCTAssertTrue(app.staticTexts["Память"].isHittable)
+        XCTAssertFalse(app.staticTexts["Скачивание"].exists)
+        XCTAssertFalse(app.staticTexts["Отправка"].exists)
+        capture(app, "sketch-new-drawer")
+        tabButton(app, "Роутинг").tap()
+        XCTAssertTrue(app.buttons["prototype.routing.enabled"].waitForExistence(timeout: 5))
+        XCTAssertEqual(app.buttons["prototype.routing.enabled"].label, "RoskomVPN")
+        capture(app, "sketch-new-routing")
+        tabButton(app, "Профиль").tap()
+        let reset = app.buttons["prototype.reset"]
+        for _ in 0..<5 where !reset.isHittable { app.swipeUp() }
+        XCTAssertTrue(reset.isHittable)
+        reset.tap()
+        app.alerts["Сбросить приложение?"].buttons["Отмена"].tap()
+        XCTAssertTrue(tabButton(app, "Профиль").exists)
+        capture(app, "sketch-new-profile")
+        reset.tap()
+        app.alerts["Сбросить приложение?"].buttons["Сбросить"].tap()
+        let input = app.textFields["prototype.subscription.url"]
+        XCTAssertTrue(input.waitForExistence(timeout: 15))
+        let resetFinished = expectation(for: NSPredicate(format: "enabled == true"), evaluatedWith: input)
+        wait(for: [resetFinished], timeout: 15)
+        XCTAssertFalse(app.staticTexts["prototype.notice.message"].exists)
+        capture(app, "subscription-after-full-reset")
+        app.terminate()
+        let restored = launch(reset: false)
+        XCTAssertTrue(restored.textFields["prototype.subscription.url"].waitForExistence(timeout: 15))
+    }
+
+    func testSavedDiagnosticsCanBeReadAndSharedWhileDisconnected() {
+        let app = launch()
+        addSubscription(app)
+        tabButton(app, "Профиль").tap()
+        let logs = app.buttons["prototype.logs"]
+        for _ in 0..<5 where !logs.isHittable { app.swipeUp() }
+        XCTAssertTrue(logs.waitForExistence(timeout: 5))
+        logs.tap()
+        XCTAssertTrue(app.staticTexts["VPN отключён"].waitForExistence(timeout: 5))
+        app.buttons["prototype.logs.diagnostics"].tap()
+        let text = app.textViews["prototype.logs.diagnostics.text"]
+        XCTAssertTrue(text.waitForExistence(timeout: 15))
+        XCTAssertTrue((text.value as? String)?.contains("[app] application loaded") == true)
+        XCTAssertTrue((text.value as? String)?.contains("VPN diagnostics") == true)
+        app.buttons["prototype.logs.diagnostics.clear"].tap()
+        let confirmation = app.alerts["Удалить сохранённые отчёты?"]
+        XCTAssertTrue(confirmation.waitForExistence(timeout: 5))
+        confirmation.buttons["Отмена"].tap()
+        app.buttons["prototype.logs.diagnostics.share"].tap()
+        XCTAssertTrue(app.otherElements["ActivityListView"].waitForExistence(timeout: 10))
+        capture(app, "Saved diagnostics share sheet")
+    }
+
     override func setUp() async throws {
         continueAfterFailure = false
         try await control("normal")
@@ -14,7 +259,7 @@ final class PrototypeSmokeTests: XCTestCase {
         XCTAssertEqual((response as? HTTPURLResponse)?.statusCode, 200)
     }
 
-    private func launch(reset: Bool = true, connected: Bool = false, largeText: Bool = false, connectionStatus: String? = nil) -> XCUIApplication {
+    private func launch(reset: Bool = true, connected: Bool = false, largeText: Bool = false, connectionStatus: String? = nil, failover: String? = nil) -> XCUIApplication {
         XCUIDevice.shared.orientation = .portrait
         let app = XCUIApplication()
         app.launchEnvironment["PROTOTYPE_UI_TESTING"] = "1"
@@ -25,6 +270,7 @@ final class PrototypeSmokeTests: XCTestCase {
         if let connectionStatus {
             app.launchEnvironment["PROTOTYPE_UI_STATUS"] = connectionStatus
         }
+        if let failover { app.launchEnvironment["PROTOTYPE_UI_FAILOVER"] = failover }
         app.launchArguments += ["-AppleLanguages", "(ru)", "-AppleLocale", "ru_RU"]
         if largeText {
             app.launchArguments += ["-UIPreferredContentSizeCategoryName", "UICTContentSizeCategoryAccessibilityXXXL"]
@@ -43,7 +289,7 @@ final class PrototypeSmokeTests: XCTestCase {
         app.buttons.matching(NSPredicate(format: "label == %@", title)).firstMatch
     }
 
-    private func addSubscription(_ app: XCUIApplication, name: String = "both", server: String = "http://localhost:18081") {
+    private func addSubscription(_ app: XCUIApplication, name: String = "both", server: String = "http://localhost:18081", dismissOnboarding: Bool = true) {
         let input = app.textFields["prototype.subscription.url"]
         XCTAssertTrue(input.waitForExistence(timeout: 15))
         input.tap()
@@ -52,7 +298,14 @@ final class PrototypeSmokeTests: XCTestCase {
         }
         input.typeText(server + "/subscription/" + name)
         app.buttons["prototype.subscription.fetch"].tap()
-        XCTAssertTrue(tabButton(app, "Профиль").waitForExistence(timeout: 20))
+        XCTAssertTrue(app.descendants(matching: .any)["prototype.mode.drawer"].waitForExistence(timeout: 20))
+        if dismissOnboarding {
+            let done = app.buttons["prototype.mode.onboarding.done"]
+            if done.waitForExistence(timeout: 5) { done.tap() }
+        }
+        if dismissOnboarding {
+            XCTAssertTrue(tabButton(app, "Профиль").waitForExistence(timeout: 20))
+        }
     }
 
     private func capture(_: XCUIApplication, _ name: String) {
@@ -128,9 +381,9 @@ final class PrototypeSmokeTests: XCTestCase {
         capture(app, "native-tabs-connection")
 
         tabs.buttons["Роутинг"].tap()
-        let picker = app.segmentedControls["prototype.routing.mode"]
+        let picker = app.otherElements["prototype.routing.mode"]
         XCTAssertTrue(picker.waitForExistence(timeout: 5))
-        picker.buttons["Russia inside"].tap()
+        app.buttons["prototype.routing.russiaInside"].tap()
         XCTAssertTrue(tabs.buttons["Роутинг"].isSelected)
 
         tabs.buttons["Профиль"].tap()
@@ -139,7 +392,7 @@ final class PrototypeSmokeTests: XCTestCase {
         capture(app, "native-tabs-profile")
 
         tabs.buttons["Роутинг"].tap()
-        XCTAssertTrue(picker.buttons["Russia inside"].isSelected)
+        XCTAssertTrue(app.buttons["prototype.routing.russiaInside"].isSelected)
         tabs.buttons["Подключение"].tap()
         XCTAssertTrue(app.buttons["prototype.start"].waitForExistence(timeout: 5))
         XCTAssertTrue(tabs.buttons["Подключение"].isSelected)
@@ -509,15 +762,15 @@ final class PrototypeSmokeTests: XCTestCase {
         let app = launch()
         addSubscription(app)
         tabButton(app, "Роутинг").tap()
-        let picker = app.segmentedControls["prototype.routing.mode"]
+        let picker = app.otherElements["prototype.routing.mode"]
         XCTAssertTrue(picker.waitForExistence(timeout: 5))
-        picker.buttons["Russia inside"].tap()
-        XCTAssertTrue(picker.buttons["Russia inside"].isSelected)
+        app.buttons["prototype.routing.russiaInside"].tap()
+        XCTAssertTrue(app.buttons["prototype.routing.russiaInside"].isSelected)
         app.terminate()
         let restored = launch(reset: false)
         XCTAssertTrue(tabButton(restored, "Роутинг").waitForExistence(timeout: 15))
         tabButton(restored, "Роутинг").tap()
-        XCTAssertTrue(restored.segmentedControls["prototype.routing.mode"].buttons["Russia inside"].isSelected)
+        XCTAssertTrue(restored.buttons["prototype.routing.russiaInside"].isSelected)
     }
 
     func testLiveRefreshFailureAndForegroundActivationRetainCache() async throws {
@@ -534,6 +787,8 @@ final class PrototypeSmokeTests: XCTestCase {
         try await control("normal")
         XCUIDevice.shared.press(.home)
         app.activate()
+        XCTAssertTrue(app.staticTexts["Обновлённый обзор"].waitForExistence(timeout: 10))
+        app.buttons["prototype.subscription.refresh"].tap()
         XCTAssertTrue(app.staticTexts["Обзор"].waitForExistence(timeout: 10))
     }
 
@@ -543,19 +798,19 @@ final class PrototypeSmokeTests: XCTestCase {
         XCTAssertFalse(app.staticTexts["Осталось 2000000000 байт"].exists)
         let card = app.descendants(matching: .any)["prototype.vpn.card"]
         let cardFrame = card.frame
-        let refreshFrame = app.buttons["prototype.traffic.refresh"].frame
+        let refreshFrame = app.buttons["prototype.subscription.refresh"].frame
         try await control("invalid")
         let message = app.staticTexts["prototype.notice.message"]
         let close = app.buttons["prototype.notice.close"]
 
         for dismissal in 0 ..< 3 {
-            app.buttons["prototype.traffic.refresh"].tap()
+            app.buttons["prototype.subscription.refresh"].tap()
             XCTAssertTrue(message.waitForExistence(timeout: 10))
             XCTAssertEqual(message.label, "Сервер вернул некорректное оформление подписки.")
             XCTAssertLessThan(message.frame.minY, refreshFrame.minY)
             XCTAssertEqual(card.frame.minY, cardFrame.minY, accuracy: 1)
             XCTAssertEqual(card.frame.height, cardFrame.height, accuracy: 1)
-            XCTAssertEqual(app.buttons["prototype.traffic.refresh"].frame.minY, refreshFrame.minY, accuracy: 1)
+            XCTAssertEqual(app.buttons["prototype.subscription.refresh"].frame.minY, refreshFrame.minY, accuracy: 1)
             XCTAssertEqual(app.staticTexts.matching(NSPredicate(format: "label == %@", message.label)).count, 1)
             capture(app, "error-banner-\(dismissal)")
             if dismissal == 0 {

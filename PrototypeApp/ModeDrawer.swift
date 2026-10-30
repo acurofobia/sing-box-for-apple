@@ -4,6 +4,7 @@ struct PrototypeModeDrawer: View {
     @ObservedObject var model: PrototypeModel
     @ObservedObject var presentation: PrototypePresentationCoordinator
     @Environment(\.accessibilityReduceMotion) private var reduceMotion
+    @Environment(\.dynamicTypeSize) private var dynamicTypeSize
     @AccessibilityFocusState private var focused: Bool
     @ScaledMetric(relativeTo: .headline) private var headerHeight: CGFloat = 52
     @State private var progress: CGFloat = 0
@@ -11,9 +12,19 @@ struct PrototypeModeDrawer: View {
     @State private var contentHeight: CGFloat = 404
     @State private var closing = false
     @State private var openingWithGesture = false
+    @State private var arrowVisible = false
+    @AccessibilityFocusState private var onboardingFocused: Bool
 
     private var choices: [PrototypeUIItem] {
         model.subscription.uiDocument?.block("block04")?.items?.filter(\.isVisible) ?? []
+    }
+
+    private var onboardingTarget: String? {
+        guard presentation.showingModeOnboarding else { return nil }
+        return choices.first { item in
+            guard let mode = PrototypeConnectionMode.from(optionID: item.id) else { return false }
+            return model.isAvailable(mode)
+        }?.id
     }
 
     var body: some View {
@@ -37,7 +48,9 @@ struct PrototypeModeDrawer: View {
                 VStack(spacing: 0) {
                     ScrollView {
                         VStack(alignment: .leading, spacing: 12) {
-                            if let block = model.subscription.uiDocument?.block("block04") {
+                            if presentation.showingModeOnboarding {
+                                onboarding
+                            } else if let block = model.subscription.uiDocument?.block("block04") {
                                 if let title = block.title {
                                     Text(verbatim: title).font(.headline).foregroundStyle(.white).padding(.horizontal, 4)
                                 }
@@ -48,7 +61,14 @@ struct PrototypeModeDrawer: View {
                                     Text(verbatim: text).foregroundStyle(.white).padding(.horizontal, 4)
                                 }
                             }
-                            ForEach(choices) { item in choice(item) }
+                            ForEach(choices) { item in
+                                VStack(spacing: 8) {
+                                    if item.id == onboardingTarget {
+                                        onboardingArrow
+                                    }
+                                    choice(item)
+                                }
+                            }
                             if choices.isEmpty {
                                 Text("Нет доступных режимов").foregroundStyle(.white).padding(16)
                             }
@@ -114,12 +134,13 @@ struct PrototypeModeDrawer: View {
         }
         .onAppear {
             if presentation.drawerExpanded {
-                focused = true; animate(to: 1)
+                if !presentation.showingModeOnboarding { focused = true }
+                animate(to: 1)
             }
         }
         .onChange(of: presentation.drawerExpanded) { _, expanded in
             if expanded {
-                focused = true
+                if !presentation.showingModeOnboarding { focused = true }
                 if !openingWithGesture {
                     animate(to: 1)
                 }
@@ -127,6 +148,70 @@ struct PrototypeModeDrawer: View {
                 closing = true; animate(to: 0)
             }
         }
+        .task(id: presentation.showingModeOnboarding) {
+            guard presentation.showingModeOnboarding else { return }
+            do { try await Task.sleep(for: .milliseconds(400)) } catch { return }
+            onboardingFocused = true
+            withAnimation(reduceMotion ? nil : .easeOut(duration: 0.45)) {
+                arrowVisible = true
+            }
+        }
+    }
+
+    private var onboarding: some View {
+        VStack(alignment: .leading, spacing: 12) {
+            Label("Подписка добавлена", systemImage: "checkmark.circle.fill")
+                .font(.subheadline.weight(.medium)).foregroundStyle(.white.opacity(0.85))
+            if dynamicTypeSize.isAccessibilitySize {
+                onboardingDone
+                onboardingTitle
+            } else {
+                HStack(alignment: .top, spacing: 12) {
+                    onboardingTitle
+                    Spacer(minLength: 0)
+                    onboardingDone
+                }
+            }
+            Text("Нажмите на название режима или кружок справа. Менять режим можно в любой момент — просто откройте эту шторку.")
+                .font(.subheadline).foregroundStyle(.white.opacity(0.9))
+                .fixedSize(horizontal: false, vertical: true)
+        }
+        .padding(.horizontal, 8).padding(.top, 12)
+    }
+
+    private var onboardingTitle: some View {
+        Text("Выберите режим")
+            .font(.title2.weight(.semibold)).foregroundStyle(.white)
+            .fixedSize(horizontal: false, vertical: true)
+            .accessibilityIdentifier("prototype.mode.onboarding.title")
+            .accessibilityAddTraits(.isHeader)
+            .accessibilityFocused($onboardingFocused)
+    }
+
+    private var onboardingDone: some View {
+        Button { presentation.dismiss() } label: {
+            Text("Понятно").fixedSize()
+                .padding(.horizontal, 14).padding(.vertical, 8).frame(minHeight: 44)
+                .background(.white.opacity(0.16), in: Capsule())
+        }
+        .font(.subheadline.weight(.medium)).foregroundStyle(.white)
+        .buttonStyle(PrototypeFlatStyle())
+        .accessibilityIdentifier("prototype.mode.onboarding.done")
+    }
+
+    private var onboardingArrow: some View {
+        HStack {
+            Spacer()
+            Image(systemName: "arrow.turn.right.down")
+                .font(.system(size: 30, weight: .medium))
+                .foregroundStyle(.white)
+                .offset(y: arrowVisible || reduceMotion ? 0 : -8)
+                .opacity(arrowVisible || reduceMotion ? 1 : 0)
+                .frame(height: 36)
+                .padding(.trailing, 24)
+        }
+        .accessibilityHidden(true)
+        .allowsHitTesting(false)
     }
 
     private func toggleDrawer() {
@@ -240,6 +325,14 @@ struct PrototypeModeDrawer: View {
         .frame(maxWidth: .infinity, minHeight: item.id == "option01" ? 136 : (item.state == .restricted ? 158 : 116), alignment: .topLeading)
         .foregroundStyle(available ? .primary : PrototypeStyle.secondary)
         .background(.white, in: RoundedRectangle(cornerRadius: 20))
+        .overlay {
+            if item.id == onboardingTarget {
+                RoundedRectangle(cornerRadius: 20)
+                    .strokeBorder(.white.opacity(0.7), lineWidth: 2)
+                    .padding(-4)
+                    .allowsHitTesting(false)
+            }
+        }
     }
 
     private func availability(_ item: PrototypeUIItem, mode: PrototypeConnectionMode?, available: Bool) -> String {

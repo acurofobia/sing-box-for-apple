@@ -7,6 +7,39 @@ final class PrototypeDeviceRoutingTests: XCTestCase {
         app.descendants(matching: .any).matching(identifier: "prototype.status").firstMatch
     }
 
+    func testFailoverServerDetailsWithSavedConfiguration() throws {
+        #if targetEnvironment(simulator)
+            throw XCTSkip("This check requires the iPhone's saved VLESS configuration.")
+        #else
+            try XCTSkipUnless(ProcessInfo.processInfo.environment["PROTOTYPE_DEVICE_FAILOVER_CHECK"] == "1",
+                              "Enable this device check explicitly; it may start the saved VPN temporarily.")
+            continueAfterFailure = false
+            app.launch()
+            XCTAssertTrue(app.tabBars.buttons["Подключение"].waitForExistence(timeout: 15))
+            app.tabBars.buttons["Подключение"].tap()
+            let wasRunning = app.buttons["prototype.stop"].exists
+            defer {
+                if !wasRunning, ProcessInfo.processInfo.environment["PROTOTYPE_DEVICE_KEEP_CONNECTED"] != "1" { stopVPN() }
+            }
+            if !wasRunning { startVPN() }
+            waitForStatus("Подключено", timeout: 120)
+            let details = app.buttons["prototype.vpn.details"]
+            if details.value as? String != "Развёрнуто" { details.tap() }
+            let connected = app.staticTexts.matching(NSPredicate(format: "label MATCHES %@", "Подключён: .+ \\([1-4] из 4\\)"))
+                .firstMatch
+            XCTAssertTrue(connected.waitForExistence(timeout: 20), "Server field did not report the active failover candidate")
+            XCTAssertTrue(connected.isHittable, "Active server is clipped inside the drawer")
+            let screenshot = XCTAttachment(screenshot: app.screenshot())
+            screenshot.name = "Active VLESS failover server"
+            screenshot.lifetime = .keepAlways
+            add(screenshot)
+            let report = XCTAttachment(string: connected.label)
+            report.name = "Active failover status"
+            report.lifetime = .keepAlways
+            add(report)
+        #endif
+    }
+
     func testRoutingAndDownloadsWithSavedDeviceConfigurations() async throws {
         #if targetEnvironment(simulator)
             throw XCTSkip("This check requires a physical iPhone and saved VPN configurations.")

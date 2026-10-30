@@ -1,6 +1,61 @@
 {
   "sourceLanguage" : "en",
   "strings" : {
+    "Дождитесь завершения текущей операции и откройте ссылку ещё раз." : {
+      "extractionState" : "manual",
+      "localizations" : {
+        "ru" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Дождитесь завершения текущей операции и откройте ссылку ещё раз."
+          }
+        }
+      }
+    },
+    "Не удалось открыть ссылку добавления подписки." : {
+      "extractionState" : "manual",
+      "localizations" : {
+        "ru" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Не удалось открыть ссылку добавления подписки."
+          }
+        }
+      }
+    },
+    "Подписка добавлена" : {
+      "extractionState" : "manual",
+      "localizations" : {
+        "ru" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Подписка добавлена"
+          }
+        }
+      }
+    },
+    "Понятно" : {
+      "extractionState" : "manual",
+      "localizations" : {
+        "ru" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Понятно"
+          }
+        }
+      }
+    },
+    "Нажмите на название режима или кружок справа. Менять режим можно в любой момент — просто откройте эту шторку." : {
+      "extractionState" : "manual",
+      "localizations" : {
+        "ru" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Нажмите на название режима или кружок справа. Менять режим можно в любой момент — просто откройте эту шторку."
+          }
+        }
+      }
+    },
     "Проверка соединения…": {
       "extractionState": "manual",
       "localizations": {

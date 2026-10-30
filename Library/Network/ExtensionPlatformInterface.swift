@@ -310,6 +310,7 @@ public class ExtensionPlatformInterface: NSObject, LibboxPlatformInterfaceProtoc
             return
         }
         lastNetworkPath = networkPath
+        VPNDiagnostics.event("network path: " + networkPath)
         guard path.status != .unsatisfied,
               let defaultInterface = path.availableInterfaces.first
         else {
@@ -497,6 +498,7 @@ public class ExtensionPlatformInterface: NSObject, LibboxPlatformInterfaceProtoc
     }
 
     public func serviceStop() throws {
+        VPNDiagnostics.event("command server requested service stop")
         tunnel.stopService()
     }
 
@@ -553,7 +555,10 @@ public class ExtensionPlatformInterface: NSObject, LibboxPlatformInterfaceProtoc
         guard let message else {
             return
         }
-        Self.logger.debug("\(message, privacy: .public)")
+        VPNDiagnostics.core(message)
+        #if DEBUG
+            Self.logger.debug("\(message, privacy: .public)")
+        #endif
     }
 
     func reset() {

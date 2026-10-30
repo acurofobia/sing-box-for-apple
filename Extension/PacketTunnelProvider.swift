@@ -17,6 +17,7 @@ final class PacketTunnelProvider: ExtensionProvider {
             guard !stopped else { throw CancellationError() }
             startingServer = server
         }
+        capture?.setFailoverServer(server)
     }
 
     override func startTunnel(options: [String: NSObject]?) async throws {
@@ -34,6 +35,7 @@ final class PacketTunnelProvider: ExtensionProvider {
         let baseline = settings["baseline"] as? Bool ?? false
         let mode = settings["mode"] as? String ?? "vk-turn"
         let vless = !baseline && mode == "vless"
+        VPNDiagnostics.beginTunnel(mode: baseline ? "baseline" : mode)
         let connections = settings["connections"] as? Int ?? 30
         let directory = FilePath.sharedDirectory
         defer {
@@ -134,9 +136,6 @@ final class PacketTunnelProvider: ExtensionProvider {
             effective["configContent"] = NSString(string: configText)
             effective["systemProxyEnabled"] = NSNumber(value: false)
             try await super.startTunnel(options: effective)
-            if priorityFailoverJSON != nil {
-                capture.setFailoverServer(commandServer)
-            }
             if !baseline {
                 capture.setHealthServer(commandServer)
             }
@@ -161,6 +160,7 @@ final class PacketTunnelProvider: ExtensionProvider {
             guard !stateLock.withLock({ stopped }) else { throw CancellationError() }
             capture.setPhase(baseline ? "baseline" : vless ? "vless" : "combined")
         } catch {
+            VPNDiagnostics.startupFailed(error.localizedDescription)
             capture.setHealthServer(nil)
             capture.setFailoverServer(nil)
             if commandServer != nil {
@@ -175,6 +175,8 @@ final class PacketTunnelProvider: ExtensionProvider {
     }
 
     override func stopTunnel(with reason: NEProviderStopReason) async {
+        // Persist before any shutdown work that may block or be interrupted by iOS.
+        VPNDiagnostics.stopRequested(reason.rawValue)
         let (id, startup, server) = stateLock.withLock {
             stopped = true
             let id = sessionID
@@ -199,6 +201,7 @@ final class PacketTunnelProvider: ExtensionProvider {
         await super.stopTunnel(with: reason)
         capture?.stop()
         capture = nil
+        VPNDiagnostics.event("tunnel stopped")
     }
 }
 
@@ -223,6 +226,7 @@ private final class PrototypeMemoryCapture {
     private var healthChecking = false
     private var healthGeneration: UInt64 = 0
     private var nextHealthProbe = 0.0
+    private var nextDiagnosticSample = 0.0
 
     func setHealthServer(_ server: LibboxCommandServer?) {
         queue.sync {
@@ -274,6 +278,7 @@ private final class PrototypeMemoryCapture {
     }
 
     func fail(_ message: String) {
+        VPNDiagnostics.event("capture failure: \(message)")
         queue.async { [self] in lastError = message; phase = "failed"; sample(forceCSV: true); finish() }
     }
 
@@ -331,6 +336,16 @@ private final class PrototypeMemoryCapture {
             let active = stats?.activeConnections ?? 0
             let tx = stats?.txBytes ?? 0
             let rx = stats?.rxBytes ?? 0
+            if forceCSV || elapsed >= nextDiagnosticSample {
+                nextDiagnosticSample = elapsed + 30
+                let process = ProcessInfo.processInfo
+                #if os(iOS)
+                    let available = os_proc_available_memory()
+                #else
+                    let available = 0
+                #endif
+                VPNDiagnostics.event("sample elapsed=\(Int(elapsed))s phase=\(phase) footprint=\(info.phys_footprint) available=\(available) thermal=\(process.thermalState.rawValue) lowPower=\(process.isLowPowerModeEnabled) turnActive=\(active) tx=\(tx) rx=\(rx) health=\(health.map(String.init) ?? "unknown")")
+            }
             if forceCSV || elapsed <= 720 || elapsed >= nextMinuteSample {
                 let line = "\(elapsed),\(phase),phys_footprint,bytes,\(info.phys_footprint),\(connections),\(active),\(tx),\(rx)\n"
                 try file.write(contentsOf: Data(line.utf8))
@@ -338,20 +353,19 @@ private final class PrototypeMemoryCapture {
                     nextMinuteSample = (floor(elapsed / 60) + 1) * 60
                 }
             }
-            struct Failover: Codable { let mode: String; let selected: String?; let primaryHealth: String?; let allDown: Bool }
             struct Status: Encodable {
                 let footprintBytes: UInt64
                 let phase: String
                 let error: String?
                 let updatedAt: Date
-                let failover: Failover?
+                let failover: PriorityFailoverStatus?
                 let health: Bool?
                 let healthUpdatedAt: Date?
             }
-            var failover: Failover?
+            var failover: PriorityFailoverStatus?
             var statusError: NSError?
             if let text = failoverServer?.priorityFailoverStatus(&statusError), statusError == nil {
-                failover = try? JSONDecoder().decode(Failover.self, from: Data(text.utf8))
+                failover = try? JSONDecoder().decode(PriorityFailoverStatus.self, from: Data(text.utf8))
             }
             let data = try JSONEncoder().encode(Status(footprintBytes: info.phys_footprint, phase: phase, error: lastError, updatedAt: Date(), failover: failover, health: health, healthUpdatedAt: healthUpdatedAt))
             try data.write(to: directory.appendingPathComponent("prototype-status.json"), options: [.atomic, .completeFileProtectionUntilFirstUserAuthentication])

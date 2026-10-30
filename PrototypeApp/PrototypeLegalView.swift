@@ -1,3 +1,4 @@
+import Library
 import SwiftUI
 import UIKit
 
@@ -37,28 +38,35 @@ struct PrototypeLegalView: View {
         .navigationBarTitleDisplayMode(.inline)
         .toolbar(.visible, for: .navigationBar)
         .task {
-            do { text = try document.text() } catch { failed = true }
+            do { text = try document.text() } catch {
+                VPNDiagnostics.applicationError("open legal document", error: error)
+                failed = true
+            }
         }
     }
 }
 
-private struct PrototypeLegalTextView: UIViewRepresentable {
+struct PrototypeLegalTextView: UIViewRepresentable {
     let text: String
     var detectLinks = true
+    var monospaced = false
+    var accessibilityIdentifier = "prototype.legal.text"
 
     func makeUIView(context _: Context) -> UITextView {
         // TextKit 1 keeps long bundled license documents inexpensive to scroll.
         let view = UITextView(usingTextLayoutManager: false)
         view.isEditable = false
         view.isSelectable = true
-        view.font = .preferredFont(forTextStyle: .body)
+        view.font = monospaced
+            ? UIFontMetrics(forTextStyle: .caption2).scaledFont(for: .monospacedSystemFont(ofSize: 12, weight: .regular))
+            : .preferredFont(forTextStyle: .body)
         view.adjustsFontForContentSizeCategory = true
         view.textColor = .label
         view.backgroundColor = .systemBackground
         view.textContainerInset = UIEdgeInsets(top: 20, left: 20, bottom: 24, right: 20)
         view.textContainer.lineFragmentPadding = 0
         view.dataDetectorTypes = detectLinks ? [.link] : []
-        view.accessibilityIdentifier = "prototype.legal.text"
+        view.accessibilityIdentifier = accessibilityIdentifier
         view.setContentCompressionResistancePriority(.defaultLow, for: .horizontal)
         return view
     }

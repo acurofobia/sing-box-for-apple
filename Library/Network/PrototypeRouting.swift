@@ -6,7 +6,7 @@ public enum PrototypeRoutingMode: String, CaseIterable {
     case enabled
 
     public var title: String {
-        self == .enabled ? "С роутингом" : "Russia inside"
+        self == .enabled ? "RoskomVPN" : "Russia inside"
     }
 }
 

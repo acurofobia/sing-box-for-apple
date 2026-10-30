@@ -199,6 +199,30 @@ assertion checks the log window's active-mode title rather than the unreliable
 SwiftUI segmented button `isSelected` flag. Log: `/tmp/sing-prototype-logs-ui-final.log`.
 The simplified main screen was visually inspected from a simulator screenshot.
 
+## Subscription deep links
+
+The iOS app supports one custom URL action:
+
+```text
+vipin://add-subscription?url=https%3A%2F%2Fexample.org%2Fsubscription%2Ftoken
+```
+
+Encode the entire HTTP(S) subscription URL as the `url` query parameter.
+Percent-encoding preserves query characters such as `&` (`%26`) and `+` (`%2B`).
+Swift callers can use `URLComponents` and
+`URLQueryItem` to build the link. The app decodes the parameter once.
+
+Opening the link fills the existing subscription form. The user taps **Добавить
+подписку** to import, or **Сохранить** to replace an existing subscription.
+Cancelling leaves the saved subscription unchanged. The first successful import
+keeps the mode onboarding. The action works when the app is already open or
+starts from the link; a second link updates an already open draft.
+
+Only `add-subscription` with one nonempty `url` parameter is supported. Unknown
+actions, additional or duplicate parameters, URL credentials, fragments and
+non-HTTP(S) subscription URLs are rejected. Existing import checks still apply,
+including the requirement to disconnect VPN before replacing a subscription.
+
 ## Subscription import verification
 
 ```sh

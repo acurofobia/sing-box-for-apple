@@ -1,10 +1,23 @@
 """Local, synthetic-only fixtures for native UI verification (port 18081)."""
 from http.server import BaseHTTPRequestHandler, ThreadingHTTPServer
+from html import escape
 import json
-from urllib.parse import urlsplit
-from test_prototype_subscription import CONFIG, LINK
+import time
+from urllib.parse import quote, urlsplit
+from test_prototype_subscription import CONFIG, LINK, NODE
 
 VARIANT = 'normal'
+DEVICE_HWIDS = set()
+DEVICE_REVISION = int(time.time() * 1000)
+
+FAILOVER = {'schemaVersion': 1, 'kind': 'vless-failover', 'state': 'available',
+            'outbounds': [dict(NODE, tag=f'node-{i}', tls={'enabled': True, 'server_name': 'example.org',
+                          'utls': {'enabled': True, 'fingerprint': 'chrome'},
+                          'reality': {'enabled': True, 'public_key': 'A' * 43, 'short_id': 'abcd'}})
+                          for i in range(1, 5)],
+            'failover': {'selector': 'vk-wg', 'primary': 'node-1', 'backups': ['node-2', 'node-3', 'node-4'],
+                         'intervalMilliseconds': 10000, 'timeoutMilliseconds': 5000,
+                         'failureThreshold': 2, 'recoveryThreshold': 3}}
 
 
 def document(variant):
@@ -52,15 +65,32 @@ def document(variant):
 
 class Handler(BaseHTTPRequestHandler):
     def do_GET(self):
-        global VARIANT
+        global VARIANT, DEVICE_REVISION
         path = urlsplit(self.path).path
         name = path.rsplit('/', 1)[-1]
         status = 200
-        if path.startswith('/control/'):
+        if path.startswith('/deeplink/'):
+            source = f'http://localhost:{self.server.server_port}/subscription/{name}'
+            link = 'vipin://add-subscription?url=' + quote(source, safe='')
+            body = ('<!doctype html><html><body><a href="' + escape(link, quote=True) + '">Open vipin</a></body></html>').encode()
+            self.send_response(200)
+            self.send_header('Content-Type', 'text/html; charset=utf-8')
+            self.send_header('Content-Length', str(len(body)))
+            self.end_headers()
+            self.wfile.write(body)
+            return
+        if path == '/identity':
+            payload = {'hwids': sorted(DEVICE_HWIDS)}
+        elif path.startswith('/control/'):
             VARIANT = name
+            if name == "normal":
+                DEVICE_HWIDS.clear()
+                DEVICE_REVISION += 10
             payload = {'ok': True}
         elif path == '/config':
             payload = CONFIG
+        elif path == '/config/failover':
+            payload = FAILOVER
         elif path.startswith('/ui/'):
             if self.headers.get('Authorization') != 'Bearer synthetic_ui_token_123':
                 status, payload = 401, {'error': 'unauthorized'}
@@ -70,14 +100,22 @@ class Handler(BaseHTTPRequestHandler):
                 if variant == 'invalid': payload['schemaVersion'] = 2
         elif path.startswith('/subscription/') and name != 'error':
             base = f'http://localhost:{self.server.server_port}'
-            payload = {'sing_box_url': None if name in ('empty', 'vk') else base + ('/unavailable' if name == 'config-error' else '/config'),
+            payload = {'sing_box_url': None if name in ('empty', 'vk') else base + ('/unavailable' if name == 'config-error' else '/config/failover' if name == 'failover' else '/config'),
                        'vk_turn_link': None if name in ('empty', 'vless') else LINK,
                        'ui_url': base + '/ui/' + name, 'ui_token': 'synthetic_ui_token_123'}
+            if name == 'device-access':
+                payload['device_access'] = {'schemaVersion': 1, 'hwid': self.headers.get('x-hwid'),
+                                            'state': 'device_revoked' if VARIANT == 'device-revoked' else 'allowed',
+                                            'revision': DEVICE_REVISION + 1 if VARIANT == 'device-revoked' else DEVICE_REVISION}
         else:
             status, payload = 404, {'error': 'not_found'}
+        if path == '/subscription/device-access':
+            DEVICE_HWIDS.add(self.headers.get('x-hwid'))
         body = json.dumps(payload, ensure_ascii=False).encode()
         self.send_response(status)
         self.send_header('Content-Type', 'application/json')
+        if path == '/subscription/device-access':
+            self.send_header('X-Subscription-Format', 'vipin-v1')
         self.send_header('Content-Length', str(len(body)))
         self.end_headers()
         self.wfile.write(body)

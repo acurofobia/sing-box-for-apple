@@ -1,4 +1,5 @@
 import Library
+import NetworkExtension
 import SwiftUI
 import UIKit
 
@@ -12,6 +13,7 @@ struct PrototypeView: View {
     @State private var inactive = false
     @State private var connectionTop: CGFloat = 0
     @State private var rootTop: CGFloat = 0
+    @State private var importedSubscriptionSource: String?
     @Environment(\.scenePhase) private var scenePhase
     @Environment(\.openURL) private var openURL
 
@@ -58,10 +60,21 @@ struct PrototypeView: View {
                             .tabItem { Label("Профиль", systemImage: "person") }.tag(PrototypeTab.profile)
                     }
                 } else {
-                    NavigationStack { PrototypeSubscriptionForm(model: model, replacing: false) }
+                    NavigationStack {
+                        PrototypeSubscriptionForm(model: model, replacing: false, importedSource: $importedSubscriptionSource, saved: {
+                            tab = .connection
+                            if document?.block("block04")?.items?.contains(where: { item in
+                                guard item.isVisible, let mode = PrototypeConnectionMode.from(optionID: item.id) else { return false }
+                                return model.isAvailable(mode)
+                            }) == true {
+                                presentation.showModeOnboarding()
+                            }
+                        })
+                    }
                 }
             }
             .allowsHitTesting(presentation.destination != .modes && dialog == nil)
+            .disabled(model.resetting)
             .accessibilityHidden(presentation.destination == .modes || dialog != nil)
             if ready, model.subscription.isComplete,
                (tab == .connection && document?.block("block04") != nil) || presentation.destination == .modes
@@ -85,7 +98,7 @@ struct PrototypeView: View {
             NavigationStack {
                 switch destination {
                 case .subscription:
-                    PrototypeSubscriptionForm(model: model, replacing: true, saved: { presentation.dismiss() })
+                    PrototypeSubscriptionForm(model: model, replacing: true, importedSource: $importedSubscriptionSource, saved: { presentation.dismiss() })
                         .toolbar {
                             ToolbarItem(placement: .cancellationAction) {
                                 Button("Отмена") { model.cancelSubscriptionReplacement(); presentation.dismiss() }
@@ -116,7 +129,10 @@ struct PrototypeView: View {
             if let error { presentation.notice = error }
         }
         .onChange(of: presentation.notice) { _, notice in
-            if let notice { UIAccessibility.post(notification: .announcement, argument: notice) }
+            if let notice {
+                VPNDiagnostics.applicationError("application notice: " + notice)
+                UIAccessibility.post(notification: .announcement, argument: notice)
+            }
         }
         .onChange(of: presentation.externalURL) { _, value in
             guard let value else { return }
@@ -128,7 +144,30 @@ struct PrototypeView: View {
             }
         }
         .onChange(of: model.subscription.updatedAt) { presentation.reconcile(document) }
+        .onOpenURL { url in
+            do {
+                let source = try PrototypeDeepLink.subscriptionSource(from: url)
+                guard !model.resetting, !model.replacingSubscription else {
+                    presentation.notice = String(localized: "Дождитесь завершения текущей операции и откройте ссылку ещё раз.")
+                    return
+                }
+                importedSubscriptionSource = source
+                if ready, model.subscription.isComplete {
+                    presentation.show(.subscription)
+                }
+            } catch {
+                presentation.notice = String(localized: "Не удалось открыть ссылку добавления подписки.")
+            }
+        }
+        .onChange(of: model.subscription.isComplete) { _, complete in
+            if !complete {
+                tab = .connection
+                presentation.dismiss()
+            }
+        }
         .onChange(of: scenePhase) { _, phase in
+            VPNDiagnostics.app("scene phase=\(phase)")
+            model.recordVPNState(force: phase == .active)
             if phase != .active {
                 inactive = true
             } else if ready, inactive {
@@ -140,15 +179,31 @@ struct PrototypeView: View {
             await model.load()
             ready = true
             inactive = false
+            if importedSubscriptionSource != nil, model.subscription.isComplete {
+                presentation.show(.subscription)
+            }
         }
-        .task(id: ready) {
-            guard ready else { return }
-            await model.refreshSubscription()
+        .onReceive(NotificationCenter.default.publisher(for: .NEVPNStatusDidChange)) { _ in
+            model.recordVPNState()
+        }
+        .onReceive(NotificationCenter.default.publisher(for: UIApplication.didReceiveMemoryWarningNotification)) { _ in
+            VPNDiagnostics.app("application memory warning")
+        }
+        .onReceive(NotificationCenter.default.publisher(for: UIApplication.willTerminateNotification)) { _ in
+            VPNDiagnostics.app("application will terminate")
+        }
+        .task(id: ready && scenePhase == .active) {
+            guard ready, scenePhase == .active else { return }
+            while !Task.isCancelled {
+                await model.refreshSubscription()
+                do { try await Task.sleep(for: .seconds(60)) } catch { return }
+            }
         }
         .task(id: ready) {
             guard ready else { return }
             while !Task.isCancelled {
                 await model.refresh()
+                model.recordVPNState()
                 do { try await Task.sleep(for: .seconds(1)) } catch { return }
             }
         }
@@ -158,6 +213,7 @@ struct PrototypeView: View {
 struct PrototypeSubscriptionForm: View {
     @ObservedObject var model: PrototypeModel
     let replacing: Bool
+    @Binding var importedSource: String?
     var saved: () -> Void = {}
     @State private var source = ""
     @State private var showingHelp = false
@@ -171,10 +227,6 @@ struct PrototypeSubscriptionForm: View {
                 Text("Вставьте ссылку на подписку, чтобы начать пользоваться VPN.")
                     .font(.system(size: 17)).foregroundStyle(PrototypeStyle.secondary)
                     .fixedSize(horizontal: false, vertical: true).padding(.top, 12)
-                Text("Сервер подписки получит вашу ссылку и технические параметры запроса. При подключении данные передаются выбранным серверам; в режиме VK TURN также используется инфраструктура VK. Журналы сохраняются локально и не отправляются разработчику автоматически.")
-                    .font(.footnote).foregroundStyle(PrototypeStyle.secondary)
-                    .fixedSize(horizontal: false, vertical: true).padding(.top, 16)
-                    .accessibilityIdentifier("prototype.privacy.disclosure")
                 VStack(alignment: .leading, spacing: 0) {
                     Text("Ссылка на подписку").font(.system(size: 15))
                     HStack(spacing: 8) {
@@ -234,7 +286,11 @@ struct PrototypeSubscriptionForm: View {
         .background(.white)
         .toolbar(replacing ? .visible : .hidden, for: .navigationBar)
         .scrollDismissesKeyboard(.interactively)
-        .onAppear { source = model.subscription.sourceURL ?? "" }
+        .onAppear {
+            source = model.subscription.sourceURL ?? ""
+            applyImportedSource()
+        }
+        .onChange(of: importedSource) { applyImportedSource() }
         .alert("Где взять ссылку?", isPresented: $showingHelp) {
             Button("Понятно", role: .cancel) {}
         } message: {
@@ -244,6 +300,13 @@ struct PrototypeSubscriptionForm: View {
 
     private var canSubmit: Bool {
         !model.subscriptionLoading && !model.busy && !model.canStop && !source.trimmingCharacters(in: .whitespacesAndNewlines).isEmpty
+    }
+
+    private func applyImportedSource() {
+        guard let importedSource else { return }
+        source = importedSource
+        self.importedSource = nil
+        focused = false
     }
 }
 
@@ -348,11 +411,8 @@ struct PrototypeConnectionView: View {
                     if let block = model.subscription.uiDocument?.block("block01") {
                         PrototypeSubscriptionCard(block: block, context: .connection, updatedAt: model.subscription.updatedAt,
                                                   loading: model.subscriptionLoading, edit: edit,
-                                                  refresh: { Task { await model.refreshSubscription() } }, action: dispatch)
+                                                  refresh: { Task { await model.refreshSubscription(force: true) } }, action: dispatch)
                             .padding(.horizontal, -1)
-                    }
-                    if let block = model.subscription.uiDocument?.block("block06") {
-                        PrototypeProgressView(block: block, loading: model.subscriptionLoading) { Task { await model.refreshSubscription() } }
                     }
                     if !model.hasLink, !model.hasVLESS {
                         Text("Нет доступных конфигураций подключения. Обновите подписку или измените ссылку.").foregroundStyle(.orange).font(.footnote)
@@ -374,61 +434,10 @@ struct PrototypeConnectionView: View {
     }
 }
 
-private struct PrototypeProgressView: View {
-    let block: PrototypeUIBlock
-    let loading: Bool
-    let refresh: () -> Void
-
-    private func formatted(_ value: Int64, maximum: Bool = false) -> String {
-        if block.unit == "bytes" {
-            let number = Double(value) / 1_000_000_000
-            return number.formatted(.number.locale(Locale(identifier: "en_US_POSIX")).precision(.fractionLength((maximum ? 1 : 0) ... 1))) + " GB"
-        }
-        return value.formatted() + (block.unit == "percent" ? "%" : "")
-    }
-
-    var body: some View {
-        VStack(alignment: .leading, spacing: 10) {
-            if let title = block.title {
-                Text(verbatim: title).font(.headline)
-            }
-            if let subtitle = block.subtitle {
-                Text(verbatim: subtitle)
-            }
-            HStack(spacing: 8) {
-                Text(verbatim: formatted(block.value ?? 0) + " из " + formatted(block.maximum ?? 1, maximum: true))
-                    .font(.system(size: 17)).lineLimit(1).minimumScaleFactor(0.75)
-                    .frame(maxWidth: .infinity, alignment: .leading)
-                if let period = block.period {
-                    Text(verbatim: ["day": "в день", "week": "в неделю", "month": "в месяц", "total": "всего"][period] ?? "")
-                        .font(.system(size: 13)).foregroundStyle(.white).padding(.horizontal, 14).frame(height: 24)
-                        .background(PrototypeStyle.accent, in: Capsule())
-                }
-                Button(action: refresh) {
-                    HStack(spacing: 4) { Image(systemName: "arrow.clockwise"); Text("Обновить") }
-                        .font(.system(size: 15)).frame(width: 108, height: 44).contentShape(Rectangle())
-                }
-                .buttonStyle(.plain).foregroundStyle(PrototypeStyle.accent).disabled(loading)
-                .padding(.vertical, -8).accessibilityIdentifier("prototype.traffic.refresh")
-            }
-            GeometryReader { proxy in
-                Capsule().fill(PrototypeStyle.border)
-                    .overlay(alignment: .leading) {
-                        Capsule().fill(PrototypeStyle.accent)
-                            .frame(width: proxy.size.width * min(1, max(0, Double(block.value ?? 0) / Double(max(1, block.maximum ?? 1)))))
-                    }
-            }.frame(height: 6)
-            if let reset = block.resetAt, let date = PrototypeUIDocument.date(from: reset) {
-                Text(date, format: .dateTime.day().month().hour().minute()).font(.caption).foregroundStyle(.secondary)
-            }
-        }
-        .padding(16).prototypeSurface()
-    }
-}
-
 struct PrototypeProfileView: View {
     @ObservedObject var model: PrototypeModel
     @ObservedObject var presentation: PrototypePresentationCoordinator
+    @State private var showingReset = false
     private var menu: [PrototypeUIItem] {
         model.subscription.uiDocument?.block("block05")?.items ?? []
     }
@@ -444,7 +453,7 @@ struct PrototypeProfileView: View {
                 if let block = model.subscription.uiDocument?.block("block01") {
                     PrototypeSubscriptionCard(block: block, context: .profile, updatedAt: model.subscription.updatedAt,
                                               loading: model.subscriptionLoading, edit: {},
-                                              refresh: { Task { await model.refreshSubscription() } }, action: dispatch)
+                                              refresh: { Task { await model.refreshSubscription(force: true) } }, action: dispatch)
                 }
                 ForEach(model.subscription.warnings, id: \.self) { Text(verbatim: $0).foregroundStyle(.orange).font(.footnote) }
                 if let block = model.subscription.uiDocument?.block("block02") {
@@ -471,14 +480,22 @@ struct PrototypeProfileView: View {
                         .accessibilityIdentifier("prototype.logs")
                     NavigationLink { PrototypeSettingsView() } label: { row("Настройки приложения", last: false) }
                         .accessibilityIdentifier("prototype.settings")
+                    Button { showingReset = true } label: {
+                        row(model.resetting ? "Сброс…" : "Сбросить приложение", last: menu.dropFirst(localIndex).filter(\.isVisible).isEmpty, destructive: true)
+                    }
+                    .buttonStyle(.plain).disabled(model.busy || model.resetting)
+                    .accessibilityIdentifier("prototype.reset")
+                    ForEach(Array(menu.dropFirst(localIndex)).filter(\.isVisible)) { item in menuRow(item, last: item.id == menu.last?.id) }
+                }
+                .foregroundStyle(.primary).background(PrototypeStyle.field, in: RoundedRectangle(cornerRadius: 20))
+                VStack(spacing: 0) {
                     ForEach(PrototypeLegalDocument.allCases) { document in
                         Button { presentation.show(.legal(document)) } label: {
-                            row(document.title, last: document == .sources && menu.dropFirst(localIndex).filter(\.isVisible).isEmpty)
+                            row(document.title, last: document == .sources)
                         }
                         .buttonStyle(.plain)
                         .accessibilityIdentifier("prototype.legal." + document.rawValue)
                     }
-                    ForEach(Array(menu.dropFirst(localIndex)).filter(\.isVisible)) { item in menuRow(item, last: item.id == menu.last?.id) }
                 }
                 .foregroundStyle(.primary).background(PrototypeStyle.field, in: RoundedRectangle(cornerRadius: 20))
             }
@@ -487,11 +504,17 @@ struct PrototypeProfileView: View {
         }
         .background(.white).toolbar(.hidden, for: .navigationBar)
         .ignoresSafeArea(.container, edges: .top)
+        .alert("Сбросить приложение?", isPresented: $showingReset) {
+            Button("Сбросить", role: .destructive) { Task { await model.resetApplication() } }
+            Button("Отмена", role: .cancel) {}
+        } message: {
+            Text("VPN будет отключён. Подписка, параметры подключения, сохранённые ключи, настройки, кеш и локальные журналы будут удалены с устройства. Это действие нельзя отменить.")
+        }
     }
 
-    private func row(_ title: String, last: Bool) -> some View {
+    private func row(_ title: String, last: Bool, destructive: Bool = false) -> some View {
         HStack {
-            Text(verbatim: title).font(.system(size: 17)).foregroundStyle(.primary)
+            Text(verbatim: title).font(.system(size: 17)).foregroundStyle(destructive ? Color.red : Color.primary)
             Spacer()
             Image(systemName: "chevron.right").font(.system(size: 13, weight: .semibold)).foregroundStyle(Color(uiColor: .tertiaryLabel))
         }

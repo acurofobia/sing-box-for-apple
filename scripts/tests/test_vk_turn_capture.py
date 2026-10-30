@@ -11,7 +11,9 @@ import Darwin
 import Foundation
 
 private var testUptime = 0.0
+private enum VPNDiagnostics { static func event(_ message: String) {} }
 private enum ConnectionStatus { case connected, connecting, disconnecting, reasserting, disconnected, invalid }
+private enum ConnectionMode { case vless, vkTurn }
 private struct TestConnection { var status: ConnectionStatus; var connectedDate: Date? = nil }
 private struct TestManager { var connection: TestConnection }
 private enum FilePath { static var sharedDirectory = FileManager.default.temporaryDirectory }
@@ -134,6 +136,22 @@ case "disconnected_error", "stale", "connected", "all_down", "stale_all_down", "
         expect(model.footprint == "40.0 МиБ", "Fresh connected memory missing")
         expect(model.status != "Подключено", "Tunnel without a successful check presented as working internet")
     }
+case "connecting_failover", "expired_failover", "previous_failover", "disconnected_failover":
+    let scenario = CommandLine.arguments[1]
+    FilePath.sharedDirectory = directory
+    let date = Date(timeIntervalSinceNow: scenario == "expired_failover" ? -10 : scenario == "previous_failover" ? -2 : 0)
+    let payload = UIStatus(phase: "vless-startup", error: nil, updatedAt: date, failover: TestFailover())
+    try JSONEncoder().encode(payload).write(to: statusURL)
+    let model = TestModel()
+    model.failoverStatus = try JSONDecoder().decode(PriorityFailoverStatus.self, from: JSONEncoder().encode(TestFailover()))
+    model.manager = TestManager(connection: TestConnection(status: scenario == "disconnected_failover" ? .disconnected : .connecting,
+        connectedDate: scenario == "previous_failover" ? Date(timeIntervalSinceNow: -1) : nil))
+    await model.refresh()
+    if scenario == "connecting_failover" {
+        expect(model.failoverStatus?.selected == "b2", "Startup failover snapshot not published")
+    } else {
+        expect(model.failoverStatus == nil, "Stale or disconnected failover status retained")
+    }
 case "failover":
     let server = LibboxCommandServer()
     capture.setFailoverServer(server)
@@ -218,12 +236,14 @@ class CaptureTests(unittest.TestCase):
         app = (ROOT / 'PrototypeApp/Application.swift').read_text()
         refresh = '    func refresh() async {' + app.split('    func refresh() async {', 1)[1].rsplit('\n}', 1)[0]
         model = ('private final class TestModel {\n'
-                 '    var manager: TestManager?\n    var footprint = "—"\n'
+                 '    var manager: TestManager?\n    var footprint = "—"\n    var resetting = false\n'
+                 '    var connectionMode: ConnectionMode = .vless\n    var failoverStatus: PriorityFailoverStatus?\n'
                  '    var vpnState: ConnectionStatus = .disconnected\n    var connectedAt: Date?\n    var status = "Отключено"\n    var error: String?\n' + refresh + '}\n')
         swift.write_text(HARNESS + capture + model + CHECKS)
         cls.executable = directory / 'capture-tests'
         subprocess.run(['xcrun', 'swiftc', '-module-cache-path', str(directory / 'modules'),
-                        str(swift), '-o', str(cls.executable)], check=True, text=True)
+                        str(ROOT / 'Library/Network/PriorityFailoverStatus.swift'), str(swift),
+                        '-o', str(cls.executable)], check=True, text=True)
 
     def run_scenario(self, name):
         result = subprocess.run([str(self.executable), name], capture_output=True, text=True)
@@ -231,6 +251,11 @@ class CaptureTests(unittest.TestCase):
 
     def test_failover_status_uses_existing_sampler_and_releases_server(self):
         self.run_scenario("failover")
+
+    def test_failover_is_visible_during_startup_and_cleared_when_stale(self):
+        for scenario in ['connecting_failover', 'expired_failover', 'previous_failover', 'disconnected_failover']:
+            with self.subTest(scenario=scenario):
+                self.run_scenario(scenario)
 
     def test_health_checks_publish_failure_and_recovery_without_overlapping(self):
         self.run_scenario('health')

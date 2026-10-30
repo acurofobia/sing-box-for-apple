@@ -1,4 +1,5 @@
 """Atomic cache and cancellation tests against the production Swift store."""
+from test_device_access import shared_sources
 from pathlib import Path
 import subprocess
 import tempfile
@@ -54,6 +55,36 @@ HARNESS = '''
   try JSONEncoder().encode(snapshot).write(to: cache)
   try restored.load()
   precondition(restored.snapshot.vlessProvisioning?.failover?.primary == "n1")
+  let clock = Date(timeIntervalSince1970: 1_800_000_000)
+  _ = try await store.update("first", replacing: true, now: clock)
+  let throttled = try await store.update("first", replacing: false, automatic: true, now: clock.addingTimeInterval(3599))
+  precondition(throttled == nil, "automatic refresh bypassed the hourly interval")
+  let reloaded = PrototypeSubscriptionStore(cacheURL: cache)
+  try reloaded.load()
+  let afterRelaunch = try await reloaded.update("first", replacing: false, automatic: true, now: clock.addingTimeInterval(3599))
+  precondition(afterRelaunch == nil, "relaunch bypassed the hourly interval")
+  let due = try await store.update("first", replacing: false, automatic: true, now: clock.addingTimeInterval(3600))
+  precondition(due != nil, "hourly automatic refresh did not run")
+  let manual = try await store.update("first", replacing: false, now: clock.addingTimeInterval(3601))
+  precondition(manual != nil, "manual refresh was throttled")
+  do {
+   _ = try await store.update("fail", replacing: false, automatic: true, now: clock.addingTimeInterval(7201))
+   fatalError("failed download unexpectedly succeeded")
+  } catch {}
+  let retry = try await store.update("first", replacing: false, automatic: true, now: clock.addingTimeInterval(7202))
+  precondition(retry == nil, "failed automatic request was retried too early")
+  let late = Task { try await store.update("old", replacing: true) }
+  try await Task.sleep(for: .milliseconds(20))
+  try await store.reset()
+  _ = try await late.value
+  precondition(!store.snapshot.isComplete && !FileManager.default.fileExists(atPath: cache.path), "reset retained subscription or late download")
+  let resetReloaded = PrototypeSubscriptionStore(cacheURL: cache)
+  try resetReloaded.load()
+  precondition(!resetReloaded.snapshot.isComplete, "reset did not persist")
+  _ = try await store.update("first", replacing: true)
+  snapshot = store.snapshot
+  snapshot.vlessProvisioning = provisioned
+  try JSONEncoder().encode(snapshot).write(to: cache)
   var raw = try JSONSerialization.jsonObject(with: Data(contentsOf: cache)) as! [String: Any]
   var provisioning = raw["vlessProvisioning"] as! [String: Any]
   var nodes = provisioning["outbounds"] as! [[String: Any]]
@@ -76,7 +107,7 @@ class LifecycleTests(unittest.TestCase):
             files = ['Library/Network/VKTurnConfiguration.swift', 'PrototypeApp/SubscriptionUIDocument.swift',
                      'PrototypeApp/Subscription.swift', 'PrototypeApp/SubscriptionLoader.swift',
                      'PrototypeApp/SubscriptionStore.swift']
-            source.write_text('\n'.join((ROOT / name).read_text().replace('import Library\n', '') for name in files) + HARNESS)
+            source.write_text(shared_sources() + '\n'.join((ROOT / name).read_text().replace('import Library\n', '') for name in files) + HARNESS)
             import json
             from test_prototype_subscription import NODE
             nodes = [dict(NODE, tag=tag, tls={'enabled': True, 'server_name': 'example.org',

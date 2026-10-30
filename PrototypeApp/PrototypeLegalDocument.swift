@@ -25,7 +25,10 @@ enum PrototypeLegalDocument: String, CaseIterable, Identifiable {
         guard let url = bundle.url(forResource: resource, withExtension: "txt", subdirectory: "Legal")
             ?? bundle.url(forResource: resource, withExtension: "txt")
         else { throw CocoaError(.fileNoSuchFile) }
-        return try String(contentsOf: url, encoding: .utf8)
+        let text = try String(contentsOf: url, encoding: .utf8)
+        guard self == .sources else { return text }
+        return text.replacingOccurrences(of: "{{version}}", with: bundle.object(forInfoDictionaryKey: "CFBundleShortVersionString") as? String ?? "—")
+            .replacingOccurrences(of: "{{build}}", with: bundle.object(forInfoDictionaryKey: "CFBundleVersion") as? String ?? "—")
     }
 
     struct LicenseSection: Identifiable {

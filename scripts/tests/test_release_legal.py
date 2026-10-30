@@ -14,9 +14,9 @@ class LegalDocumentTests(unittest.TestCase):
             folder = Path(directory)
             bundle = folder / 'LegalFixture.bundle'
             (bundle / 'Legal').mkdir(parents=True)
-            (bundle / 'Info.plist').write_bytes(plistlib.dumps({'CFBundleIdentifier': 'test.legal'}))
+            (bundle / 'Info.plist').write_bytes(plistlib.dumps({'CFBundleIdentifier': 'test.legal', 'CFBundleShortVersionString': '1.2.3', 'CFBundleVersion': '99'}))
             for name in ['PrivacyPolicy', 'Licenses', 'SourceCode']:
-                (bundle / 'Legal' / (name + '.txt')).write_text(name + ' — пример', encoding='utf-8')
+                (bundle / 'Legal' / (name + '.txt')).write_text(name + ' — пример {{version}} ({{build}})', encoding='utf-8')
             harness = folder / 'main.swift'
             harness.write_text('''import Foundation
 @main struct Checks {
@@ -26,6 +26,7 @@ class LegalDocumentTests(unittest.TestCase):
             let text = try document.text(in: bundle)
             precondition(text.contains("— пример"))
             precondition(!document.title.isEmpty)
+            if document == .sources { precondition(text.contains("1.2.3 (99)") && !text.contains("{{version}}")) }
         }
         let licenses = "Intro\\n\\n" + String(repeating: "=", count: 78) + "\\nLibrary A\\nA license\\n\\n" + String(repeating: "=", count: 78) + "\\nLibrary B\\nB license"
         let sections = PrototypeLegalDocument.licenseSections(from: licenses)

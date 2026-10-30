@@ -18,6 +18,7 @@ final class PrototypePresentationCoordinator: ObservableObject {
 
     @Published private(set) var destination: Destination?
     @Published private(set) var drawerExpanded = false
+    @Published private(set) var showingModeOnboarding = false
     @Published var externalURL: URL?
     @Published var notice: String? {
         didSet {
@@ -33,6 +34,11 @@ final class PrototypePresentationCoordinator: ObservableObject {
     private var dismissing = false
     private var dialogDismissal: Task<Void, Never>?
     private var noticeDismissal: Task<Void, Never>?
+
+    func showModeOnboarding() {
+        showingModeOnboarding = true
+        show(.modes)
+    }
 
     func show(_ next: Destination) {
         guard destination != next else { return }
@@ -79,6 +85,7 @@ final class PrototypePresentationCoordinator: ObservableObject {
 
     func completeDismissal() {
         if destination == .modes {
+            showingModeOnboarding = false
             destination = nil
         }
         guard destination == nil else { return }

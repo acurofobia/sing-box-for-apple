@@ -1,4 +1,5 @@
 import Foundation
+import Library
 
 /// Serializes provisioning transactions. This store never touches tunnel runtime files.
 @MainActor
@@ -8,19 +9,24 @@ final class PrototypeSubscriptionStore {
     private var task: Task<PrototypeSubscription, Error>?
     private var generation: UInt64 = 0
     private var activeGeneration: UInt64?
+    private var lastAttemptAt: Date?
+    private var refreshURL: URL { cacheURL.appendingPathExtension("refresh") }
     private(set) var snapshot = PrototypeSubscription()
     var isLoading: Bool {
         activeGeneration != nil
     }
 
-    init(cacheURL: URL, download: @escaping @Sendable (String) async throws -> PrototypeSubscription = { try await PrototypeSubscription.download($0) }) {
+    init(cacheURL: URL, download: (@Sendable (String) async throws -> PrototypeSubscription)? = nil) {
         self.cacheURL = cacheURL
-        self.download = download
+        self.download = download ?? { try await PrototypeSubscriptionLoader.download($0, accessStore: SubscriptionDeviceAccessStore(cacheURL: cacheURL)) }
     }
 
     func load() throws {
+        if let data = try? Data(contentsOf: refreshURL) {
+            lastAttemptAt = try? JSONDecoder().decode(Date.self, from: data)
+        }
         guard FileManager.default.fileExists(atPath: cacheURL.path) else { return }
-        let data = try Data(contentsOf: cacheURL)
+        let data = try SubscriptionDeviceAccessStore(cacheURL: cacheURL).sanitizedSnapshot(Data(contentsOf: cacheURL))
         // Validate raw keys before Codable can discard unknown outbound options.
         if let root = try JSONSerialization.jsonObject(with: data) as? [String: Any],
            let provisioning = root["vlessProvisioning"], !(provisioning is NSNull)
@@ -33,6 +39,9 @@ final class PrototypeSubscriptionStore {
             _ = try PrototypeUIDocument.decode(JSONEncoder().encode(document))
         }
         snapshot = cached
+        if let updatedAt = cached.updatedAt, lastAttemptAt.map({ $0 < updatedAt }) ?? true {
+            lastAttemptAt = updatedAt
+        }
     }
 
     func cancel() {
@@ -42,8 +51,22 @@ final class PrototypeSubscriptionStore {
         // Retain the task until the next operation has waited for cancellation.
     }
 
-    func update(_ source: String, replacing: Bool, authorizeCommit: () throws -> Void = {}) async throws -> PrototypeSubscription? {
+    func reset() async throws {
+        cancel()
+        if let task { _ = await task.result }
+        task = nil
+        for url in [cacheURL, refreshURL] where FileManager.default.fileExists(atPath: url.path) {
+            try FileManager.default.removeItem(at: url)
+        }
+        snapshot = PrototypeSubscription()
+        lastAttemptAt = nil
+    }
+
+    func update(_ source: String, replacing: Bool, automatic: Bool = false, now: Date = Date(), authorizeCommit: () throws -> Void = {}) async throws -> PrototypeSubscription? {
         if !replacing, isLoading {
+            return nil
+        }
+        if automatic, let lastAttemptAt, now.timeIntervalSince(lastAttemptAt) < 3600 {
             return nil
         }
         generation &+= 1
@@ -60,14 +83,17 @@ final class PrototypeSubscriptionStore {
             }
             return nil
         }
-        let operation = Task { try await download(source) }
-        task = operation
         defer {
             if activeGeneration == current {
                 task = nil
                 activeGeneration = nil
             }
         }
+        lastAttemptAt = now
+        try FileManager.default.createDirectory(at: cacheURL.deletingLastPathComponent(), withIntermediateDirectories: true)
+        try JSONEncoder().encode(now).write(to: refreshURL, options: [.atomic, .completeFileProtectionUntilFirstUserAuthentication])
+        let operation = Task { try await download(source) }
+        task = operation
         do {
             let updated = try await withTaskCancellationHandler {
                 try await operation.value
@@ -78,9 +104,9 @@ final class PrototypeSubscriptionStore {
             try authorizeCommit()
             let encoded = try JSONEncoder().encode(updated)
             try FileManager.default.createDirectory(at: cacheURL.deletingLastPathComponent(), withIntermediateDirectories: true)
-            try encoded.write(to: cacheURL, options: [.atomic, .completeFileProtectionUntilFirstUserAuthentication])
-            snapshot = updated
-            return updated
+            let committed = try SubscriptionDeviceAccessStore(cacheURL: cacheURL).commitSnapshot(encoded)
+            snapshot = try JSONDecoder().decode(PrototypeSubscription.self, from: committed)
+            return snapshot
         } catch {
             guard generation == current, !operation.isCancelled, !Task.isCancelled else { return nil }
             throw error
