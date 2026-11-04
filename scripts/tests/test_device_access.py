@@ -78,6 +78,33 @@ HARNESS = r'''
         _ = try store.record(decision("allowed", 4), source: source)
         let allowedDecision = try store.decision(forSource: source)
         precondition(allowedDecision?.state == .allowed)
+
+        let tariffMessage = "Смените тариф, чтобы получить доступ к обходу белых списков"
+        let tariffButton = ["id": "button05", "title": "Сменить тариф"]
+        var tariffSnapshot = original
+        let choice: [String: Any] = ["id": "option02", "state": "restricted", "stateText": tariffMessage, "buttons": [tariffButton]]
+        tariffSnapshot["uiDocument"] = ["blocks": [["id": "block04", "items": [choice]]]]
+        let encodedTariff = try JSONSerialization.data(withJSONObject: tariffSnapshot)
+        func renderedChoice(_ data: Data) throws -> [String: Any] {
+            let snapshot = try JSONSerialization.jsonObject(with: data) as! [String: Any]
+            precondition(snapshot["vkTurnLink"] == nil, "denied credential retained")
+            let document = snapshot["uiDocument"] as! [String: Any]
+            let blocks = document["blocks"] as! [[String: Any]]
+            let items = blocks[0]["items"] as! [[String: Any]]
+            return items[0]
+        }
+        _ = try store.record(decision("not_allowed", 5), source: source)
+        let restricted = try renderedChoice(store.commitSnapshot(encodedTariff))
+        precondition(restricted["state"] as? String == "restricted", "tariff restriction overwritten")
+        precondition(restricted["stateText"] as? String == tariffMessage)
+        precondition(restricted["buttons"] as? [[String: String]] == [tariffButton])
+        for (state, revision) in [("device_limit_reached", 6), ("device_revoked", 7)] {
+            let denial = try store.record(decision(state, revision), source: source)
+            let blocked = try renderedChoice(store.commitSnapshot(encodedTariff))
+            precondition(blocked["state"] as? String == "unavailable")
+            precondition(blocked["stateText"] as? String == denial.state.message)
+            precondition((blocked["buttons"] as? [[String: String]])?.isEmpty == true)
+        }
         for raw in ["{}", "{\"schemaVersion\":1,\"hwid\":\"wrong\",\"state\":\"device_revoked\",\"revision\":5}", "{\"schemaVersion\":1,\"hwid\":\"\(hwid)\",\"state\":\"allowed\",\"revision\":-1}"] {
             do { _ = try SubscriptionDeviceAccessDecision.decode(Data(raw.utf8), hwid: hwid); fatalError("invalid response accepted") } catch {}
         }

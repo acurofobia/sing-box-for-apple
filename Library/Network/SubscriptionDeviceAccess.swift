@@ -147,6 +147,10 @@ public struct SubscriptionDeviceAccessStore: Sendable {
             for index in blocks.indices where blocks[index]["id"] as? String == "block04" {
                 guard var items = blocks[index]["items"] as? [[String: Any]] else { continue }
                 for item in items.indices where items[item]["id"] as? String == "option02" {
+                    // The generic denial also covers tariffs without bypass. Keep the server's tariff action.
+                    if decision.state == .notAllowed, items[item]["state"] as? String == "restricted" {
+                        continue
+                    }
                     items[item]["state"] = "unavailable"
                     items[item]["stateText"] = decision.state.message
                     items[item]["buttons"] = []

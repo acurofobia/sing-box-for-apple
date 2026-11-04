@@ -28,8 +28,8 @@ def document(variant):
          'state': 'available', 'buttons': [], 'detailsPageId': 'page01'},
         {'id': 'option02', 'title': 'Обход БС', 'text': 'Альтернативное подключение для сетей с белыми списками. Выберите этот режим, если обычный ВПН недоступен.',
          'state': 'restricted' if variant == 'restricted' else 'available',
-         'stateText': 'Временно недоступно' if variant == 'restricted' else None,
-         'detailsPageId': 'page02', 'buttons': [button('button05', 'Узнать больше', external('https://example.org/info'))] if variant == 'restricted' else []},
+         'stateText': 'Смените тариф, чтобы получить доступ к обходу белых списков' if variant == 'restricted' else None,
+         'detailsPageId': 'page02', 'buttons': [button('button05', 'Сменить тариф', external('https://example.org/tariffs'))] if variant == 'restricted' else []},
         {'id': 'option03', 'title': 'Авто', 'text': 'При запуске проверяет доступность обычного ВПН. Если он недоступен, выбирает обход БС. Повторяет проверку при новом подключении.', 'state': 'available', 'buttons': []}]
     if variant == 'restricted': choices[1]['text'] = 'Для сетей с белыми списками.\nВременно недоступно.'
     if variant == 'ban-current': choices[0]['state'] = 'restricted'
@@ -107,6 +107,9 @@ class Handler(BaseHTTPRequestHandler):
                 payload['device_access'] = {'schemaVersion': 1, 'hwid': self.headers.get('x-hwid'),
                                             'state': 'device_revoked' if VARIANT == 'device-revoked' else 'allowed',
                                             'revision': DEVICE_REVISION + 1 if VARIANT == 'device-revoked' else DEVICE_REVISION}
+            elif name == 'restricted':
+                payload['vk_turn_link'] = None
+                payload['device_access'] = {'schemaVersion': 1, 'hwid': self.headers.get('x-hwid'), 'state': 'not_allowed', 'revision': DEVICE_REVISION}
         else:
             status, payload = 404, {'error': 'not_found'}
         if path == '/subscription/device-access':
@@ -114,7 +117,7 @@ class Handler(BaseHTTPRequestHandler):
         body = json.dumps(payload, ensure_ascii=False).encode()
         self.send_response(status)
         self.send_header('Content-Type', 'application/json')
-        if path == '/subscription/device-access':
+        if path in ('/subscription/device-access', '/subscription/restricted'):
             self.send_header('X-Subscription-Format', 'vipin-v1')
         self.send_header('Content-Length', str(len(body)))
         self.end_headers()
