@@ -1,6 +1,468 @@
 {
   "sourceLanguage" : "en",
   "strings" : {
+    "Восстанавливаем основной VPN" : {
+      "extractionState": "manual",
+      "localizations": {
+        "ru": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Восстанавливаем основной VPN"
+          }
+        }
+      }
+    },
+    "Выполняется" : {
+      "extractionState": "manual",
+      "localizations": {
+        "ru": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Выполняется"
+          }
+        }
+      }
+    },
+    "Готово" : {
+      "extractionState": "manual",
+      "localizations": {
+        "ru": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Готово"
+          }
+        }
+      }
+    },
+    "Дождитесь завершения переключения VPN и повторите попытку." : {
+      "extractionState": "manual",
+      "localizations": {
+        "ru": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Дождитесь завершения переключения VPN и повторите попытку."
+          }
+        }
+      }
+    },
+    "Загружаем подписку" : {
+      "extractionState": "manual",
+      "localizations": {
+        "ru": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Загружаем подписку"
+          }
+        }
+      }
+    },
+    "Импорт подписки" : {
+      "extractionState": "manual",
+      "localizations": {
+        "ru": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Импорт подписки"
+          }
+        }
+      }
+    },
+    "Истекло время ожидания подключения." : {
+      "extractionState": "manual",
+      "localizations": {
+        "ru": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Истекло время ожидания подключения."
+          }
+        }
+      }
+    },
+    "Ключ сервисного WDTT недоступен." : {
+      "extractionState": "manual",
+      "localizations": {
+        "ru": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Ключ сервисного WDTT недоступен."
+          }
+        }
+      }
+    },
+    "На время обновления мы отключим основной VPN и затем подключим его снова." : {
+      "extractionState": "manual",
+      "localizations": {
+        "ru": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "На время обновления мы отключим основной VPN и затем подключим его снова."
+          }
+        }
+      }
+    },
+    "Не удалось восстановить основной VPN." : {
+      "extractionState": "manual",
+      "localizations": {
+        "ru": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Не удалось восстановить основной VPN."
+          }
+        }
+      }
+    },
+    "Не удалось найти сервер подписки." : {
+      "extractionState": "manual",
+      "localizations": {
+        "ru": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Не удалось найти сервер подписки."
+          }
+        }
+      }
+    },
+    "Не удалось обновить подписку через сервисный WDTT." : {
+      "extractionState": "manual",
+      "localizations": {
+        "ru": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Не удалось обновить подписку через сервисный WDTT."
+          }
+        }
+      }
+    },
+    "Не удалось подключиться к серверу подписки." : {
+      "extractionState": "manual",
+      "localizations": {
+        "ru": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Не удалось подключиться к серверу подписки."
+          }
+        }
+      }
+    },
+    "Не удалось подтвердить отключение сервисного WDTT." : {
+      "extractionState": "manual",
+      "localizations": {
+        "ru": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Не удалось подтвердить отключение сервисного WDTT."
+          }
+        }
+      }
+    },
+    "Добавляем VPN-конфигурацию в iOS" : {
+      "extractionState": "manual",
+      "localizations": {
+        "ru": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Добавляем VPN-конфигурацию в iOS"
+          }
+        }
+      }
+    },
+    "Не удалось подготовить VPN-конфигурацию. Повторите попытку и разрешите добавление VPN, если iOS запросит подтверждение." : {
+      "extractionState": "manual",
+      "localizations": {
+        "ru": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Не удалось подготовить VPN-конфигурацию. Повторите попытку и разрешите добавление VPN, если iOS запросит подтверждение."
+          }
+        }
+      }
+    },
+    "Не удалось подтвердить подключение к VPN." : {
+      "extractionState": "manual",
+      "localizations": {
+        "ru": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Не удалось подтвердить подключение к VPN."
+          }
+        }
+      }
+    },
+    "Не удалось связаться с сервером подписки. Попробовать через временное сервисное подключение?" : {
+      "extractionState": "manual",
+      "localizations": {
+        "ru": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Не удалось связаться с сервером подписки. Попробовать через временное сервисное подключение?"
+          }
+        }
+      }
+    },
+    "Не удалось установить защищённое соединение. Проверьте сертификат сервера подписки." : {
+      "extractionState": "manual",
+      "localizations": {
+        "ru": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Не удалось установить защищённое соединение. Проверьте сертификат сервера подписки."
+          }
+        }
+      }
+    },
+    "Некорректная ссылка подписки." : {
+      "extractionState": "manual",
+      "localizations": {
+        "ru": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Некорректная ссылка подписки."
+          }
+        }
+      }
+    },
+    "Нет доступа к сети. Проверьте подключение к интернету." : {
+      "extractionState": "manual",
+      "localizations": {
+        "ru": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Нет доступа к сети. Проверьте подключение к интернету."
+          }
+        }
+      }
+    },
+    "Обновить через сервисный WDTT" : {
+      "extractionState": "manual",
+      "localizations": {
+        "ru": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Обновить через сервисный WDTT"
+          }
+        }
+      }
+    },
+    "Обновление отменено." : {
+      "extractionState": "manual",
+      "localizations": {
+        "ru": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Обновление отменено."
+          }
+        }
+      }
+    },
+    "Обновление прервано." : {
+      "extractionState": "manual",
+      "localizations": {
+        "ru": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Обновление прервано."
+          }
+        }
+      }
+    },
+    "Обновление через сервисный WDTT" : {
+      "extractionState": "manual",
+      "localizations": {
+        "ru": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Обновление через сервисный WDTT"
+          }
+        }
+      }
+    },
+    "Ожидает" : {
+      "extractionState": "manual",
+      "localizations": {
+        "ru": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Ожидает"
+          }
+        }
+      }
+    },
+    "Отключаем основной VPN" : {
+      "extractionState": "manual",
+      "localizations": {
+        "ru": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Отключаем основной VPN"
+          }
+        }
+      }
+    },
+    "Отключаем сервисный WDTT" : {
+      "extractionState": "manual",
+      "localizations": {
+        "ru": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Отключаем сервисный WDTT"
+          }
+        }
+      }
+    },
+    "Отключить VPN vipin?" : {
+      "extractionState": "manual",
+      "localizations": {
+        "ru": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Отключить VPN vipin?"
+          }
+        }
+      }
+    },
+    "Отключить VPN vipin…" : {
+      "extractionState": "manual",
+      "localizations": {
+        "ru": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Отключить VPN vipin…"
+          }
+        }
+      }
+    },
+    "Это может отключить ваш обычный VPN vipin. После отключения приложение продолжит восстановление." : {
+      "extractionState": "manual",
+      "localizations": {
+        "ru": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Это может отключить ваш обычный VPN vipin. После отключения приложение продолжит восстановление."
+          }
+        }
+      }
+    },
+    "Отменено" : {
+      "extractionState": "manual",
+      "localizations": {
+        "ru": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Отменено"
+          }
+        }
+      }
+    },
+    "Повторить отключение" : {
+      "extractionState": "manual",
+      "localizations": {
+        "ru": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Повторить отключение"
+          }
+        }
+      }
+    },
+    "Повторить подключение" : {
+      "extractionState": "manual",
+      "localizations": {
+        "ru": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Повторить подключение"
+          }
+        }
+      }
+    },
+    "Подключаем сервисный WDTT" : {
+      "extractionState": "manual",
+      "localizations": {
+        "ru": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Подключаем сервисный WDTT"
+          }
+        }
+      }
+    },
+    "Подписка обновлена." : {
+      "extractionState": "manual",
+      "localizations": {
+        "ru": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Подписка обновлена."
+          }
+        }
+      }
+    },
+    "Прежний режим VPN больше недоступен." : {
+      "extractionState": "manual",
+      "localizations": {
+        "ru": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Прежний режим VPN больше недоступен."
+          }
+        }
+      }
+    },
+    "Прежний режим VPN больше недоступен. Выберите доступный режим." : {
+      "extractionState": "manual",
+      "localizations": {
+        "ru": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Прежний режим VPN больше недоступен. Выберите доступный режим."
+          }
+        }
+      }
+    },
+    "Проверяем и сохраняем" : {
+      "extractionState": "manual",
+      "localizations": {
+        "ru": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Проверяем и сохраняем"
+          }
+        }
+      }
+    },
+    "Пропущено" : {
+      "extractionState": "manual",
+      "localizations": {
+        "ru": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Пропущено"
+          }
+        }
+      }
+    },
+    "Сервер подписки не ответил вовремя." : {
+      "extractionState": "manual",
+      "localizations": {
+        "ru": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Сервер подписки не ответил вовремя."
+          }
+        }
+      }
+    },
+    "Соединение с сервером подписки прервалось." : {
+      "extractionState": "manual",
+      "localizations": {
+        "ru": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Соединение с сервером подписки прервалось."
+          }
+        }
+      }
+    },
     "Дождитесь завершения текущей операции и откройте ссылку ещё раз." : {
       "extractionState" : "manual",
       "localizations" : {
@@ -52,6 +514,17 @@
           "stringUnit" : {
             "state" : "translated",
             "value" : "Нажмите на название режима или кружок справа. Менять режим можно в любой момент — просто откройте эту шторку."
+          }
+        }
+      }
+    },
+    "Проверяем подключение…": {
+      "extractionState": "manual",
+      "localizations": {
+        "ru": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Проверяем подключение…"
           }
         }
       }
@@ -375,6 +848,17 @@
         }
       }
     },
+    "Очистить": {
+      "extractionState": "manual",
+      "localizations": {
+        "ru": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Очистить"
+          }
+        }
+      }
+    },
     "Выберите режим": {
       "extractionState": "manual",
       "localizations": {
@@ -661,13 +1145,13 @@
         }
       }
     },
-    "Не удалось загрузить сохранённое состояние приложения.": {
+    "Не удалось прочитать сохранённую подписку. Вставьте ссылку ещё раз или откройте «Логи».": {
       "extractionState": "manual",
       "localizations": {
         "ru": {
           "stringUnit": {
             "state": "translated",
-            "value": "Не удалось загрузить сохранённое состояние приложения."
+            "value": "Не удалось прочитать сохранённую подписку. Вставьте ссылку ещё раз или откройте «Логи»."
           }
         }
       }
@@ -703,6 +1187,18 @@
             "value": "Нет доступных режимов"
           }
         }
+      }
+    },
+    "Текущие логи": {
+      "extractionState": "manual",
+      "localizations": {
+        "ru": { "stringUnit": { "state": "translated", "value": "Текущие логи" } }
+      }
+    },
+    "Сохранённые логи": {
+      "extractionState": "manual",
+      "localizations": {
+        "ru": { "stringUnit": { "state": "translated", "value": "Сохранённые логи" } }
       }
     },
     "Нет записей по запросу": {

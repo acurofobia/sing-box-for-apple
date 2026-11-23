@@ -55,7 +55,7 @@ public struct VKTurnConfiguration: Codable, Equatable {
         guard fields.count == 6,
               let port = Int(fields[1]), (1...65_535).contains(port),
               !fields[4].isEmpty else { throw VKTurnError.invalidLink }
-        let hashList = fields[5].split(separator: "#", maxSplits: 1, omittingEmptySubsequences: false)[0]
+        let hashList = fields[5].prefix { $0 != "#" }
         let firstHash = String(hashList.split(separator: ",", omittingEmptySubsequences: false).first ?? "")
         let prefixes = ["https://vk.ru/call/join/", "https://vk.com/call/join/", "https://vk.me/join/"]
         let hash = prefixes.first(where: { firstHash.lowercased().hasPrefix($0) })

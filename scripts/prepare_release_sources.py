@@ -22,7 +22,9 @@ LICENSE_MANIFEST = 'scripts/license_sources/manifest.json'
 SWIFT_PACKAGES = ('binarycodable', 'legacybinarycodable', 'grdb.swift', 'devicekit', 'plcrashreporter')
 REQUIRED = (
     'scripts/prepare_release_sources.py', 'scripts/tests/test_release_sources.py',
-    'scripts/prepare_release_site.py', 'docs/release/export-options.plist',
+    'scripts/prepare_release_site.py', 'scripts/service-wdtt/embed.py',
+    'scripts/service-wdtt/debug.json', 'scripts/service-wdtt/probe.go', 'scripts/tests/test_service_wdtt_recovery.py',
+    'docs/release/export-options.plist',
     'docs/release/testflight-submission.md', 'docs/release/testflight-metadata.json',
     'docs/release/branding/shield-check.svg', 'docs/release/branding/LICENSE.lucide',
     'docs/release/branding/SOURCE.json', 'docs/release/branding/render.swift',
@@ -67,7 +69,7 @@ def allowed(name, dependency=False):
             and path.suffix.lower() not in BLOCKED_SUFFIXES
             and path.name.lower() not in {
                 'vless-outbound.json', 'local.properties', '.netrc', '.git-credentials',
-                'credentials.json', '.mcp.json', '.npmrc', 'id_rsa', 'id_ed25519'}
+                'credentials.json', 'servicewdtt.json', '.mcp.json', '.npmrc', 'id_rsa', 'id_ed25519'}
             and not path.name.startswith('.vless-')
             and not path.name.lower().endswith(('.xcframework', '.aar', '.apk', '.ipa')))
 

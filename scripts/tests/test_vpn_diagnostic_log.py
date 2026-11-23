@@ -1,18 +1,15 @@
 """Run the production rolling log against real files, including restart and limits."""
 from pathlib import Path
+import os
 import subprocess
 import tempfile
 import unittest
 
+from test_prototype_startup_cancellation import method
+
 ROOT = Path(__file__).resolve().parents[2]
 
-
-class VPNDiagnosticLogTests(unittest.TestCase):
-    def test_export_preserves_three_latest_sessions_and_excludes_configuration(self):
-        with tempfile.TemporaryDirectory() as temporary:
-            folder = Path(temporary)
-            harness = folder / 'main.swift'
-            harness.write_text(r'''import Foundation
+SUPPORT = r'''import Foundation
 import os
 extension Logger { init(category: String) { self.init(subsystem: "diagnostic-test", category: category) } }
 enum FilePath {
@@ -26,7 +23,168 @@ enum ReportArchive {
     static let goLogFileName = "go.log"
     static let nativeLogFileName = "native.log"
 }
+'''
+
+
+class VPNDiagnosticLogTests(unittest.TestCase):
+    def run_diagnostics(self, swift, timeout=10):
+        with tempfile.TemporaryDirectory() as temporary:
+            folder = Path(temporary)
+            harness = folder / 'main.swift'
+            harness.write_text(SUPPORT + swift)
+            executable = folder / 'check'
+            sources = ROOT / 'Library/Shared'
+            subprocess.run(['xcrun', 'swiftc', '-module-cache-path', str(folder / 'modules'),
+                            str(sources / 'RollingDiagnosticLog.swift'), str(sources / 'VPNDiagnosticArchive.swift'),
+                            str(sources / 'VPNDiagnostics.swift'), str(harness), '-o', str(executable)], check=True)
+            try:
+                result = subprocess.run([str(executable), str(folder / 'data')], capture_output=True,
+                                        text=True, timeout=timeout, env={**os.environ, 'TMPDIR': temporary})
+            except subprocess.TimeoutExpired:
+                self.fail('diagnostics did not return while the dependency was unavailable')
+            self.assertEqual(result.returncode, 0, result.stdout + result.stderr)
+
+    def test_large_saved_export_releases_each_redacted_segment(self):
+        self.run_diagnostics(r'''
+let folder = FilePath.sharedDirectory.appendingPathComponent("Library/Application Support/VPNDiagnostics/application-errors")
+try FileManager.default.createDirectory(at: folder, withIntermediateDirectories: true)
+let line = "2026-11-20T13:42:00Z [app error] update subscription domain=NSURLErrorDomain code=-1009 description=The Internet connection appears to be offline.\n"
+let data = Data(String(repeating: line, count: (256 * 1024) / line.utf8.count).utf8)
+for index in 0..<24 {
+    try data.write(to: folder.appendingPathComponent(String(format: "%014d.log", index)))
+}
+func peakRSS() -> Int64 {
+    var usage = rusage()
+    precondition(getrusage(RUSAGE_SELF, &usage) == 0)
+    return Int64(usage.ru_maxrss)
+}
+let before = peakRSS()
+let file = try VPNDiagnostics.export()
+defer { try? FileManager.default.removeItem(at: file) }
+let report = try VPNDiagnostics.exportForReading()
+defer { try? FileManager.default.removeItem(at: report.url) }
+let last = try report.text(forPage: report.pageCount - 1)
+precondition(report.pageCount > 300 && !last.isEmpty)
+let increase = peakRSS() - before
+if increase > 64 * 1024 * 1024 {
+    print("6 MiB saved export increased peak resident memory by \(increase) bytes")
+    exit(1)
+}
+let size = try file.resourceValues(forKeys: [.fileSizeKey]).fileSize ?? 0
+precondition(size >= data.count * 24, "Report was truncated")
+''')
+
+    def test_saved_pages_match_full_export_with_unicode_redaction_and_rotated_tail(self):
+        self.run_diagnostics(r'''
 let fm = FileManager.default
+let folder = FilePath.sharedDirectory.appendingPathComponent("Library/Application Support/VPNDiagnostics")
+try fm.createDirectory(at: folder, withIntermediateDirectories: true)
+let text = String(repeating: "\u{FEFF}", count: 16_385) +
+    String(repeating: "🌧️ заметка e\u{301} 👩‍💻\r\n", count: 2300) +
+    "Authorization: Bearer test-value\nhttps://example.invalid/hidden\n"
+try Data(text.utf8).write(to: folder.appendingPathComponent("b.log"))
+// The historical tail starts in the middle of a UTF-8 scalar. Keep its replacement character.
+let large = Data("DROPé".utf8) + Data(repeating: 65, count: 512 * 1024 - 1)
+try large.write(to: folder.appendingPathComponent("a.txt"))
+let report = try VPNDiagnostics.exportForReading()
+defer { try? fm.removeItem(at: report.url) }
+let output = try String(contentsOf: report.url, encoding: .utf8)
+let expected = "\n--- a.txt (last 512 KiB) ---\n" + String(decoding: large.suffix(512 * 1024), as: UTF8.self) +
+    "\n\n--- b.log ---\n" + DiagnosticRedaction.clean(text) + "\n"
+precondition(output.hasSuffix(expected) && !output.contains("test-value") && !output.contains("example.invalid"))
+var start = output.startIndex
+for number in 0..<report.pageCount {
+    let page = try report.text(forPage: number)
+    let end = output.index(start, offsetBy: 16_384, limitedBy: output.endIndex) ?? output.endIndex
+    precondition(page == output[start..<end])
+    start = end
+}
+precondition(start == output.endIndex)
+let firstAgain = try report.text(forPage: 0)
+precondition(firstAgain == output.prefix(16_384))
+let exports = report.url.deletingLastPathComponent()
+let before = try fm.contentsOfDirectory(atPath: exports.path).sorted()
+let unreadable = folder.appendingPathComponent("c.log")
+try fm.createSymbolicLink(at: unreadable, withDestinationURL: unreadable)
+do {
+    _ = try VPNDiagnostics.export()
+    print("Unreadable input did not fail the export"); exit(1)
+} catch {
+    let after = try fm.contentsOfDirectory(atPath: exports.path).sorted()
+    precondition(before == after, "A partial or hidden export survived a read error")
+}
+''')
+
+    def test_busy_archive_allows_status_logging_stop_and_saved_export(self):
+        self.run_diagnostics(r'''
+let fm = FileManager.default
+let directory = FilePath.sharedDirectory.appendingPathComponent("Library/Application Support/VPNDiagnostics")
+func session(_ time: Date) throws -> URL {
+    let name = String(format: "%020.6f", time.timeIntervalSince1970) + "-" + UUID().uuidString
+    let url = directory.appendingPathComponent("sessions/" + name)
+    try fm.createDirectory(at: url, withIntermediateDirectories: true)
+    try Data().write(to: url.appendingPathComponent("tracked.txt"))
+    return url
+}
+let ended = try session(Date().addingTimeInterval(-60))
+let descriptor = open(directory.appendingPathComponent("archive.lock").path, O_CREAT | O_RDWR, 0o600)
+precondition(descriptor >= 0 && flock(descriptor, LOCK_EX) == 0)
+defer { close(descriptor) }
+// The second notification queues behind the first. Neither may capture a future tunnel.
+VPNDiagnostics.observeConnection(disconnected: true)
+VPNDiagnostics.observeConnection(disconnected: true)
+let live = try session(Date())
+VPNDiagnostics.app("status changed")
+VPNDiagnostics.expectStop()
+let exported = try VPNDiagnostics.export()
+defer { try? fm.removeItem(at: exported) }
+let text = try String(contentsOf: exported, encoding: .utf8)
+precondition(text.contains("status changed"))
+precondition(fm.fileExists(atPath: live.appendingPathComponent("expected-stop.txt").path))
+precondition(flock(descriptor, LOCK_UN) == 0)
+let incidents = directory.appendingPathComponent("incidents")
+let preserved = incidents.appendingPathComponent(ended.lastPathComponent)
+let deadline = Date().addingTimeInterval(3)
+while !fm.fileExists(atPath: preserved.path) && Date() < deadline { Thread.sleep(forTimeInterval: 0.01) }
+precondition(fm.fileExists(atPath: preserved.path), "missed the disconnected tunnel")
+// Clearing must finish previously submitted observations before acknowledging incidents.
+try VPNDiagnostics.clearPreservedReports()
+precondition(!fm.fileExists(atPath: live.appendingPathComponent("acknowledged.txt").path),
+             "a later live tunnel was archived by a stale notification")
+''')
+
+    def test_saved_diagnostics_available_while_disconnect_reply_is_pending(self):
+        app = (ROOT / 'PrototypeApp/Application.swift').read_text()
+        collect = method(app, '    func collectDiagnostics()')
+        self.run_diagnostics(r'''
+@MainActor struct CrashReportManager { func refresh() async {} }
+@MainActor final class Model {
+    var disconnectDiagnosticTask: Task<Void, Never>?
+    let pending = AsyncStream<Void>.makeStream()
+    func recordVPNState(force: Bool) {
+        disconnectDiagnosticTask = Task { for await _ in pending.stream {} }
+    }
+''' + collect + r'''
+}
+VPNDiagnostics.app("already on disk")
+let model = Model()
+await model.collectDiagnostics()
+let url = try VPNDiagnostics.export()
+let text = try String(contentsOf: url, encoding: .utf8)
+try FileManager.default.removeItem(at: url)
+precondition(text.contains("already on disk"))
+model.pending.continuation.finish()
+await model.disconnectDiagnosticTask?.value
+''', timeout=5)
+
+    def test_export_preserves_three_latest_sessions_and_excludes_configuration(self):
+        self.run_diagnostics(r'''
+let fm = FileManager.default
+let liveURL = try VPNDiagnostics.exportCurrentLogs(["first entry", "second token=test-secret"])
+defer { try? fm.removeItem(at: liveURL) }
+let live = try String(contentsOf: liveURL, encoding: .utf8)
+precondition(liveURL.pathExtension == "txt" && live.contains("first entry\nsecond token=[redacted]"), "Live log file missing entries")
+precondition(!live.contains("test-secret"), "Live export leaked credentials")
 VPNDiagnostics.app("launch")
 for index in 0..<4 {
     VPNDiagnostics.beginTunnel(mode: "mode-\(index)")
@@ -40,6 +198,7 @@ try Data("panic: example".utf8).write(to: report.appendingPathComponent("go.log"
 let url = try VPNDiagnostics.export()
 defer { try? fm.removeItem(at: url) }
 let text = try String(contentsOf: url, encoding: .utf8)
+precondition(!text.contains("first entry") && !live.contains("[app] launch"), "Live and saved logs must be independent files")
 precondition(!text.contains("core-session-0"), "Oldest session retained")
 for index in 1...3 { precondition(text.contains("core-session-\(index)"), "Recent incident overwritten") }
 precondition(text.contains("[app] launch") && text.contains("stop requested reason=1"), "Lifecycle evidence missing")
@@ -76,16 +235,6 @@ precondition(resetText.contains("fresh launch after reset"), "logging did not re
 precondition(!resetText.contains("UNEXPECTED-MUST-SURVIVE") && !resetText.contains("persistent UI error"), "reset retained diagnostics")
 print("PASS")
 ''')
-            executable = folder / 'check'
-            result = subprocess.run([
-                'xcrun', 'swiftc', '-module-cache-path', str(folder / 'modules'),
-                str(ROOT / 'Library/Shared/RollingDiagnosticLog.swift'),
-                str(ROOT / 'Library/Shared/VPNDiagnosticArchive.swift'),
-                str(ROOT / 'Library/Shared/VPNDiagnostics.swift'), str(harness), '-o', str(executable)
-            ], capture_output=True, text=True)
-            self.assertEqual(result.returncode, 0, result.stdout + result.stderr)
-            result = subprocess.run([str(executable), str(folder / 'data')], capture_output=True, text=True)
-            self.assertEqual(result.returncode, 0, result.stdout + result.stderr)
 
     def test_retention_restart_size_and_redaction(self):
         with tempfile.TemporaryDirectory() as temporary:

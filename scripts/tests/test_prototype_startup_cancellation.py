@@ -23,10 +23,14 @@ class StartupCancellationTests(unittest.TestCase):
         source = (ROOT / 'Extension/PacketTunnelProvider.swift').read_text()
         stop = method(source, '    override func stopTunnel(')
         prepare = method(source, '    override func prepareServiceStart(')
+        startup = method(source, '    override func startTunnel(')
+        clear_deadline = method(source, '    private func clearServiceDeadline(')
+        failure = startup.rsplit('        } catch {', 1)[1].rsplit('        }', 1)[0]
         harness = r'''
 import Foundation
-private enum NEProviderStopReason: Int { case userInitiated = 1 }
+private enum NEProviderStopReason: Int { case userInitiated = 1, providerFailed = 2 }
 private enum VPNDiagnostics {
+ static func startupFailed(_ message: String) {}
  static func event(_ message: String) {}
  static func termination(_ message: String) {}
  static func stopRequested(_ reason: Int) {}
@@ -43,6 +47,8 @@ private class ExtensionProvider {
  func prepareServiceStart(_ server: LibboxCommandServer) throws {}
 }
 private final class Capture {
+ var error: String?
+ func fail(_ message: String) { error = message }
  func setHealthServer(_ server: LibboxCommandServer?) {}
  func setFailoverServer(_ server: LibboxCommandServer?) {}
  func stop() {}
@@ -52,15 +58,30 @@ private func LibboxStopVKTurnPrototype(_ id: Int64) {}
 private func LibboxSetVKTurnPrototypeLogServer(_ server: LibboxCommandServer?) {}
 private final class PacketTunnelProvider: ExtensionProvider {
  let stateLock = NSLock()
- var stopped = false
+ var stopReason: NEProviderStopReason?
+ var commandServer: LibboxCommandServer?
  var sessionID: Int64 = 0
  var startupFinished: AsyncStream<Void>?
  var startingServer: LibboxCommandServer?
  var capture: Capture?
-''' + prepare + '\n' + stop + r'''
+ var serviceDeadline: DispatchWorkItem?
+ var serviceSession: String?
+''' + clear_deadline + '\n' + prepare + '\n' + stop + r'''
+ func finishFailedStart(_ error: Error, capture: Capture) async throws {
+''' + failure + r'''
+ }
 }
 @main struct Checks {
  static func main() async throws {
+  let coreError = NSError(domain: "libbox", code: 1, userInfo: [NSLocalizedDescriptionKey: "context canceled"])
+  for cancel in [false, true] {
+   let provider = PacketTunnelProvider()
+   let capture = Capture()
+   if cancel { await provider.stopTunnel(with: .userInitiated) }
+   do { try await provider.finishFailedStart(coreError, capture: capture) } catch {}
+   precondition(capture.error == (cancel ? nil : coreError.localizedDescription),
+                "a user stop must not publish a startup failure, an unsolicited failure must still be reported")
+  }
   for early in [false, true] {
    let provider = PacketTunnelProvider()
    let server = LibboxCommandServer()
@@ -76,6 +97,9 @@ private final class PacketTunnelProvider: ExtensionProvider {
     completion.continuation.finish()
    }
    let start = ContinuousClock.now
+   let deadline = DispatchWorkItem {}
+   provider.serviceDeadline = deadline
+   provider.serviceSession = "test-session"
    let stopping = Task { await provider.stopTunnel(with: .userInitiated) }
    if early {
     try await Task.sleep(for: .milliseconds(20))
@@ -86,6 +110,7 @@ private final class PacketTunnelProvider: ExtensionProvider {
    await startup.value
    precondition(start.duration(to: .now) < .milliseconds(400), "stop waited for probe deadline")
    precondition(server.isCancelled(), "core startup context was not cancelled")
+   precondition(deadline.isCancelled && provider.serviceSession == nil, "service lifetime timer survived stop")
    precondition(provider.startingServer == nil, "server reference retained after stop")
   }
   print("PASS")

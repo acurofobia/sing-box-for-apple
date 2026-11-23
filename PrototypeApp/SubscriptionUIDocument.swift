@@ -5,15 +5,22 @@ struct PrototypeUIDocument: Codable, Sendable {
     let blocks: [PrototypeUIBlock]
     let pages: [PrototypeUIPage]
 
-    static func decode(_ data: Data) throws -> Self {
-        guard data.count <= 1024 * 1024, String(data: data, encoding: .utf8) != nil else {
+    static func decode(_ data: Data, embedded: Bool = false) throws -> Self {
+        guard embedded || data.count <= 1024 * 1024 else {
             throw PrototypeUIError.invalidDocument
         }
         var parser = PrototypeJSONParser(data: data)
-        let root = try parser.parse()
+        var root = try parser.parse()
+        var document = data
+        if embedded {
+            guard case let .object(fields) = root, let ui = fields["ui"],
+                  let range = parser.uiRange, range.count <= 1024 * 1024 else { throw PrototypeUIError.invalidDocument }
+            root = ui
+            document = data.subdata(in: range)
+        }
         try PrototypeUIValidator.validate(root)
         do {
-            return try JSONDecoder().decode(Self.self, from: data)
+            return try JSONDecoder().decode(Self.self, from: document)
         } catch {
             throw PrototypeUIError.invalidDocument
         }
@@ -102,6 +109,7 @@ private indirect enum PrototypeJSON {
 
 private struct PrototypeJSONParser {
     let bytes: [UInt8]
+    private(set) var uiRange: Range<Int>?
     var index = 0
     init(data: Data) {
         bytes = Array(data)
@@ -162,7 +170,10 @@ private struct PrototypeJSONParser {
             repeat {
                 let key = try string()
                 guard fields[key] == nil, take(58) else { throw PrototypeUIError.invalidDocument }
+                whitespace()
+                let start = index
                 fields[key] = try value(depth: depth + 1)
+                if depth == 0, key == "ui" { uiRange = start ..< index }
                 if take(125) {
                     return .object(fields)
                 }

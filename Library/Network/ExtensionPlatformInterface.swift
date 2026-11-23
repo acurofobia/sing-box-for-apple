@@ -292,14 +292,17 @@ public class ExtensionPlatformInterface: NSObject, LibboxPlatformInterfaceProtoc
         let monitor = NWPathMonitor()
         nwMonitor = monitor
         let semaphore = DispatchSemaphore(value: 0)
-        monitor.pathUpdateHandler = { path in
+        let observe = tunnel.makeNetworkPathObserver()
+        let update: @Sendable (Network.NWPath) -> Void = { path in
+            observe?(path)
             self.onUpdateDefaultInterface(listener, path)
-            semaphore.signal()
-            monitor.pathUpdateHandler = { path in
-                self.onUpdateDefaultInterface(listener, path)
-            }
         }
-        monitor.start(queue: DispatchQueue.global())
+        monitor.pathUpdateHandler = { path in
+            update(path)
+            monitor.pathUpdateHandler = update
+            semaphore.signal()
+        }
+        monitor.start(queue: DispatchQueue(label: "net.sing-box.default-interface"))
         semaphore.wait()
     }
 

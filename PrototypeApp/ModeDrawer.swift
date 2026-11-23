@@ -267,6 +267,8 @@ struct PrototypeModeDrawer: View {
     private func choice(_ item: PrototypeUIItem) -> some View {
         let mode = PrototypeConnectionMode.from(optionID: item.id)
         let available = mode.map { model.isAvailable($0) } ?? false
+        let canSelect = available && !model.busy && !model.replacingSubscription &&
+            (!model.canStop || model.vpnState == .connecting || model.vpnState == .connected)
         let selected = mode == model.connectionMode && model.hasSelectedMode
         return VStack(alignment: .leading, spacing: 0) {
             HStack(spacing: 0) {
@@ -278,7 +280,7 @@ struct PrototypeModeDrawer: View {
                     Text(verbatim: item.title).font(.system(size: 17)).frame(maxWidth: .infinity, minHeight: 44, alignment: .leading).contentShape(Rectangle())
                 }
                 .buttonStyle(PrototypeFlatStyle())
-                .disabled(!available || model.busy || model.replacingSubscription || (model.canStop && model.vpnState != .connected))
+                .disabled(!canSelect)
                 .accessibilityIdentifier("prototype.ui." + item.id)
                 .accessibilityValue(selected ? String(localized: "Выбрано") : availability(item, mode: mode, available: available))
                 .padding(.vertical, -8)
@@ -306,7 +308,7 @@ struct PrototypeModeDrawer: View {
                         Image(selected ? "ModeSelected" : "ModeUnselected").resizable().frame(width: 28, height: 28)
                             .frame(width: 44, height: 44).contentShape(Rectangle())
                     }
-                    .buttonStyle(PrototypeFlatStyle()).disabled(!available || model.busy || model.replacingSubscription || (model.canStop && model.vpnState != .connected))
+                    .buttonStyle(PrototypeFlatStyle()).disabled(!canSelect)
                     .padding(-8)
                     .accessibilityLabel(Text(verbatim: item.title))
                 }

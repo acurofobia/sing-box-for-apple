@@ -4,6 +4,8 @@ import subprocess
 import tempfile
 import unittest
 
+from test_prototype_startup_cancellation import method
+
 ROOT = Path(__file__).resolve().parents[2]
 HARNESS = r"""
 import Foundation
@@ -69,7 +71,13 @@ case "routing_same":
 case "routing_not_loaded":
     model.managersLoaded = false
     await model.setRoutingMode(.russiaInside)
-    expect(events.isEmpty, "uninitialized routing changed VPN")
+    expect(events == ["load"], "routing did not retry loading system preferences safely")
+case "routing_load_retry":
+    model.setStatus(.disconnected)
+    model.managersLoaded = false
+    model.canLoadManagers = true
+    await model.setRoutingMode(.russiaInside)
+    expect(events == ["load", "prepared:disabled", "written", "saved:disabled"], "routing was not applied after retry")
 case "routing_invalid":
     model.failPreparation = true
     await model.setRoutingMode(.russiaInside)
@@ -90,11 +98,17 @@ case "offline":
     model.setStatus(.disconnected)
     await model.switchConnection(to: .vless)
     expect(events == ["saved:vless"], "offline selection started VPN")
-case "busy":
+case "connecting":
+    model.setMode(.vless)
     model.setStatus(.connecting)
-    await model.switchConnection(to: .vless)
-    expect(events.isEmpty, "switch during connecting altered VPN")
-    expect(model.connectionMode == .vkTurn, "mode changed during connecting")
+    await model.switchConnection(to: .vkTurn)
+    expect(events == ["stop", "disconnected", "saved:vk-turn", "start:vk-turn"], "switch did not cancel startup before starting the selected mode")
+case "other_transitions":
+    for state in [ConnectionStatus.disconnecting, .reasserting] {
+        model.setStatus(state)
+        await model.switchConnection(to: .vless)
+        expect(events.isEmpty && model.connectionMode == .vkTurn, "switch interrupted a different transition")
+    }
 case "missing_link":
     model.setMode(.vless)
     model.setHasLink(false)
@@ -111,7 +125,7 @@ case "offline_missing_link":
 case "not_loaded":
     model.managersLoaded = false
     await model.switchConnection(to: .vless)
-    expect(events.isEmpty, "uninitialized model changed the existing VPN")
+    expect(events == ["load"], "mode did not retry loading system preferences safely")
     expect(model.connectionMode == .vkTurn, "uninitialized model changed selection")
 case "empty_initial_selection":
     model.hasSelectedMode = false
@@ -122,12 +136,26 @@ case "empty_initial_selection":
     model.hasVLESS = true
     model.chooseInitialMode()
     expect(!model.hasSelectedMode && events.isEmpty, "refresh selected a newly available transport")
-case "explicit_disconnect":
+case "manual_default_selection":
+    model.setStatus(.disconnected)
+    model.hasSelectedMode = false
+    model.hasVLESS = false
+    model.hasLink = false
+    model.chooseInitialMode()
+    model.hasLink = true
+    model.chooseInitialMode()
+    expect(!model.hasSelectedMode && events.isEmpty, "refresh selected a newly available transport")
+    await model.switchConnection(to: .vkTurn)
+    expect(model.hasSelectedMode, "available VK TURN could not be selected manually")
+    expect(events == ["saved:vk-turn"], "offline selection was not saved or started VPN")
+case "explicit_disconnect", "cancel_connecting_switch":
+    if CommandLine.arguments[1] == "cancel_connecting_switch" { model.setStatus(.connecting) }
     Task { @MainActor in
         try? await Task.sleep(for: .milliseconds(5))
         model.stop()
     }
     await model.switchConnection(to: .vless)
+    expect(events.contains("disconnected"), "switch did not wait for the old tunnel to stop")
     expect(!events.contains(where: { $0.hasPrefix("start:") || $0.hasPrefix("saved:") }), "explicit disconnect allowed pending mode restart")
     expect(model.connectionMode == .vkTurn, "explicit disconnect changed mode")
 case "explicit_disconnect_routing":
@@ -171,7 +199,7 @@ class SwitchingTests(unittest.TestCase):
         routing = '    func setRoutingMode' + app.split('    func setRoutingMode', 1)[1].split('    private func prepareRouting', 1)[0]
         initial = '    private func chooseInitialMode() {' + app.split('    private func chooseInitialMode() {', 1)[1].split('    func refreshSubscription(', 1)[0]
         initial = initial.replace('private func chooseInitialMode', 'func chooseInitialMode')
-        stop = '    func stop() {' + app.split('    func stop() {', 1)[1].split('    func refresh()', 1)[0]
+        stop = method(app, '    func stop() {')
         model = r"""
 @MainActor
 private final class TestModel {
@@ -188,6 +216,9 @@ private final class TestModel {
     struct Snapshot { let isComplete = true; let uiDocument: Document? = Document() }
     let subscription = Snapshot()
     var managersLoaded = true
+    var canLoadManagers = false
+    func loadVPN() async { events.append("load"); managersLoaded = canLoadManagers }
+    var routingPreferenceKey = "prototype.routing.mode"
     var routingMode: PrototypeRoutingMode = .enabled
     var failPreparation = false
     func prepareRouting(_ mode: PrototypeRoutingMode) throws -> Data {
@@ -231,6 +262,7 @@ private final class TestModel {
 
     def test_routing_waits_until_managers_are_loaded(self):
         self.run_scenario('routing_not_loaded')
+        self.run_scenario('routing_load_retry')
 
     def test_invalid_routing_does_not_stop_working_vpn(self):
         self.run_scenario('routing_invalid')
@@ -244,8 +276,11 @@ private final class TestModel {
     def test_offline_selection_does_not_start_vpn(self):
         self.run_scenario('offline')
 
-    def test_connecting_tunnel_cannot_be_switched(self):
-        self.run_scenario('busy')
+    def test_switch_cancels_connecting_tunnel_before_starting_selected_mode(self):
+        self.run_scenario('connecting')
+
+    def test_mode_cannot_change_while_disconnecting_or_reasserting(self):
+        self.run_scenario('other_transitions')
 
     def test_missing_turn_link_preserves_running_vless(self):
         self.run_scenario('missing_link')
@@ -259,8 +294,12 @@ private final class TestModel {
     def test_refresh_does_not_select_a_mode_after_initial_empty_snapshot(self):
         self.run_scenario("empty_initial_selection")
 
+    def test_available_default_mode_can_be_selected_after_initial_empty_snapshot(self):
+        self.run_scenario("manual_default_selection")
+
     def test_explicit_disconnect_cancels_pending_mode_restart(self):
         self.run_scenario("explicit_disconnect")
+        self.run_scenario("cancel_connecting_switch")
 
     def test_explicit_disconnect_cancels_pending_routing_restart(self):
         self.run_scenario("explicit_disconnect_routing")

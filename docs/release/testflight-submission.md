@@ -15,7 +15,7 @@ The owner has accepted the earlier licensing, account-model, and reused-material
 - Privacy/support URL: <https://vipin.eagerdell32.chatgpt.site/>.
 - Matching source release: <https://github.com/acurofobia/sing-box-for-apple/releases/tag/vipin-1.14.6-9>.
 
-The app icon is the pinned Lucide shield-check icon. Its SVG, upstream license, revision, and reproducible renderer are in `docs/release/branding`. Notices are included in the app's license screen.
+Build 12 uses the VI/PIN launcher artwork from the Vipin VPN Android client. To regenerate the iOS appearances, run `swift docs/release/branding/render.swift ../android-client/app/src/main/res/mipmap-xxxhdpi/ic_launcher_foreground.png PrototypeApp/Assets.xcassets/AppIcon.appiconset` from the repository root. The Lucide SVG and license in `docs/release/branding` belong to the icon used in earlier builds.
 
 ## Archive and export
 
@@ -51,6 +51,6 @@ After upload processing, select the build in TestFlight, complete any Missing Co
 
 ## Device verification
 
-The existing `PrototypeDeviceRoutingTests` exercises saved real-device configurations, both available transports, both routing choices, HTTPS traffic, native rule-set downloads, and restoring the original routing/mode/connection state. It requires the explicit `PROTOTYPE_DEVICE_ROUTING_CHECK=1` opt-in and does not import or publish credentials. A local run with this opt-in is authorized as part of this release preparation. Manual Wi-Fi/cellular switching and an initial system VPN permission prompt still require interaction with the phone when encountered.
+The existing `PrototypeDeviceRoutingTests` exercises saved real-device configurations, both available transports, both routing choices, HTTPS traffic, the published subscription routing source, and restoring the original routing/mode/connection state. It requires the explicit `PROTOTYPE_DEVICE_ROUTING_CHECK=1` opt-in and does not import or publish credentials. A local run with this opt-in is authorized as part of this release preparation. Manual Wi-Fi/cellular switching and an initial system VPN permission prompt still require interaction with the phone when encountered.
 
 The test now accepts the app's first-connection privacy disclosure before starting the tunnel.

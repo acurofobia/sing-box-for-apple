@@ -21,6 +21,10 @@ struct PrototypeView: View {
         model.subscription.uiDocument
     }
 
+    private var pollsExtensionStatus: Bool {
+        ready && scenePhase == .active && model.canStop && !model.resetting
+    }
+
     private var sheet: Binding<PrototypePresentationCoordinator.Destination?> {
         Binding(get: {
             switch presentation.destination {
@@ -94,6 +98,7 @@ struct PrototypeView: View {
         .statusBarHidden(false)
         .preferredColorScheme(.light)
         .modifier(PrototypeNoticeModifier(presentation: presentation))
+        .modifier(SubscriptionDialog(model: model, isFrontmost: sheet.wrappedValue == nil, completed: finishRecoveredImport))
         .sheet(item: sheet, onDismiss: { presentation.completeDismissal() }, content: { destination in
             NavigationStack {
                 switch destination {
@@ -121,12 +126,14 @@ struct PrototypeView: View {
             .presentationDetents([.medium, .large])
             .presentationDragIndicator(.visible)
             .modifier(PrototypeNoticeModifier(presentation: presentation))
+            .modifier(SubscriptionDialog(model: model, completed: finishRecoveredImport))
+            .interactiveDismissDisabled(model.recovery != nil || model.importProgress != nil)
         })
-        .onReceive(model.$error.removeDuplicates()) { error in
-            if let error { presentation.notice = error }
+        .onReceive(model.errorChanges) { error in
+            if let error, model.recovery == nil { presentation.notice = error }
         }
-        .onReceive(model.$subscriptionError.removeDuplicates()) { error in
-            if let error { presentation.notice = error }
+        .onReceive(model.subscriptionErrorChanges) { error in
+            if let error, model.recovery == nil, model.importProgress == nil { presentation.notice = error }
         }
         .onChange(of: presentation.notice) { _, notice in
             if let notice {
@@ -147,10 +154,13 @@ struct PrototypeView: View {
         .onOpenURL { url in
             do {
                 let source = try PrototypeDeepLink.subscriptionSource(from: url)
-                guard !model.resetting, !model.replacingSubscription else {
+                guard !model.resetting, !model.replacingSubscription, model.recovery == nil,
+                      model.importProgress == nil || model.importProgress?.error != nil
+                else {
                     presentation.notice = String(localized: "Дождитесь завершения текущей операции и откройте ссылку ещё раз.")
                     return
                 }
+                if model.importProgress?.error != nil { model.cancelSubscriptionReplacement() }
                 importedSubscriptionSource = source
                 if ready, model.subscription.isComplete {
                     presentation.show(.subscription)
@@ -167,12 +177,19 @@ struct PrototypeView: View {
         }
         .onChange(of: scenePhase) { _, phase in
             VPNDiagnostics.app("scene phase=\(phase)")
+            if phase == .active {
+                model.refreshVPNState()
+                model.checkRecoveryTransport()
+            }
             model.recordVPNState(force: phase == .active)
             if phase != .active {
                 inactive = true
             } else if ready, inactive {
                 inactive = false
-                Task { await model.refreshSubscription() }
+                Task {
+                    await model.reconcileRecoveryOnActivation()
+                    await model.refreshSubscription()
+                }
             }
         }
         .task {
@@ -182,8 +199,22 @@ struct PrototypeView: View {
             if importedSubscriptionSource != nil, model.subscription.isComplete {
                 presentation.show(.subscription)
             }
+            await model.loadVPN()
+            guard !Task.isCancelled else { return }
+            model.resumeRecovery()
+            model.recordVPNState()
+        }
+        .task(id: pollsExtensionStatus) {
+            guard pollsExtensionStatus else { return }
+            while !Task.isCancelled {
+                do { try await Task.sleep(for: .seconds(1)) } catch { return }
+                guard pollsExtensionStatus else { return }
+                model.refreshExtensionStatus()
+            }
         }
         .onReceive(NotificationCenter.default.publisher(for: .NEVPNStatusDidChange)) { _ in
+            model.refreshVPNState()
+            model.checkRecoveryTransport()
             model.recordVPNState()
         }
         .onReceive(NotificationCenter.default.publisher(for: UIApplication.didReceiveMemoryWarningNotification)) { _ in
@@ -199,14 +230,189 @@ struct PrototypeView: View {
                 do { try await Task.sleep(for: .seconds(60)) } catch { return }
             }
         }
-        .task(id: ready) {
-            guard ready else { return }
-            while !Task.isCancelled {
-                await model.refresh()
-                model.recordVPNState()
-                do { try await Task.sleep(for: .seconds(1)) } catch { return }
+    }
+
+    private func finishRecoveredImport() {
+        if presentation.destination == .subscription {
+            presentation.dismiss()
+        } else {
+            tab = .connection
+            if PrototypeConnectionMode.allCases.contains(where: model.isAvailable) { presentation.showModeOnboarding() }
+        }
+    }
+}
+
+private struct SubscriptionDialog: ViewModifier {
+    @ObservedObject var model: PrototypeModel
+    var isFrontmost = true
+    let completed: () -> Void
+    @State private var profileToConfirm: NETunnelProviderManager?
+    @AccessibilityFocusState private var focusTitle: Bool
+    private var isPresented: Bool { isFrontmost && (model.recovery != nil || model.importProgress != nil) }
+
+    func body(content: Content) -> some View {
+        content
+            .disabled(isPresented)
+            .accessibilityHidden(isPresented)
+            .overlay {
+                if isPresented {
+                    ZStack {
+                        Color.black.opacity(0.3).ignoresSafeArea()
+                        ViewThatFits(in: .vertical) {
+                            dialogCard
+                            ScrollView { dialogCard }.scrollBounceBehavior(.basedOnSize)
+                        }
+                        .frame(maxWidth: 420)
+                        .background(.regularMaterial, in: RoundedRectangle(cornerRadius: 24))
+                        .padding(20)
+                    }
+                    .accessibilityElement(children: .contain).accessibilityAddTraits(.isModal)
+                    .onAppear { focusTitle = true }
+                }
+            }
+            .alert("Отключить VPN vipin?", isPresented: Binding(
+                get: { profileToConfirm != nil },
+                set: { if !$0 { profileToConfirm = nil } }
+            ), presenting: profileToConfirm) { profile in
+                Button("Отключить", role: .destructive) { model.resumeRecovery(stopping: profile) }
+                Button("Отмена", role: .cancel) {}
+            } message: { _ in
+                Text("Это может отключить ваш обычный VPN vipin. После отключения приложение продолжит восстановление.")
+            }
+    }
+
+    @ViewBuilder private var dialogCard: some View {
+        if let recovery = model.recovery {
+            card(recovery)
+        } else if let progress = model.importProgress {
+            VStack(alignment: .leading, spacing: 16) {
+                HStack(alignment: .firstTextBaseline, spacing: 12) {
+                    Text("Импорт подписки")
+                        .font(.title3.bold()).accessibilityAddTraits(.isHeader).accessibilityFocused($focusTitle)
+                        .fixedSize(horizontal: false, vertical: true)
+                        .frame(maxWidth: .infinity, alignment: .leading)
+                    Button { model.cancelSubscriptionReplacement() } label: {
+                        headerAction(progress.error == nil ? "Отмена" : "Закрыть")
+                    }
+                    .accessibilityIdentifier(progress.error == nil ? "prototype.import.cancel" : "prototype.import.close")
+                }
+                VStack(alignment: .leading, spacing: 0) {
+                    SubscriptionStepRow(step: .download, state: progress.download, last: false)
+                        .accessibilityIdentifier("prototype.import.download")
+                    SubscriptionStepRow(step: .save, state: progress.save, last: true)
+                        .accessibilityIdentifier("prototype.import.save")
+                }
+                if let error = progress.error {
+                    Text(verbatim: error).font(.callout)
+                }
+            }
+            .padding(24).frame(maxWidth: .infinity, alignment: .leading)
+            .accessibilityElement(children: .contain)
+            .accessibilityIdentifier("prototype.import.dialog")
+            .accessibilityAction(.escape) { model.cancelSubscriptionReplacement() }
+            .onChange(of: progress.error) { _, message in
+                if let message { UIAccessibility.post(notification: .announcement, argument: message) }
             }
         }
+    }
+
+    private func card(_ recovery: PrototypeModel.Recovery) -> some View {
+        VStack(alignment: .leading, spacing: 16) {
+            HStack(alignment: .firstTextBaseline, spacing: 12) {
+                Text("Обновление через сервисный WDTT")
+                    .font(.title3.bold()).accessibilityAddTraits(.isHeader).accessibilityFocused($focusTitle)
+                    .fixedSize(horizontal: false, vertical: true)
+                    .frame(maxWidth: .infinity, alignment: .leading)
+                if recovery.offered || (recovery.result == nil && recovery.canCancel) {
+                    Button(role: .cancel) {
+                        if recovery.offered { model.dismissRecovery() } else { model.cancelRecovery() }
+                    } label: { headerAction("Отмена") }
+                        .accessibilityIdentifier("prototype.recovery.cancel")
+                } else if recovery.result != nil, model.canDismissRecovery {
+                    Button {
+                        model.dismissRecovery()
+                        if recovery.imported { completed() }
+                    } label: { headerAction("Закрыть") }
+                        .accessibilityIdentifier("prototype.recovery.close")
+                }
+            }
+            if recovery.offered {
+                Text("Не удалось связаться с сервером подписки. Попробовать через временное сервисное подключение?")
+                if model.recoveryWillPauseVPN {
+                    Text("На время обновления мы отключим основной VPN и затем подключим его снова.")
+                }
+                actionButton("Обновить через сервисный WDTT", action: model.startRecovery)
+                    .disabled(model.busy)
+                    .accessibilityIdentifier("prototype.recovery.start")
+            } else {
+                VStack(alignment: .leading, spacing: 0) {
+                    ForEach(recovery.steps, id: \.self) { step in
+                        SubscriptionStepRow(step: step, state: recovery.states[step] ?? .waiting, last: recovery.steps.last == step)
+                    }
+                }
+                if let result = recovery.result {
+                    Text(verbatim: result).font(.callout).accessibilityIdentifier("prototype.recovery.result")
+                    if recovery.canRetryCleanup {
+                        actionButton(recovery.states[.disconnect] == .failed ? "Повторить отключение" : "Повторить подключение",
+                                     action: { model.resumeRecovery() })
+                        if let profile = model.recoveryProfileToStop {
+                            Button("Отключить VPN vipin…", role: .destructive) { profileToConfirm = profile }
+                                .accessibilityIdentifier("prototype.recovery.confirmStop")
+                        }
+                    }
+                }
+            }
+        }
+        .font(.body).padding(24).frame(maxWidth: .infinity, alignment: .leading)
+    }
+
+    private func headerAction(_ title: LocalizedStringKey) -> some View {
+        Text(title)
+            .font(.subheadline.weight(.semibold)).foregroundStyle(PrototypeStyle.accent)
+            .fixedSize(horizontal: true, vertical: false)
+            .frame(minWidth: 44, minHeight: 44, alignment: .trailing).contentShape(Rectangle())
+    }
+
+    private func actionButton(_ title: LocalizedStringKey, action: @escaping () -> Void) -> some View {
+        Button(action: action) {
+            Text(title).multilineTextAlignment(.center).frame(maxWidth: .infinity)
+        }
+        .buttonStyle(.borderedProminent)
+        .tint(PrototypeStyle.accent)
+    }
+}
+
+private struct SubscriptionStepRow: View {
+    let step: PrototypeModel.RecoveryStep
+    let state: PrototypeModel.StepState
+    let last: Bool
+
+    var body: some View {
+        HStack(alignment: .top, spacing: 12) {
+            Group {
+                switch state {
+                case .done: Image(systemName: "checkmark.circle.fill").foregroundStyle(.green)
+                case .running: ProgressView().controlSize(.small)
+                case .failed: Image(systemName: "exclamationmark.circle.fill").foregroundStyle(.red)
+                case .cancelled, .skipped: Image(systemName: "minus.circle").foregroundStyle(.secondary)
+                case .waiting: Image(systemName: "circle").foregroundStyle(.secondary)
+                }
+            }.frame(width: 22, height: 22).accessibilityHidden(true)
+            VStack(alignment: .leading, spacing: 2) {
+                Text(LocalizedStringKey(step.rawValue))
+                Text(LocalizedStringKey(state.rawValue)).font(.caption).foregroundStyle(.secondary)
+            }
+        }
+        .padding(.bottom, last ? 0 : 14)
+        .background(alignment: .topLeading) {
+            if !last {
+                Rectangle().fill(Color.secondary.opacity(0.28)).frame(width: 1)
+                    .padding(.leading, 10.5).padding(.top, 22)
+            }
+        }
+        .accessibilityElement(children: .ignore)
+        .accessibilityLabel(Text(LocalizedStringKey(step.rawValue)))
+        .accessibilityValue(Text(LocalizedStringKey(state.rawValue)))
     }
 }
 
@@ -216,6 +422,7 @@ struct PrototypeSubscriptionForm: View {
     @Binding var importedSource: String?
     var saved: () -> Void = {}
     @State private var source = ""
+    @State private var hasLoadedSource = false
     @State private var showingHelp = false
     @FocusState private var focused: Bool
 
@@ -228,7 +435,21 @@ struct PrototypeSubscriptionForm: View {
                     .font(.system(size: 17)).foregroundStyle(PrototypeStyle.secondary)
                     .fixedSize(horizontal: false, vertical: true).padding(.top, 12)
                 VStack(alignment: .leading, spacing: 0) {
-                    Text("Ссылка на подписку").font(.system(size: 15))
+                    HStack {
+                        Text("Ссылка на подписку")
+                        if replacing {
+                            Spacer()
+                            Button {
+                                source = ""
+                                focused = true
+                            } label: {
+                                Text("Очистить").frame(minHeight: 44).contentShape(Rectangle())
+                            }
+                            .buttonStyle(.borderless).tint(PrototypeStyle.accent)
+                            .disabled(source.isEmpty || model.replacingSubscription)
+                        }
+                    }
+                    .font(.system(size: 15))
                     HStack(spacing: 8) {
                         TextField("", text: $source, prompt: Text("Вставьте ссылку").foregroundStyle(PrototypeStyle.secondary))
                             .keyboardType(.URL).textInputAutocapitalization(.never).autocorrectionDisabled()
@@ -244,16 +465,15 @@ struct PrototypeSubscriptionForm: View {
                     }
                     .font(.system(size: 17)).padding(.horizontal, 16).frame(height: 56)
                     .background(PrototypeStyle.field, in: RoundedRectangle(cornerRadius: 16)).padding(.top, 8)
+                    .disabled(model.replacingSubscription)
                     Button {
                         focused = false
                         Task {
-                            if await model.replaceSubscription(source) {
-                                saved()
-                            }
+                            if await model.replaceSubscription(source) { saved() }
                         }
                     } label: {
                         Group {
-                            if model.subscriptionLoading {
+                            if model.subscriptionLoading, model.importProgress == nil {
                                 ProgressView().tint(.white)
                             } else {
                                 Text(replacing ? "Сохранить" : "Добавить подписку")
@@ -274,7 +494,12 @@ struct PrototypeSubscriptionForm: View {
                         Text("Отключите VPN перед изменением ссылки подписки.").padding(.top, 16)
                         Text(verbatim: model.status).accessibilityIdentifier("prototype.status").accessibilityValue(model.status)
                         Button("Отключить") { model.stop() }.accessibilityIdentifier("prototype.stop")
-                        NavigationLink { PrototypeLogView(model: model) } label: { Text("Логи") }.accessibilityIdentifier("prototype.logs")
+                    }
+                    if !replacing || model.canStop {
+                        NavigationLink { PrototypeLogView(model: model).toolbar(.visible, for: .navigationBar) } label: {
+                            Text("Логи").font(.system(size: 15)).frame(maxWidth: .infinity, minHeight: 44)
+                        }
+                        .accessibilityIdentifier("prototype.logs")
                     }
                     PrototypeLegalLinks().padding(.top, 24)
                 }.padding(.top, 54)
@@ -287,7 +512,10 @@ struct PrototypeSubscriptionForm: View {
         .toolbar(replacing ? .visible : .hidden, for: .navigationBar)
         .scrollDismissesKeyboard(.interactively)
         .onAppear {
-            source = model.subscription.sourceURL ?? ""
+            if !hasLoadedSource {
+                source = model.subscription.sourceURL ?? ""
+                hasLoadedSource = true
+            }
             applyImportedSource()
         }
         .onChange(of: importedSource) { applyImportedSource() }
@@ -402,6 +630,8 @@ struct PrototypeConnectionView: View {
     @ObservedObject var presentation: PrototypePresentationCoordinator
     let edit: () -> Void
     private let cardSpacing: CGFloat = 16
+    private let footerHeight: CGFloat = 47
+    private let appVersion = "\(Bundle.main.version) (\(Bundle.main.versionNumber))"
     @ScaledMetric(relativeTo: .headline) private var modeRowHeight: CGFloat = 52
 
     var body: some View {
@@ -420,9 +650,18 @@ struct PrototypeConnectionView: View {
                 }
                 .padding(.horizontal, 18).padding(.top, modeRowHeight + cardSpacing)
                 .frame(maxWidth: .infinity, maxHeight: .infinity, alignment: .top)
-                PrototypeVPNCard(model: model, maximumHeight: max(80, geometry.size.height - modeRowHeight - 47 - 12),
-                                 showPrivacyPolicy: { presentation.show(.legal(.privacy)) })
-                    .padding(.horizontal, 18).padding(.bottom, 47)
+                VStack(spacing: 0) {
+                    PrototypeVPNCard(model: model, maximumHeight: max(80, geometry.size.height - modeRowHeight - footerHeight - 12),
+                                     showPrivacyPolicy: { presentation.show(.legal(.privacy)) })
+                    Text(verbatim: appVersion)
+                        .font(.caption2)
+                        .foregroundStyle(.tertiary)
+                        .accessibilityLabel("Version")
+                        .accessibilityValue(appVersion)
+                        .accessibilityIdentifier("prototype.app.version")
+                        .frame(height: footerHeight)
+                }
+                .padding(.horizontal, 18)
             }
         }
         .toolbar(.hidden, for: .navigationBar)

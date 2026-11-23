@@ -1,0 +1,85 @@
+{
+  "ui": {
+    "schemaVersion": 1,
+    "blocks": [],
+    "pages": []
+  },
+  "device_access": {
+    "schemaVersion": 1,
+    "revision": 1,
+    "state": "allowed",
+    "hwid": "aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa"
+  },
+  "vless": null,
+  "vk_turn_link": null,
+  "routing": {
+    "schemaVersion": 1,
+    "profiles": {
+      "roskomvpn": {
+        "rules": [
+          {
+            "action": "sniff"
+          },
+          {
+            "protocol": "dns",
+            "action": "hijack-dns"
+          },
+          {
+            "ip_cidr": [
+              "8.8.8.8/32",
+              "77.88.8.8/32"
+            ],
+            "port": 443,
+            "outbound": "direct"
+          },
+          {
+            "domain": [
+              "video.routing.invalid"
+            ],
+            "outbound": "vk-wg"
+          },
+          {
+            "rule_set": "geosite-youtube",
+            "network": "udp",
+            "port": 443,
+            "action": "reject"
+          },
+          {
+            "rule_set": "geosite-youtube",
+            "outbound": "vk-wg"
+          }
+        ],
+        "final": "vk-wg",
+        "reverse_mapping": false
+      },
+      "russia_inside": {
+        "rules": [
+          {
+            "action": "sniff"
+          },
+          {
+            "protocol": "dns",
+            "action": "hijack-dns"
+          },
+          {
+            "rule_set": "russia-inside",
+            "outbound": "vk-wg"
+          }
+        ],
+        "final": "direct",
+        "reverse_mapping": true
+      }
+    },
+    "assets": {
+      "geosite-youtube": {
+        "data": "U1JTAnjaYmRgYmBkAAEHBhBDahUIiKVk5iSW5WXqpedllpTmF+nlp6ZklnH9ZwAMAOPSDTM=",
+        "sha256": "fdb5de9846ed17d30077756bcc91022a63ac2a37866a748dacc29ea3ec9d4df4"
+      },
+      "russia-inside": {
+        "data": "U1JTAnjaYmRgYmBkAIEGBhAjaxUIiKdk5iSW5WXqpedllpTmF+mlpmQW52Vy/WcADAAFHg4p",
+        "sha256": "fe056fc5159513d3045b8b83c8f7be453ef32fd84634a9c22c1290dc7f35e009"
+      }
+    },
+    "revision": "3c75cd5f0e6e30d33fef4b5e4bb5d6990c967fe889a6d10a909d0fcc05075339"
+  }
+}

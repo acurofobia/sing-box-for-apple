@@ -2,6 +2,22 @@ import Libbox
 import Library
 import SwiftUI
 
+private struct ConnectionButtonStyle: ButtonStyle {
+    let canStop: Bool
+    @Environment(\.accessibilityReduceMotion) private var reduceMotion
+
+    func makeBody(configuration: Configuration) -> some View {
+        let pressed = configuration.isPressed
+        let fill = canStop ? PrototypeStyle.accent.mix(with: .black, by: 0.14) : PrototypeStyle.accent
+        return configuration.label
+            .background(pressed ? fill.mix(with: .white, by: 0.16) : fill, in: Capsule())
+            .scaleEffect(pressed && !reduceMotion ? 0.97 : 1)
+            .animation(pressed ? .easeOut(duration: 0.08) : .spring(duration: 0.24, bounce: 0.12), value: pressed)
+            .animation(reduceMotion ? nil : .easeInOut(duration: 0.22), value: canStop)
+            .contentShape(Rectangle())
+    }
+}
+
 struct PrototypeVPNCard: View {
     @ObservedObject var model: PrototypeModel
     let maximumHeight: CGFloat
@@ -9,7 +25,7 @@ struct PrototypeVPNCard: View {
     @AppStorage("prototype.privacy.reviewed.2026-10-22") private var privacyReviewed = false
     @State private var showingPrivacyNotice = false
     @State private var headerContentHeight: CGFloat = 60
-    @State private var footerContentHeight: CGFloat = 50
+    @State private var footerContentHeight: CGFloat = 66
     @State private var metricsHeight: CGFloat = 88
     @State private var noticeHeight: CGFloat = 0
     @ScaledMetric(relativeTo: .body) private var rowHeight: CGFloat = 44
@@ -154,7 +170,9 @@ struct PrototypeVPNCard: View {
             } label: {
                 HStack(spacing: 4) {
                     Image(systemName: "power").font(.system(size: 18))
-                    if model.canStop {
+                    if model.isCheckingVPN {
+                        Text("Проверяем подключение…")
+                    } else if model.canStop {
                         Text(verbatim: model.status)
                         Text("·")
                         if let start = model.connectedAt {
@@ -170,11 +188,11 @@ struct PrototypeVPNCard: View {
                 }
                 .font(.system(size: 17)).foregroundStyle(.white)
                 .frame(maxWidth: .infinity, minHeight: 50)
-                .background(PrototypeStyle.accent, in: Capsule())
             }
-            .buttonStyle(PrototypeFlatStyle())
-            .disabled(model.canStop ? false : !model.canStart)
-            .accessibilityLabel(model.canStop ? "Отключить" : "Подключить")
+            .buttonStyle(ConnectionButtonStyle(canStop: model.canStop))
+            .disabled(dragging || model.isCheckingVPN || !(model.canStart || model.canStop))
+            .accessibilityLabel(model.isCheckingVPN ? "Проверяем подключение…" : model.canStop ? "Отключить" : "Подключить")
+            .accessibilityValue(model.isCheckingVPN ? "" : model.status)
             .accessibilityIdentifier(model.canStop ? "prototype.stop" : "prototype.start")
             .alert("Перед подключением", isPresented: $showingPrivacyNotice) {
                 Button("Подключить") {
@@ -190,8 +208,10 @@ struct PrototypeVPNCard: View {
                 Text(verbatim: model.status).hidden()
                     .accessibilityHidden(false).accessibilityIdentifier("prototype.status").accessibilityValue(model.status)
             }
+            .padding(8)
+            .contentShape(Rectangle())
+            .simultaneousGesture(expansionGesture)
             .onGeometryChange(for: CGFloat.self) { $0.size.height } action: { footerContentHeight = $0 }
-            .highPriorityGesture(expansionGesture)
         }
         .font(.system(size: 17))
         .prototypeSurface()
@@ -209,7 +229,7 @@ struct PrototypeVPNCard: View {
                 }
             }
         }
-        .onReceive(client.$lastError.removeDuplicates()) { error in
+        .onChange(of: client.lastError, initial: true) { _, error in
             if let error { VPNDiagnostics.applicationError("status command channel \(error.kind): \(error.message)") }
         }
         .task(id: scenePhase) {
@@ -253,11 +273,7 @@ struct PrototypeVPNCard: View {
 
     private var expansionGesture: some Gesture {
         DragGesture(minimumDistance: 8, coordinateSpace: .global)
-            .updating($dragging) { value, state, _ in
-                if abs(value.translation.height) > abs(value.translation.width) {
-                    state = true
-                }
-            }
+            .updating($dragging) { _, state, _ in state = true }
             .onChanged { value in
                 guard !scrolling, abs(value.translation.height) > abs(value.translation.width) else { return }
                 if dragStartExpansion == nil {

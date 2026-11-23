@@ -2,22 +2,75 @@ import Darwin
 import Foundation
 import Libbox
 import Library
+import Network
 import NetworkExtension
 
 final class PacketTunnelProvider: ExtensionProvider {
     private var sessionID: Int64 = 0
     private var capture: PrototypeMemoryCapture?
     private let stateLock = NSLock()
-    private var stopped = false
+    private var stopReason: NEProviderStopReason?
     private var startupFinished: AsyncStream<Void>?
+    private var serviceSession: String?
+    private var serviceDeadline: DispatchWorkItem?
     private var startingServer: LibboxCommandServer?
+
+    override var shouldPersistStartOptions: Bool {
+        stateLock.withLock { serviceSession == nil }
+    }
+
+    override func handleAppMessage(_ messageData: Data) async -> Data? {
+        if messageData == Data("service-wdtt-session".utf8) {
+            return Data(stateLock.withLock { serviceSession ?? "" }.utf8)
+        }
+        if stateLock.withLock({ serviceSession != nil }) { return nil }
+        return await super.handleAppMessage(messageData)
+    }
+
+    private func armServiceDeadline(_ id: String) {
+        let deadline = DispatchWorkItem { [weak self] in
+            guard let self else { return }
+            self.stateLock.withLock {
+                guard self.serviceSession == id, self.stopReason == nil else { return }
+                LibboxCancelVKTurnPrototype()
+                self.cancelTunnelWithError(NSError(domain: NSURLErrorDomain, code: NSURLErrorTimedOut))
+            }
+        }
+        stateLock.withLock {
+            serviceSession = id
+            serviceDeadline = deadline
+        }
+        DispatchQueue.global(qos: .utility).asyncAfter(deadline: .now() + 300, execute: deadline)
+    }
+
+    private func clearServiceDeadline() {
+        stateLock.withLock {
+            serviceDeadline?.cancel()
+            serviceDeadline = nil
+            serviceSession = nil
+        }
+    }
 
     override func prepareServiceStart(_ server: LibboxCommandServer) throws {
         try stateLock.withLock {
-            guard !stopped else { throw CancellationError() }
+            guard stopReason == nil else { throw CancellationError() }
             startingServer = server
         }
         capture?.setFailoverServer(server)
+    }
+
+    override func makeNetworkPathObserver() -> (@Sendable (Network.NWPath) -> Void)? {
+        let id = stateLock.withLock { sessionID }
+        guard id != 0 else { return nil }
+        return { path in
+            let physical = path.availableInterfaces.first { interface in
+                [.wifi, .cellular, .wiredEthernet].contains(interface.type) && path.usesInterfaceType(interface.type)
+            }
+            let index = path.status == .satisfied ? Int32(physical?.index ?? -1) : -1
+            if LibboxUpdateVKTurnPrototypePath(id, index) {
+                VPNDiagnostics.event("VK TURN refreshing sessions on physical interface \(index)")
+            }
+        }
     }
 
     override func startTunnel(options: [String: NSObject]?) async throws {
@@ -28,15 +81,27 @@ final class PacketTunnelProvider: ExtensionProvider {
         }
         let generation = stateLock.withLock {
             startupFinished = completion.stream
-            stopped = false
+            stopReason = nil
             return LibboxBeginVKTurnPrototype()
         }
         let settings = (protocolConfiguration as? NETunnelProviderProtocol)?.providerConfiguration ?? [:]
-        let baseline = settings["baseline"] as? Bool ?? false
-        let mode = settings["mode"] as? String ?? "vk-turn"
+        let serviceLink = options?["serviceWDTTLink"] as? String
+        let serviceHost: String?
+        if let serviceLink {
+            guard serviceLink.hasPrefix("wdtt://"), let origin = options?["serviceWDTTSource"] as? String,
+                  let url = URLComponents(string: origin), url.scheme?.lowercased() == "https",
+                  let host = url.host, !host.isEmpty,
+                  let id = options?["serviceWDTTSession"] as? String, UUID(uuidString: id) != nil else { throw VKTurnError.invalidField }
+            serviceHost = host
+            armServiceDeadline(id)
+        } else { serviceHost = nil }
+        var started = false
+        defer { if !started { clearServiceDeadline() } }
+        let baseline = serviceHost == nil && (settings["baseline"] as? Bool ?? false)
+        let mode = serviceHost == nil ? settings["mode"] as? String ?? "vk-turn" : "vk-turn"
         let vless = !baseline && mode == "vless"
         VPNDiagnostics.beginTunnel(mode: baseline ? "baseline" : mode)
-        let connections = settings["connections"] as? Int ?? 30
+        let connections = serviceHost == nil ? settings["connections"] as? Int ?? 30 : 1
         let directory = FilePath.sharedDirectory
         defer {
             // Every start regenerates config; also clear stale snapshots on failure.
@@ -46,13 +111,47 @@ final class PacketTunnelProvider: ExtensionProvider {
         self.capture = capture
         capture.start()
         do {
-            let data = try Data(contentsOf: directory.appendingPathComponent("prototype-routing.json"))
-            let route = try JSONSerialization.jsonObject(with: data)
-            var input: [String: Any] = ["route": route, "baseline": baseline, "mode": mode, "generation": generation, "cache_path": directory.appendingPathComponent("Library/Caches/Prototype").path]
+            let snapshotURL = directory.appendingPathComponent("prototype-subscription.json")
+            let access = SubscriptionDeviceAccessStore(cacheURL: snapshotURL)
+            let route: Any
+            let source: String?
+            let reverseMapping: Bool
+            let vlessConfiguration: Data?
+            if let serviceHost {
+                let host = serviceHost.trimmingCharacters(in: CharacterSet(charactersIn: "[]"))
+                var target = ["domain": host, "outbound": "vk-wg"]
+                if IPv4Address(host) != nil || IPv6Address(host) != nil {
+                    target = ["ip_cidr": host + (host.contains(":") ? "/128" : "/32"), "outbound": "vk-wg"]
+                }
+                route = ["rules": [["action": "sniff"], ["protocol": "dns", "action": "hijack-dns"], target], "final": "direct"] as [String: Any]
+                source = nil
+                reverseMapping = true
+                vlessConfiguration = nil
+            } else {
+                let data = try Data(contentsOf: directory.appendingPathComponent("prototype-routing.json"))
+                let runtime = try await access.withLock {
+                    try PrototypeRouting.runtime(selection: data, snapshotURL: snapshotURL, bundle: .main,
+                                                 expectedSource: settings["routingSource"] as? String, requiresVLESS: vless)
+                }
+                route = try JSONSerialization.jsonObject(with: runtime.profile.route)
+                reverseMapping = runtime.profile.reverseMapping
+                source = runtime.source
+                vlessConfiguration = runtime.vlessConfiguration
+            }
+            let cache = directory.appendingPathComponent(serviceHost == nil ? "Library/Caches/Prototype" : "Library/Caches/ServiceWDTT")
+            try FileManager.default.createDirectory(at: cache, withIntermediateDirectories: true)
+            if serviceHost != nil {
+                // A stopped TURN allocation keeps its credential busy for ten minutes.
+                // A recovery attempt needs a fresh allocation even on an immediate retry.
+                let previous = cache.appendingPathComponent("prototype-turn-credentials.json")
+                if FileManager.default.fileExists(atPath: previous.path) {
+                    try FileManager.default.removeItem(at: previous)
+                }
+            }
+            var input: [String: Any] = ["route": route, "baseline": baseline, "mode": mode, "generation": generation, "cache_path": cache.path]
             var priorityFailoverJSON: String?
             if vless {
-                let node = try Data(contentsOf: directory.appendingPathComponent("prototype-vless.json"))
-                guard node.count <= 8 * 1024 * 1024,
+                guard let node = vlessConfiguration, node.count <= 8 * 1024 * 1024,
                       let document = try JSONSerialization.jsonObject(with: node) as? [String: Any]
                 else { throw VKTurnError.invalidField }
                 if document["kind"] != nil || document["schemaVersion"] != nil {
@@ -69,15 +168,26 @@ final class PacketTunnelProvider: ExtensionProvider {
                     guard let policyText = String(bytes: policyData, encoding: .utf8) else { throw VKTurnError.invalidField }
                     priorityFailoverJSON = policyText
                 } else {
+                    guard document["type"] as? String == "vless" else { throw VKTurnError.invalidField }
                     input["vless"] = document
                 }
             } else if !baseline {
-                let configuration = try VKTurnConfigurationStore.load()
+                let configuration: VKTurnConfiguration
+                if let serviceLink {
+                    configuration = try VKTurnConfiguration.importLink(serviceLink)
+                } else {
+                    configuration = try await access.withAllowedWDTT(source: source) { try VKTurnConfigurationStore.load() }
+                }
                 guard let proxyText = configuration.proxyConfig,
                       let proxyData = proxyText.data(using: .utf8),
                       var proxy = try JSONSerialization.jsonObject(with: proxyData) as? [String: Any]
                 else {
                     throw VKTurnError.invalidField
+                }
+                if serviceHost != nil, let password = configuration.wrapAPassword {
+                    // A managed node binds each transport device ID to one password.
+                    // Subscription HTTP requests continue to carry the original HWID.
+                    proxy["device_id"] = "service-" + SubscriptionDeviceIdentity.digest(VKTurnConfigurationStore.wrapADeviceID + ":" + password).prefix(32)
                 }
                 proxy["num_conns"] = connections
                 input["proxy"] = proxy
@@ -105,7 +215,7 @@ final class PacketTunnelProvider: ExtensionProvider {
                 }
             }
             let accepted = stateLock.withLock {
-                guard !stopped else { return false }
+                guard stopReason == nil else { return false }
                 sessionID = session.id_
                 return true
             }
@@ -114,15 +224,15 @@ final class PacketTunnelProvider: ExtensionProvider {
                 throw CancellationError()
             }
             capture.setSession(session.id_)
-            let cacheDirectory = FilePath.prototypeRuleSetDirectory
+            let cacheDirectory = serviceHost == nil ? FilePath.prototypeRuleSetDirectory : cache
             try FileManager.default.createDirectory(at: cacheDirectory, withIntermediateDirectories: true)
             var dnsConfiguration = Data(session.configuration.utf8)
             if !baseline {
                 dnsConfiguration = try PrototypeRouting.configurationWithDNSPolicy(dnsConfiguration)
             }
-            let configuration = try PrototypeRouting.configurationWithPersistentCache(dnsConfiguration, directory: cacheDirectory)
+            let configuration = try PrototypeRouting.configurationWithPersistentCache(dnsConfiguration, directory: cacheDirectory, reverseMapping: reverseMapping)
             guard let configText = String(bytes: configuration, encoding: .utf8) else { throw VKTurnError.invalidField }
-            var effective = options ?? [:]
+            var effective = serviceHost == nil ? options ?? [:] : [:]
             // Derive policy exclusively from this runtime document, never start options.
             effective.removeValue(forKey: "priorityFailoverJSON")
             if let priorityFailoverJSON {
@@ -136,13 +246,20 @@ final class PacketTunnelProvider: ExtensionProvider {
             effective["configContent"] = NSString(string: configText)
             effective["systemProxyEnabled"] = NSNumber(value: false)
             try await super.startTunnel(options: effective)
-            if !baseline {
+            if !baseline, serviceHost == nil {
                 capture.setHealthServer(commandServer)
             }
             LibboxSetVKTurnPrototypeLogServer(commandServer)
+            #if DEBUG
+            if let vlessConfiguration {
+                // The acceptance exporter reads the configuration used by this session.
+                let diagnostic = directory.appendingPathComponent("prototype-vless.json")
+                try? vlessConfiguration.write(to: diagnostic, options: [.atomic, .completeFileProtectionUntilFirstUserAuthentication])
+            }
+            #endif
             commandServer?.writeMessage(4, message: "[VPN] Connected: " + (vless ? "VLESS" : "VK TURN"))
             #if DEBUG
-            if !baseline {
+            if !baseline, serviceHost == nil {
                 let profileDirectory = directory.appendingPathComponent("Library/Caches/Prototype/OOMVerification").path
                 try await withCheckedThrowingContinuation { (continuation: CheckedContinuation<Void, Error>) in
                     DispatchQueue.global(qos: .utility).async {
@@ -157,9 +274,12 @@ final class PacketTunnelProvider: ExtensionProvider {
                 }
             }
             #endif
-            guard !stateLock.withLock({ stopped }) else { throw CancellationError() }
+            guard stateLock.withLock({ stopReason == nil }) else { throw CancellationError() }
+            started = true
             capture.setPhase(baseline ? "baseline" : vless ? "vless" : "combined")
         } catch {
+            // The pending stop owns teardown and writes the final stopped snapshot.
+            if stateLock.withLock({ stopReason == .userInitiated }) { throw CancellationError() }
             VPNDiagnostics.startupFailed(error.localizedDescription)
             capture.setHealthServer(nil)
             capture.setFailoverServer(nil)
@@ -177,8 +297,9 @@ final class PacketTunnelProvider: ExtensionProvider {
     override func stopTunnel(with reason: NEProviderStopReason) async {
         // Persist before any shutdown work that may block or be interrupted by iOS.
         VPNDiagnostics.stopRequested(reason.rawValue)
+        defer { clearServiceDeadline() }
         let (id, startup, server) = stateLock.withLock {
-            stopped = true
+            stopReason = reason
             let id = sessionID
             sessionID = 0
             return (id, startupFinished, startingServer)

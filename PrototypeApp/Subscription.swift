@@ -44,14 +44,37 @@ struct PrototypeVLESSProvisioning: Codable, Sendable {
     }
 }
 
-/// A complete provisioning snapshot; routing and DNS remain application-owned.
+struct PrototypeServiceWDTT: Codable, Sendable {
+    let revision: Int
+    let link: String
+
+    static func validated(_ data: Data) -> Self? {
+        guard data.count < 16384, let value = try? JSONDecoder().decode(Self.self, from: data),
+              value.revision > 0, value.link.hasPrefix("wdtt://"),
+              (try? VKTurnConfiguration.importLink(value.link)) != nil else { return nil }
+        return value
+    }
+
+    static func preferred(for subscription: PrototypeSubscription?) -> Self? {
+        let bundled = Bundle.main.url(forResource: "ServiceWDTT", withExtension: "json")
+            .flatMap { try? Data(contentsOf: $0) }.flatMap(validated)
+        guard let saved = subscription?.serviceWDTT, saved.revision > (bundled?.revision ?? 0),
+              (try? VKTurnConfiguration.importLink(saved.link)) != nil else { return bundled }
+        return saved
+    }
+}
+
+/// A complete provisioning snapshot, atomically shared with the tunnel extension.
 struct PrototypeSubscription: Codable, Sendable {
+    var serviceWDTT: PrototypeServiceWDTT?
+    var allowsLegacyTransport: Bool?
+    var routing: Data?
     var uiURL: String?
     var uiToken: String?
     var uiDocument: PrototypeUIDocument?
     var updatedAt: Date?
     var isComplete: Bool {
-        sourceURL != nil && uiURL != nil && uiDocument != nil && updatedAt != nil
+        sourceURL != nil && uiDocument != nil && updatedAt != nil
     }
 
     func isAvailable(optionID: String) -> Bool {

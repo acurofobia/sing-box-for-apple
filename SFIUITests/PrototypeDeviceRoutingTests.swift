@@ -7,6 +7,19 @@ final class PrototypeDeviceRoutingTests: XCTestCase {
         app.descendants(matching: .any).matching(identifier: "prototype.status").firstMatch
     }
 
+    func testColdLaunchShowsAlreadyRunningVPN() throws {
+        try XCTSkipUnless(ProcessInfo.processInfo.environment["PROTOTYPE_DEVICE_CONNECTED_RELAUNCH"] == "1",
+                          "Requires a physical iPhone with the prototype VPN already connected.")
+        continueAfterFailure = false
+        app.launch()
+        let stop = app.buttons["prototype.stop"]
+        XCTAssertTrue(stop.waitForExistence(timeout: 10))
+        app.terminate()
+        app.launch()
+        XCTAssertTrue(stop.waitForExistence(timeout: 10), "The running VPN was not discovered automatically")
+        XCTAssertTrue(stop.isEnabled)
+    }
+
     func testFailoverServerDetailsWithSavedConfiguration() throws {
         #if targetEnvironment(simulator)
             throw XCTSkip("This check requires the iPhone's saved VLESS configuration.")
@@ -40,7 +53,7 @@ final class PrototypeDeviceRoutingTests: XCTestCase {
         #endif
     }
 
-    func testRoutingAndDownloadsWithSavedDeviceConfigurations() async throws {
+    func testSubscriptionRoutingWithSavedDeviceConfigurations() async throws {
         #if targetEnvironment(simulator)
             throw XCTSkip("This check requires a physical iPhone and saved VPN configurations.")
         #else
@@ -49,20 +62,33 @@ final class PrototypeDeviceRoutingTests: XCTestCase {
             continueAfterFailure = false
             app.launch()
             XCTAssertTrue(app.tabBars.buttons["Роутинг"].waitForExistence(timeout: 15))
+            app.tabBars.buttons["Профиль"].tap()
+            let refresh = app.buttons["prototype.subscription.refresh"]
+            XCTAssertTrue(refresh.waitForExistence(timeout: 10))
+            if refresh.isEnabled { refresh.tap() }
+            app.tabBars.buttons["Роутинг"].tap()
+            XCTAssertTrue(app.staticTexts["Подписка"].waitForExistence(timeout: 95),
+                          "The saved subscription did not supply a routing profile.")
             app.tabBars.buttons["Подключение"].tap()
             app.buttons["prototype.mode"].tap()
             let originalMode = app.buttons["prototype.ui.option01"].value as? String == "Выбрано" ? "option01" : "option02"
-            let modes = ["option01", "option02"].filter { app.buttons["prototype.ui." + $0].isEnabled }
-            let modeTitles = Dictionary(uniqueKeysWithValues: modes.map { ($0, app.buttons["prototype.ui." + $0].label) })
+            let modes = ["option01", "option02"].filter {
+                let button = app.buttons["prototype.ui." + $0]
+                return button.exists && button.isEnabled
+            }
             app.buttons["prototype.mode.close"].tap()
+            XCTAssertTrue(app.buttons["prototype.mode"].waitForExistence(timeout: 8))
             try XCTSkipIf(modes.isEmpty, "Import a VPN configuration on the iPhone before running this check.")
-            _ = reveal("prototype.stop")
             let wasConnected = status.value as? String == "Подключено"
+                || ProcessInfo.processInfo.environment["PROTOTYPE_DEVICE_PREINSTALL_CONNECTED"] == "1"
             app.tabBars.buttons["Роутинг"].tap()
-            let routingPicker = app.segmentedControls["prototype.routing.mode"]
-            let originalRouting = routingPicker.buttons["Russia inside"].isSelected ? "Russia inside" : "С роутингом"
+            let insideID = "prototype.routing.russiaInside"
+            let roskomID = "prototype.routing.enabled"
+            XCTAssertTrue(app.buttons[insideID].waitForExistence(timeout: 8))
+            let originalRouting = app.buttons[insideID].isSelected ? insideID : roskomID
             app.tabBars.buttons["Подключение"].tap()
-            defer {
+            addTeardownBlock { @MainActor [self] in
+                app.tabBars.buttons["Подключение"].tap()
                 stopVPN()
                 choose(mode: originalMode, routing: originalRouting)
                 if wasConnected {
@@ -72,7 +98,7 @@ final class PrototypeDeviceRoutingTests: XCTestCase {
 
             for mode in modes {
                 stopVPN()
-                for (index, routing) in ["Russia inside", "С роутингом"].enumerated() {
+                for (index, routing) in [insideID, roskomID].enumerated() {
                     choose(mode: mode, routing: routing)
                     if index == 0 {
                         startVPN()
@@ -89,37 +115,10 @@ final class PrototypeDeviceRoutingTests: XCTestCase {
                     XCTAssertEqual((response as? HTTPURLResponse)?.statusCode, 200)
                     XCTAssertTrue(String(data: data, encoding: .utf8)?.contains("Success") == true)
 
-                    app.tabBars.buttons["Профиль"].tap()
-                    app.buttons["prototype.logs"].tap()
-                    XCTAssertTrue(app.navigationBars["Логи · " + (modeTitles[mode] ?? mode)].waitForExistence(timeout: 10))
-                    let search = app.searchFields.firstMatch
-                    if !search.isHittable {
-                        app.swipeDown()
-                    }
-                    XCTAssertTrue(search.waitForExistence(timeout: 10))
-                    search.tap()
-                    search.typeText("captive.apple.com")
-                    let traffic = app.staticTexts.matching(NSPredicate(format: "label CONTAINS %@", "captive.apple.com")).allElementsBoundByIndex
-                        .map(\.label).filter { $0.contains("connection to") || $0.contains("inbound connection to") }
-                    let report = XCTAttachment(string: "Mode: \(mode)\nRouting: \(routing)\nHTTPS: 200, Success\n" + traffic.joined(separator: "\n"))
+                    let report = XCTAttachment(string: "Mode: \(mode)\nRouting: \(routing)\nHTTPS: 200, Success")
                     report.name = "VPN traffic: \(mode), \(routing)"
                     report.lifetime = .keepAlways
                     add(report)
-                    if routing == "С роутингом", mode == modes.first {
-                        search.tap()
-                        search.typeText(String(repeating: XCUIKeyboardKey.delete.rawValue, count: 100))
-                        search.typeText("updated rule-set")
-                        // Native updates are sequential; the last descriptor follows all geosite sets.
-                        let lastUpdate = app.staticTexts.matching(NSPredicate(format: "label CONTAINS %@", "updated rule-set geoip-direct")).firstMatch
-                        XCTAssertTrue(lastUpdate.waitForExistence(timeout: 90), "Native remote updates did not finish.")
-                        let updates = app.staticTexts.allElementsBoundByIndex.map(\.label)
-                            .filter { $0.contains("updated rule-set") }
-                        let evidence = XCTAttachment(string: updates.joined(separator: "\n"))
-                        evidence.name = "Native rule-set updates: \(mode)"
-                        evidence.lifetime = .keepAlways
-                        add(evidence)
-                    }
-                    app.navigationBars.buttons.element(boundBy: 0).tap()
                     app.tabBars.buttons["Роутинг"].tap()
                     let screenshot = XCTAttachment(screenshot: app.screenshot())
                     screenshot.name = "Routing choice on iPhone: \(mode), \(routing)"
@@ -129,6 +128,91 @@ final class PrototypeDeviceRoutingTests: XCTestCase {
                 }
             }
         #endif
+    }
+
+    func testServiceRecoveryWithSavedDeviceConfigurations() throws {
+        #if targetEnvironment(simulator)
+            throw XCTSkip("Requires a physical iPhone and a working WDTT resource.")
+        #else
+            try XCTSkipUnless(ProcessInfo.processInfo.environment["PROTOTYPE_DEVICE_SERVICE_CHECK"] == "1",
+                              "Enable the check explicitly to temporarily change VPN connections.")
+            continueAfterFailure = false
+            app.launchEnvironment["PROTOTYPE_RECOVERY_SIMULATE_TIMEOUT"] = "1"
+            app.launch()
+            let connection = app.tabBars.buttons["Подключение"]
+            try XCTSkipUnless(connection.waitForExistence(timeout: 15), "The device has no saved subscription.")
+            connection.tap()
+            XCTAssertTrue(status.waitForExistence(timeout: 10))
+            let wasRunning = app.buttons["prototype.stop"].exists ||
+                ProcessInfo.processInfo.environment["PROTOTYPE_DEVICE_PREINSTALL_CONNECTED"] == "1"
+            app.buttons["prototype.mode"].tap()
+            let modes = ["option01", "option02"].filter { app.buttons["prototype.ui." + $0].exists && app.buttons["prototype.ui." + $0].isEnabled }
+            let originalMode = modes.first { app.buttons["prototype.ui." + $0].value as? String == "Выбрано" }
+            closeDeviceModeDrawer()
+            try XCTSkipIf(modes.isEmpty || originalMode == nil, "No selected, available VPN configuration on the device.")
+            app.tabBars.buttons["Роутинг"].tap()
+            let inside = app.buttons["prototype.routing.russiaInside"]
+            XCTAssertTrue(inside.waitForExistence(timeout: 8))
+            let routing = inside.isSelected ? "prototype.routing.russiaInside" : "prototype.routing.enabled"
+            connection.tap()
+            addTeardownBlock { @MainActor [self] in
+                if app.buttons["prototype.recovery.cancel"].exists { app.buttons["prototype.recovery.cancel"].tap() }
+                if app.staticTexts["prototype.recovery.result"].exists || !connection.isHittable {
+                    if app.buttons["prototype.recovery.close"].waitForExistence(timeout: 170) { app.buttons["prototype.recovery.close"].tap() }
+                }
+                if connection.isHittable { connection.tap() }
+                stopVPN()
+                if let originalMode { choose(mode: originalMode, routing: routing) }
+                if wasRunning { startVPN() }
+            }
+            stopVPN()
+            verifyServiceRefresh(wasRunning: false)
+            waitForStatus("Отключено", timeout: 15)
+            for mode in modes {
+                stopVPN()
+                choose(mode: mode, routing: routing)
+                startVPN()
+                verifyServiceRefresh(wasRunning: true)
+                waitForStatus("Подключено", timeout: 120)
+                app.buttons["prototype.mode"].tap()
+                XCTAssertEqual(app.buttons["prototype.ui." + mode].value as? String, "Выбрано")
+                closeDeviceModeDrawer()
+                app.tabBars.buttons["Роутинг"].tap()
+                XCTAssertTrue(app.buttons[routing].isSelected)
+                connection.tap()
+            }
+        #endif
+    }
+
+    private func closeDeviceModeDrawer() {
+        // The expanded header may be below the viewport on a compact iPhone.
+        // Dismiss the scrim and wait until SwiftUI has completed its closing animation.
+        app.windows.firstMatch.coordinate(withNormalizedOffset: CGVector(dx: 0.95, dy: 0.86)).tap()
+        let picker = app.buttons["prototype.mode"]
+        if !picker.waitForExistence(timeout: 2) {
+            let selected = ["option01", "option02"].map { app.buttons["prototype.ui." + $0] }.first {
+                $0.exists && $0.isHittable && $0.isEnabled && $0.value as? String == "Выбрано"
+            }
+            selected?.tap()
+        }
+        XCTAssertTrue(picker.waitForExistence(timeout: 8), "The mode drawer did not finish closing.")
+    }
+
+    private func verifyServiceRefresh(wasRunning: Bool) {
+        app.tabBars.buttons["Профиль"].tap()
+        let refresh = app.buttons["prototype.subscription.refresh"]
+        let enabled = XCTNSPredicateExpectation(predicate: NSPredicate { _, _ in refresh.exists && refresh.isEnabled }, object: nil)
+        XCTAssertEqual(XCTWaiter.wait(for: [enabled], timeout: 115), .completed)
+        refresh.tap()
+        let start = app.buttons["prototype.recovery.start"]
+        XCTAssertTrue(start.waitForExistence(timeout: 15))
+        XCTAssertEqual(app.staticTexts["На время обновления мы отключим основной VPN и затем подключим его снова."].exists, wasRunning)
+        start.tap()
+        let result = app.staticTexts["prototype.recovery.result"]
+        XCTAssertTrue(result.waitForExistence(timeout: 450))
+        XCTAssertEqual(result.label, "Подписка обновлена.")
+        app.buttons["prototype.recovery.close"].tap()
+        app.tabBars.buttons["Подключение"].tap()
     }
 
     private func reveal(_ identifier: String) -> XCUIElement {
@@ -156,7 +240,9 @@ final class PrototypeDeviceRoutingTests: XCTestCase {
         option.tap()
         XCTAssertTrue(picker.waitForExistence(timeout: 5))
         app.tabBars.buttons["Роутинг"].tap()
-        let selected = app.segmentedControls["prototype.routing.mode"].buttons[routing]
+        let selected = app.buttons[routing]
+        XCTAssertTrue(selected.waitForExistence(timeout: 8))
+        XCTAssertTrue(selected.isEnabled && selected.isHittable, "Routing option unavailable: " + routing)
         selected.tap()
         let applied = XCTNSPredicateExpectation(predicate: NSPredicate { _, _ in
             selected.isSelected && selected.isEnabled
@@ -167,8 +253,9 @@ final class PrototypeDeviceRoutingTests: XCTestCase {
     }
 
     private func stopVPN() {
-        let stop = reveal("prototype.stop")
-        if stop.exists, stop.isEnabled {
+        if app.buttons["prototype.stop"].exists {
+            let stop = reveal("prototype.stop")
+            XCTAssertTrue(stop.isEnabled)
             stop.tap()
         }
         waitForStatus("Отключено", timeout: 30)

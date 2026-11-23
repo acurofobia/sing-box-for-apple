@@ -59,8 +59,15 @@ final class VPNDiagnosticArchive {
         }
     }
 
-    func recover(excluding activeSession: URL?) throws {
-        for session in try sessionDirectories() where session.lastPathComponent != activeSession?.lastPathComponent {
+    func recover(disconnected: Bool, observedAt: Date) throws {
+        // Session names start with the tunnel's creation timestamp. A queued disconnect
+        // must not preserve a tunnel that started after the status notification.
+        let sessions = try sessionDirectories().filter { session in
+            guard let prefix = session.lastPathComponent.split(separator: "-", maxSplits: 1).first,
+                  let started = Double(prefix) else { return true }
+            return started <= observedAt.timeIntervalSince1970
+        }
+        for session in sessions.dropFirst(disconnected ? 0 : 1) {
             try preserveIfUnexpected(session, detail: "session ended without an expected stop; discovered after process exit")
         }
     }
@@ -102,13 +109,10 @@ final class VPNDiagnosticArchive {
         try file.write(contentsOf: data)
     }
 
-    func clearPreservedReports() throws {
-        try withArchiveLock { try clearUnlocked() }
-    }
-
-    private func clearUnlocked() throws {
+    func clearIncidents() throws {
         // Delete only reports present at the user's action, preserving concurrent new incidents.
-        if fm.fileExists(atPath: incidents.path) {
+        try withArchiveLock {
+            guard fm.fileExists(atPath: incidents.path) else { return }
             let reports = try fm.contentsOfDirectory(at: incidents, includingPropertiesForKeys: nil, options: .skipsHiddenFiles)
             for report in reports {
                 let session = sessions.appendingPathComponent(report.lastPathComponent, isDirectory: true)
@@ -118,6 +122,9 @@ final class VPNDiagnosticArchive {
                 try fm.removeItem(at: report)
             }
         }
+    }
+
+    func clearErrors() throws {
         if fm.fileExists(atPath: errors.path) {
             for file in try fm.contentsOfDirectory(at: errors, includingPropertiesForKeys: nil) {
                 try fm.removeItem(at: file)

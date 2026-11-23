@@ -18,6 +18,10 @@ build_ios:
 build_macos:
 	xcodebuild build $(XCODEBUILD_FLAGS) -scheme SFM -configuration Debug -destination 'generic/platform=macOS' | xcbeautify | grep -A 10 -e "Build Succeeded" -e "BUILD FAILED" -e "❌"
 
+# Apple silicon runs this local variant in a proportionally scaled iPhone window.
+build_prototype_macos:
+	xcodebuild build $(XCODEBUILD_FLAGS) -scheme VKTurnPrototype -configuration Release -destination 'platform=macOS,arch=arm64,name=My Mac' TARGETED_DEVICE_FAMILY=1 | xcbeautify
+
 build_macos_standalone:
 	xcodebuild build $(XCODEBUILD_FLAGS) -scheme SFM.System -configuration Debug -destination 'generic/platform=macOS' | xcbeautify | grep -A 10 -e "Build Succeeded" -e "BUILD FAILED" -e "❌"
 

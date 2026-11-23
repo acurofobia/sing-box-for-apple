@@ -1,6 +1,6 @@
 import Foundation
 
-public struct PriorityFailoverStatus: Codable, Sendable {
+public struct PriorityFailoverStatus: Codable, Equatable, Sendable {
     public let mode: String
     public let selected: String?
     public let primaryHealth: String?
@@ -12,7 +12,7 @@ public struct PriorityFailoverStatus: Codable, Sendable {
     public let total: Int?
     public let servers: [Server]?
 
-    public struct Server: Codable, Sendable {
+    public struct Server: Codable, Equatable, Sendable {
         public let tag: String
         public let health: String
     }

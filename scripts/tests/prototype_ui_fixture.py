@@ -1,7 +1,10 @@
 """Local, synthetic-only fixtures for native UI verification (port 18081)."""
 from http.server import BaseHTTPRequestHandler, ThreadingHTTPServer
 from html import escape
+import base64
+import hashlib
 import json
+from pathlib import Path
 import time
 from urllib.parse import quote, urlsplit
 from test_prototype_subscription import CONFIG, LINK, NODE
@@ -98,6 +101,30 @@ class Handler(BaseHTTPRequestHandler):
                 variant = VARIANT if name == 'both' else name
                 payload = document(variant)
                 if variant == 'invalid': payload['schemaVersion'] = 2
+        elif path == '/subscription/bundle' and VARIANT == 'preparing':
+            status, payload = 202, {'error': 'wdtt_preparing'}
+        elif path == '/subscription/slow-error':
+            time.sleep(6)
+            status, payload = 404, {'error': 'not_found'}
+        elif path.startswith('/subscription/') and VARIANT == 'offline':
+            status, payload = 503, {'error': 'unavailable'}
+        elif path in ('/subscription/bundle', '/subscription/bundle-custom-ip'):
+            if self.headers.get('X-Subscription-Format') != 'vipin-v2' or not self.headers.get('X-App-Build'):
+                status, payload = 400, {'error': 'missing_app_headers'}
+            else:
+                payload = {'ui': document(VARIANT), 'vless': FAILOVER, 'vk_turn_link': LINK,
+                           'routing': json.loads((Path(__file__).parent / 'fixtures/vipin-v2-routing.json').read_text())['routing'],
+                           'device_access': {'schemaVersion': 1, 'hwid': self.headers.get('x-hwid'),
+                                             'state': 'allowed', 'revision': DEVICE_REVISION}}
+                if name == 'bundle-custom-ip':
+                    data = (Path(__file__).resolve().parents[2] / 'PrototypeApp/RuleSets/geoip-direct.srs').read_bytes()
+                    routing = payload['routing']
+                    routing['assets']['office-prefixes'] = {'sha256': hashlib.sha256(data).hexdigest(),
+                                                            'data': base64.b64encode(data).decode()}
+                    routing['profiles']['roskomvpn']['rules'].extend([
+                        {'rule_set': 'office-prefixes', 'outbound': 'direct'},
+                        {'ip_is_private': True, 'outbound': 'direct'}])
+                    routing['revision'] = hashlib.sha256(json.dumps(routing, sort_keys=True).encode()).hexdigest()
         elif path.startswith('/subscription/') and name != 'error':
             base = f'http://localhost:{self.server.server_port}'
             payload = {'sing_box_url': None if name in ('empty', 'vk') else base + ('/unavailable' if name == 'config-error' else '/config/failover' if name == 'failover' else '/config'),
@@ -117,7 +144,9 @@ class Handler(BaseHTTPRequestHandler):
         body = json.dumps(payload, ensure_ascii=False).encode()
         self.send_response(status)
         self.send_header('Content-Type', 'application/json')
-        if path in ('/subscription/device-access', '/subscription/restricted'):
+        if path in ('/subscription/bundle', '/subscription/bundle-custom-ip'):
+            self.send_header('X-Subscription-Format', 'vipin-v2')
+        elif path in ('/subscription/device-access', '/subscription/restricted'):
             self.send_header('X-Subscription-Format', 'vipin-v1')
         self.send_header('Content-Length', str(len(body)))
         self.end_headers()

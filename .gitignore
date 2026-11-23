@@ -40,3 +40,6 @@ __pycache__/
 
 # Include the published handoff instructions, keeping local agent settings ignored.
 !/output/android-parity-2026-10-21/design-handoff/AGENTS.md
+
+# Private WDTT bundle input or a copy exported from a release app.
+[Ss]erviceWDTT.json

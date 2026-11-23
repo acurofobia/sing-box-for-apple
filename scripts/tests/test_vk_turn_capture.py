@@ -4,11 +4,14 @@ import subprocess
 import tempfile
 import unittest
 
+from test_prototype_startup_cancellation import method
+
 ROOT = Path(__file__).resolve().parents[2]
 
 HARNESS = r'''
 import Darwin
 import Foundation
+import Combine
 
 private var testUptime = 0.0
 private enum VPNDiagnostics { static func event(_ message: String) {} }
@@ -95,11 +98,40 @@ func waitForHealth(_ expected: Bool) throws {
 }
 
 switch CommandLine.arguments[1] {
-case "disconnected_error", "stale", "connected", "all_down", "stale_all_down", "healthy", "unhealthy", "expired_health", "old_session", "future_sample", "future_health":
+case "idle_publications", "active_publications":
+    FilePath.sharedDirectory = directory
+    let model = TestModel()
+    let active = CommandLine.arguments[1] == "active_publications"
+    model.manager = TestManager(connection: TestConnection(status: active ? .connected : .disconnected))
+    let payload = UIStatus(phase: "vless", error: "Extension error", updatedAt: Date(), failover: TestFailover())
+    if active { try JSONEncoder().encode(payload).write(to: statusURL) }
+    model.refreshVPNState()
+    var publications = 0
+    let observer = model.objectWillChange.sink { publications += 1 }
+    for _ in 0..<10 {
+        if active { model.refreshExtensionStatus() } else { model.refreshVPNState() }
+    }
+    expect(publications == 0, "Ten unchanged refreshes sent \(publications) model notifications")
+    if active {
+        try JSONEncoder().encode(UIStatus(phase: "vless", error: payload.error, updatedAt: Date(),
+                                         health: true, healthUpdatedAt: Date())).write(to: statusURL)
+        model.refreshExtensionStatus()
+        expect(publications == 2 && model.status == "Подключено" && model.failoverStatus == nil,
+               "A changed capture must publish only failover and health")
+        model.manager?.connection.status = .disconnected
+        model.refreshExtensionStatus()
+        expect(publications == 2 && model.vpnState == .connected, "Telemetry polled iOS connection state")
+        model.refreshVPNState()
+        expect(model.vpnState == .disconnected && model.footprint == "—" && model.status == "Отключено",
+               "Disconnect left active telemetry visible")
+    }
+    observer.cancel()
+case "disconnected_error", "stale_error", "stale", "connected", "all_down", "stale_all_down", "healthy", "unhealthy", "expired_health", "old_session", "future_sample", "future_health":
     let scenario = CommandLine.arguments[1]
     FilePath.sharedDirectory = directory
-    var payload = UIStatus(error: scenario == "disconnected_error" ? "Bootstrap failed" : nil,
-                           updatedAt: Date(timeIntervalSinceNow: ["stale", "stale_all_down"].contains(scenario) ? -10 : 0))
+    let failed = ["disconnected_error", "stale_error"].contains(scenario)
+    var payload = UIStatus(error: failed ? "Bootstrap failed" : nil,
+                           updatedAt: Date(timeIntervalSinceNow: ["stale", "stale_all_down", "stale_error"].contains(scenario) ? -10 : 0))
     if ["all_down", "stale_all_down"].contains(scenario) { payload.failover = TestFailover(); payload.phase = "vless" }
     if ["healthy", "unhealthy", "expired_health", "old_session", "stale", "future_sample", "future_health"].contains(scenario) {
         payload.phase = "vless"
@@ -111,9 +143,9 @@ case "disconnected_error", "stale", "connected", "all_down", "stale_all_down", "
     if scenario == "old_session" { payload.healthUpdatedAt = Date(timeIntervalSinceNow: -2) }
     try JSONEncoder().encode(payload).write(to: statusURL)
     let model = TestModel()
-    model.manager = TestManager(connection: TestConnection(status: scenario == "disconnected_error" ? .disconnected : .connected,
+    model.manager = TestManager(connection: TestConnection(status: failed ? .disconnected : .connected,
                                                          connectedDate: scenario == "old_session" ? Date(timeIntervalSinceNow: -1) : nil))
-    await model.refresh()
+    model.refreshVPNState()
     if scenario == "all_down" {
         expect(model.status == "Туннель поднят · все выходы недоступны", "All-down presented as connected internet")
     } else if scenario == "stale_all_down" {
@@ -126,6 +158,8 @@ case "disconnected_error", "stale", "connected", "all_down", "stale_all_down", "
         expect(model.status != "Подключено", "Expired outbound check presented as current")
     } else if ["old_session", "future_sample", "future_health"].contains(scenario) {
         expect(model.status != "Подключено", "Invalid or previous-session health accepted")
+    } else if scenario == "stale_error" {
+        expect(model.error == nil && model.status == "Отключено", "Old snapshot reopened an error after disconnect")
     } else if scenario == "disconnected_error" {
         expect(model.footprint == "—", "Disconnected VPN shows memory")
         expect(model.error == "Bootstrap failed", "Disconnected VPN hides startup error")
@@ -146,7 +180,7 @@ case "connecting_failover", "expired_failover", "previous_failover", "disconnect
     model.failoverStatus = try JSONDecoder().decode(PriorityFailoverStatus.self, from: JSONEncoder().encode(TestFailover()))
     model.manager = TestManager(connection: TestConnection(status: scenario == "disconnected_failover" ? .disconnected : .connecting,
         connectedDate: scenario == "previous_failover" ? Date(timeIntervalSinceNow: -1) : nil))
-    await model.refresh()
+    model.refreshVPNState()
     if scenario == "connecting_failover" {
         expect(model.failoverStatus?.selected == "b2", "Startup failover snapshot not published")
     } else {
@@ -228,18 +262,20 @@ class CaptureTests(unittest.TestCase):
         cls.addClassCleanup(cls.directory.cleanup)
         directory = Path(cls.directory.name)
         source = (ROOT / 'Extension/PacketTunnelProvider.swift').read_text()
-        capture = 'private final class PrototypeMemoryCapture' + source.split(
-            'private final class PrototypeMemoryCapture', 1)[1]
+        capture = method(source, 'private final class PrototypeMemoryCapture')
         # Replace only the platform clock; execute the production sampler and real I/O.
         capture = capture.replace('ProcessInfo.processInfo.systemUptime', 'testUptime')
         swift = directory / 'main.swift'
         app = (ROOT / 'PrototypeApp/Application.swift').read_text()
-        refresh = '    func refresh() async {' + app.split('    func refresh() async {', 1)[1].rsplit('\n}', 1)[0]
-        model = ('private final class TestModel {\n'
-                 '    var manager: TestManager?\n    var footprint = "—"\n    var resetting = false\n'
-                 '    var connectionMode: ConnectionMode = .vless\n    var failoverStatus: PriorityFailoverStatus?\n'
-                 '    var vpnState: ConnectionStatus = .disconnected\n    var connectedAt: Date?\n    var status = "Отключено"\n    var error: String?\n' + refresh + '}\n')
-        swift.write_text(HARNESS + capture + model + CHECKS)
+        refresh = '\n'.join(method(app, marker) for marker in
+                            ('    var canStop:', '    func refreshVPNState()', '    func refreshExtensionStatus()'))
+        model = ('private final class TestModel: ObservableObject {\n'
+                 '    var manager: TestManager?\n    @Published var footprint = "—"\n    var resetting = false\n'
+                 '    var connectionMode: ConnectionMode = .vless\n    @Published var failoverStatus: PriorityFailoverStatus?\n'
+                 '    @Published var vpnState: ConnectionStatus = .disconnected\n    @Published var connectedAt: Date?\n'
+                 '    @Published var status = "Отключено"\n    @Published var error: String?\n'
+                 + refresh + '\n}\n')
+        swift.write_text('\n'.join((HARNESS, capture, model, CHECKS)))
         cls.executable = directory / 'capture-tests'
         subprocess.run(['xcrun', 'swiftc', '-module-cache-path', str(directory / 'modules'),
                         str(ROOT / 'Library/Network/PriorityFailoverStatus.swift'), str(swift),
@@ -248,6 +284,11 @@ class CaptureTests(unittest.TestCase):
     def run_scenario(self, name):
         result = subprocess.run([str(self.executable), name], capture_output=True, text=True)
         self.assertEqual(result.returncode, 0, result.stdout + result.stderr)
+
+    def test_unchanged_vpn_and_extension_status_send_no_model_notifications(self):
+        for scenario in ("idle_publications", "active_publications"):
+            with self.subTest(scenario=scenario):
+                self.run_scenario(scenario)
 
     def test_failover_status_uses_existing_sampler_and_releases_server(self):
         self.run_scenario("failover")
@@ -278,6 +319,7 @@ class CaptureTests(unittest.TestCase):
 
     def test_disconnected_vpn_keeps_startup_error_but_clears_memory(self):
         self.run_scenario('disconnected_error')
+        self.run_scenario('stale_error')
 
     def test_stale_status_is_not_displayed_as_live_memory(self):
         self.run_scenario('stale')

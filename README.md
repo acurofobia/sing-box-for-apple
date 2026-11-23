@@ -6,8 +6,9 @@ The **Роутинги** tab selects the existing RoscomVPN rules or **Russia in
 from [itdoginfo/allow-domains](https://github.com/itdoginfo/allow-domains).
 Russia inside sends listed domains through the VPN and all other traffic directly.
 Changing routing automatically reconnects an active VPN; an offline VPN stays off.
-Both modes update their rule sets through the selected VPN using native sing-box
-downloads, with persistent caching and bundled lists as an initial fallback.
+The vipin-v2 subscription delivers both profiles and their binary rule sets in one response.
+The next VPN start uses the latest validated revision, including starts from iOS Settings.
+Bundled profiles allow offline startup before the first routing update.
 The original standalone iOS interface has been retired; shared libraries and
 other upstream platform targets remain available where required.
 
@@ -20,6 +21,23 @@ scripts/build_vk_turn_prototype.sh
 Build requirements, daily Git commands and dependency updates are documented in
 [the development guide](docs/development.md). Device and runtime checks are in
 [the routing application verification notes](docs/testing/vk-turn-prototype.md).
+
+## Service WDTT release input
+
+Release builds of the iOS app read `build/private/ServiceWDTT.json` by default.
+Export the active revision on the backend with `python -m scripts.export_service_wdtt`
+and redirect its stdout directly to that private file using a local umask of 077.
+Debug builds use a synthetic fixture. Override the Xcode setting
+`SERVICE_WDTT_RESOURCE` to exercise a real service connection on a test device.
+
+The backend checks candidate credentials with `/usr/local/bin/service-wdtt-probe`
+before publishing them. To rebuild the Linux amd64 executable from this checkout:
+
+```sh
+cd upstream/sing-box
+CGO_ENABLED=0 GOOS=linux GOARCH=amd64 go build -trimpath -ldflags '-s -w -checklinkname=0' \
+  -tags 'with_gvisor,with_wireguard,badlinkname' -o ../../build/service-wdtt-probe ../../scripts/service-wdtt/probe.go
+```
 
 ## License
 

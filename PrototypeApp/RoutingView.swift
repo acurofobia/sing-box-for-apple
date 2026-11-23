@@ -36,9 +36,9 @@ struct PrototypeRoutingView: View {
                 VStack(alignment: .leading, spacing: 12) {
                     Text("Обновление списков").font(.system(size: 13)).foregroundStyle(PrototypeStyle.secondary).padding(.horizontal, 16)
                     VStack(spacing: 0) {
-                        information("Загрузка", value: "Через VPN")
+                        information("Источник", value: model.subscription.routing == nil ? "Встроенные правила" : "Подписка")
                         divider
-                        information("Интервал", value: "Раз в сутки")
+                        information("Обновление", value: "Вместе с подпиской")
                     }
                     .background(.white, in: RoundedRectangle(cornerRadius: 24))
                 }

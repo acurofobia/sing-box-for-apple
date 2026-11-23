@@ -41,8 +41,8 @@ struct Checks {
             print(String(decoding: try JSONEncoder().encode(doc), as: UTF8.self))
             return
         }
-        if CommandLine.arguments[1] == "download" {
-            result = try await PrototypeSubscriptionLoader.download(CommandLine.arguments[2], deviceHeaders: ["x-hwid": String(repeating: "a", count: 64), "x-device-os": "iOS", "x-ver-os": "27.0", "x-device-model": "iPhone14,5"])
+        if ["download", "download-service"].contains(CommandLine.arguments[1]) {
+            result = try await PrototypeSubscriptionLoader.download(CommandLine.arguments[2], deviceHeaders: ["x-hwid": String(repeating: "a", count: 64), "x-device-os": "iOS", "x-ver-os": "27.0", "x-device-model": "iPhone14,5"], service: CommandLine.arguments[1] == "download-service")
         } else {
             let data = try Data(contentsOf: URL(fileURLWithPath: CommandLine.arguments[2]))
             if CommandLine.arguments[1] == "outbound" {
@@ -54,7 +54,7 @@ struct Checks {
         // Exercise the cache representation as well as response decoding.
         let cached = try JSONDecoder().decode(PrototypeSubscription.self, from: JSONEncoder().encode(result))
         let node = try cached.vlessOutbound.map { try JSONSerialization.jsonObject(with: $0) } ?? NSNull()
-        let output: [String: Any] = ["provisioningState": cached.vlessProvisioning?.state ?? "", "node": node, "vk": cached.vkTurnLink ?? "", "complete": cached.isComplete, "warnings": cached.warnings.count, "configURL": (try JSONSerialization.jsonObject(with: JSONEncoder().encode(cached)) as? [String: Any])?["singBoxURL"] as? String ?? ""]
+        let output: [String: Any] = ["serviceRevision": cached.serviceWDTT?.revision ?? 0, "provisioningState": cached.vlessProvisioning?.state ?? "", "node": node, "vk": cached.vkTurnLink ?? "", "complete": cached.isComplete, "warnings": cached.warnings.count, "configURL": (try JSONSerialization.jsonObject(with: JSONEncoder().encode(cached)) as? [String: Any])?["singBoxURL"] as? String ?? ""]
         print(String(decoding: try JSONSerialization.data(withJSONObject: output), as: UTF8.self))
     }
 }
@@ -71,9 +71,13 @@ class SubscriptionTests(unittest.TestCase):
         vk = (ROOT / 'Library/Network/VKTurnConfiguration.swift').read_text()
         source = directory / 'checks.swift'
         source.write_text(vk + shared_sources() + (ROOT / 'PrototypeApp/SubscriptionUIDocument.swift').read_text() + (ROOT / 'PrototypeApp/SubscriptionLoader.swift').read_text().replace('import Library\n', '') + importer + (ROOT / 'PrototypeApp/PrototypeDeepLink.swift').read_text() + HARNESS)
+        import plistlib
+        plist = directory / 'Info.plist'
+        plist.write_bytes(plistlib.dumps({'CFBundleVersion': '4321'}))
         cls.executable = directory / 'checks'
         result = subprocess.run(['xcrun', 'swiftc', '-parse-as-library', '-module-cache-path', str(directory / 'modules'),
-                                 str(source), '-o', str(cls.executable)], capture_output=True, text=True)
+                                 str(source), '-Xlinker', '-sectcreate', '-Xlinker', '__TEXT', '-Xlinker', '__info_plist',
+                                 '-Xlinker', str(plist), '-o', str(cls.executable)], capture_output=True, text=True)
         if result.returncode:
             raise AssertionError(result.stdout + result.stderr)
 
@@ -445,6 +449,96 @@ func main() {
             thread.join()
 
 
+    def test_waits_for_personal_key_before_completing_import(self):
+        attempts = []
+        class Handler(BaseHTTPRequestHandler):
+            def do_GET(self):
+                attempts.append((self.path, self.headers.get('x-hwid')))
+                waiting = len(attempts) == 1
+                payload = {'error': 'wdtt_preparing'} if waiting else {
+                    'ui': UI_DOCUMENT, 'vless': None, 'vk_turn_link': LINK}
+                self.send_response(202 if waiting else 200)
+                self.send_header('X-Subscription-Format', 'vipin-v2')
+                self.send_header('Retry-After', '1')
+                self.end_headers()
+                self.wfile.write(json.dumps(payload).encode())
+            def log_message(self, *_): pass
+        with ThreadingHTTPServer(('127.0.0.1', 0), Handler) as server:
+            threading.Thread(target=server.serve_forever, daemon=True).start()
+            try:
+                run = subprocess.run([str(self.executable), 'download', f'http://127.0.0.1:{server.server_port}/sub'],
+                                     capture_output=True, text=True, timeout=15)
+                self.assertEqual(run.returncode, 0, run.stderr)
+                self.assertEqual(json.loads(run.stdout)['vk'], LINK)
+                self.assertEqual(attempts, [('/sub', 'a' * 64)] * 2)
+            finally:
+                server.shutdown()
+
+    def test_v2_download_and_old_server_negotiation(self):
+        events = []
+        variant = 'v2'
+        class Handler(BaseHTTPRequestHandler):
+            def do_GET(self):
+                fmt = self.headers.get('X-Subscription-Format')
+                events.append((self.path, fmt, self.headers.get('X-App-Build')))
+                if variant == 'old' and fmt == 'vipin-v2':
+                    self.send_error(406)
+                    return
+                if variant == 'old':
+                    payload = UI_DOCUMENT if self.path == '/ui' else dict(PAYLOAD, sing_box_url=None, ui_url=base + '/ui')
+                else:
+                    payload = {'service_wdtt': {'revision': 3, 'link': LINK if variant == 'v2' else 'invalid'}, 'vk_turn_link': LINK, 'ui': UI_DOCUMENT, 'vless': {
+                        'schemaVersion': 1, 'kind': 'vless-failover', 'state': 'restricted',
+                        'reason': 'not_allowed', 'outbounds': []}}
+                self.send_response(200)
+                self.send_header('X-Subscription-Format', 'vipin-v1' if variant == 'old' else 'vipin-v2')
+                self.end_headers()
+                self.wfile.write(json.dumps(payload).encode())
+            def log_message(self, *_): pass
+        server = ThreadingHTTPServer(('127.0.0.1', 0), Handler)
+        threading.Thread(target=server.serve_forever, daemon=True).start()
+        base = f'http://127.0.0.1:{server.server_port}'
+        try:
+            for variant in ('v2', 'invalid-key', 'old'):
+                events.clear()
+                run = subprocess.run([str(self.executable), 'download', base + '/sub'], capture_output=True, text=True)
+                self.assertEqual(run.returncode, 0, run.stderr)
+                result = json.loads(run.stdout)
+                self.assertTrue(result['complete'])
+                self.assertEqual(result['vk'], LINK)
+                self.assertEqual(result['serviceRevision'], 3 if variant == 'v2' else 0)
+                expected = [('/sub', 'vipin-v2', '4321')]
+                if variant == 'old':
+                    expected.extend([('/sub', 'vipin-v1', None), ('/ui', 'vipin-v1', None)])
+                else:
+                    self.assertEqual(result['provisioningState'], 'restricted')
+                self.assertEqual(events, expected)
+        finally:
+            server.shutdown()
+            server.server_close()
+
+    def test_service_rejects_legacy_request_outside_temporary_route(self):
+        paths = []
+        class Handler(BaseHTTPRequestHandler):
+            def do_GET(self):
+                paths.append(self.path)
+                if self.path == '/sub':
+                    payload = {'ui_url': f'http://localhost:{self.server.server_port}/ui'}
+                else:
+                    payload = UI_DOCUMENT
+                self.send_response(200)
+                self.end_headers()
+                self.wfile.write(json.dumps(payload).encode())
+            def log_message(self, *_): pass
+        with ThreadingHTTPServer(('127.0.0.1', 0), Handler) as server:
+            threading.Thread(target=server.serve_forever, daemon=True).start()
+            try:
+                run = subprocess.run([str(self.executable), 'download-service', f'http://127.0.0.1:{server.server_port}/sub'], capture_output=True)
+                self.assertNotEqual(run.returncode, 0)
+                self.assertEqual(paths, ['/sub'])
+            finally:
+                server.shutdown()
+
     def test_native_contract_headers_and_scoped_authorization(self):
         events = []
         class Handler(BaseHTTPRequestHandler):
@@ -471,9 +565,9 @@ func main() {
             self.assertEqual(len(events), 3)
             for path, agent, fmt, auth, capabilities, hwid in events:
                 self.assertRegex(hwid or "", r"^[a-zA-Z0-9=-]{10,64}$")
-                self.assertEqual(capabilities, "vless-failover-v1 device-access-v1")
+                self.assertEqual(capabilities, "vless-failover-v1 device-access-v1" + (" service-wdtt-v1 wdtt-preparation-v1" if fmt == "vipin-v2" else ""))
                 self.assertTrue(agent.startswith('VipinApp/'), events)
-                self.assertEqual(fmt, 'vipin-v1')
+                self.assertEqual(fmt, 'vipin-v2' if path == '/api/sub/key' else 'vipin-v1')
                 self.assertEqual(auth, None if path == '/api/sub/key' else 'Bearer synthetic_ui_token_123')
         finally:
             server.shutdown()

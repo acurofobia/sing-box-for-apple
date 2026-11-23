@@ -59,7 +59,7 @@ class ReleaseSourcesTests(unittest.TestCase):
 
     def test_sensitive_tracked_paths_are_excluded(self):
         for name in ('output/design/reference.txt', '.env', 'keys/key.pem',
-                     'PrototypeApp/vless-outbound.json', 'build/log.txt', '.netrc',
+                     'PrototypeApp/vless-outbound.json', 'PrototypeApp/ServiceWDTT.json', 'build/log.txt', '.netrc',
                      '.git-credentials', 'credentials.json', 'development.env'):
             self.write(name, 'private\n')
             self.git('add', '-f', name)

@@ -10,13 +10,9 @@ The isolated iOS app is **VK TURN Prototype**, scheme `VKTurnPrototype`, bundle 
 
 Direct rules use sing-box direct. Reject rules remain reject. The source `route` is the only imported config section; source DNS, servers, keys and other outbound settings are not imported. Every `R3-N1` route target, including `final`, becomes `vk-wg`. Accordingly, this config also sends unmatched traffic through TURN; it is not limited to explicitly listed YouTube/GitHub rules.
 
-Twenty-one rule sets from [RoscomVPN routing](https://github.com/hydraponique/roscomvpn-routing) are configured as native sing-box remote rule sets. The URLs use the live `release` branches of `hydraponique/roscomvpn-geosite` and `hydraponique/roscomvpn-geoip`. Downloads use `http_client.detour: vk-wg`, which is the selected WireGuard/TURN or VLESS connection. Native updates run every day while the VPN is running with routing enabled; valid updates apply to the running core.
+The **Роутинги** tab offers **RoskomVPN** and **Russia inside**. The server imports RoskomVPN routing logic and its versioned rule sets, and the Russia inside release asset. A successful vipin-v2 refresh supplies both profiles with their binary rule sets. User-defined admin rules run in saved order before source rules and the RoskomVPN YouTube UDP/443 exception.
 
-The bundled `.srs` files under `PrototypeApp/RuleSets` remain the initial fallback. The app copies them to the app group's `Library/Application Support/PrototypeRuleSets/Initial` and writes absolute `initial_path` values. Native startup loads its persistent cache first, then the fallback, so starting the VPN does not require a successful download. The native cache is stored separately at `Library/Application Support/PrototypeRuleSets/cache.db`, outside purgeable caches. Copying fallback files never replaces downloaded cache entries. Download or parse failures retain the last valid rules; updates are independent per rule set.
-
-The **Роутинги** tab saves **С роутингом** (the existing behavior, enabled by default) or **Без роутинга**. Without routing, only sniffing and DNS interception remain, `final` is still `vk-wg`, and no rule sets, direct exceptions or rejects are configured. DNS settings and the selected VPN transport are unchanged. The selection is persisted and the route snapshot for the extension is updated immediately; it applies to the next app or system VPN start without restarting the active tunnel.
-
-DNS is a minimal new UDP resolver at `1.1.1.1`, IPv4 only, via native WG in combined mode and directly in baseline. It is not the source config's DNS. Both modes use the same routing and rule-set data.
+The app validates the package and caches its files in the shared app group. The running tunnel keeps its configuration until the next start. A manual profile change reconnects an active tunnel. The app and Settings can start offline with the latest validated package or the bundled profiles. Both transports share the same application-owned DNS policy, with DNS reverse mapping enabled for Russia inside.
 
 The existing VK proxy library supplies only TURN/WRAP-A transport and provisioning. Its separate WireGuardBridge/device is not used. Both components run in one Go runtime inside the VPN extension. WireGuard uses one worker and MTU provisioned in the 1280–1500 range, with TUN MTU 1280. Existing proxy logging and credential cache remain confined to the isolated prototype container. User links are imported into its Keychain; the temporary app Documents seed is removed. The superclass's startup snapshot containing provisioned WG keys is removed after startup.
 
@@ -94,10 +90,11 @@ Ten script tests pass, including a native Swift harness running the production s
 
 ## Manual VLESS mode (2026-10-13)
 
-The prototype now has a **VK TURN / VLESS** mode picker. A disconnected selection
-is saved without starting VPN; changing a connected mode stops the old tunnel,
-waits up to 15 seconds for disconnection, and starts the chosen mode. Startup and
-shutdown disable switching. Selecting the active mode does not restart it. The
+The **VK TURN / VLESS** mode picker saves an offline selection for the next start.
+Choosing another mode while the tunnel is connecting or connected stops the
+current attempt, waits up to 15 seconds for disconnection, then starts the
+chosen mode. Pressing Disconnect during the wait cancels the pending start.
+The picker is disabled during shutdown and recovery. Selecting the active mode does not restart it. The
 existing baseline toggle still starts the direct-only measurement and disables
 the mode picker. TURN session count is disabled in VLESS mode.
 
@@ -253,16 +250,16 @@ The second routing segment is now **Russia inside**, replacing **Без роут
 The legacy stored value `disabled` maps to the new mode, so the existing selection
 survives an update. Only the official `russia_inside.srs` release asset from
 itdoginfo/allow-domains is used: listed domains go to `vk-wg`, with `direct` as
-the final outbound. The original RoscomVPN mode is unchanged. DNS sniffing and
+the final outbound.  DNS sniffing and
 hijacking remain enabled in both modes. Russia inside additionally enables DNS
 reverse mapping so domain rules can match opaque TCP/UDP connections resolved
 through the application DNS server, without changing its resolver or detour.
 
-The bundled `RuleSets/russia-inside.srs` seeds the native daily updater and cache.
+The bundled `RuleSets/russia-inside.srs` supplies the initial offline profile.
 Routing changes validate and prepare resources before stopping a connected VPN,
 wait up to 15 seconds for disconnection, then save the route and reconnect using
-the selected transport. Offline selections do not start a VPN. Selecting the same
-mode or changing modes while connecting/disconnecting does not restart the VPN.
+the selected transport. Offline selections do not start a VPN. Routing changes
+are available once the tunnel has finished connecting or disconnecting.
 
 The Swift harness in `scripts/tests/test_vk_turn_switching.py` exercises connected
 and offline routing changes, transitions, unchanged selections, corrupt resources,
@@ -280,10 +277,11 @@ invalid policy, cancellation and stale transactions retain the previous cache;
 a successful restricted/unavailable document removes VLESS for the next start.
 Legacy single-node JSON and VK TURN remain independent modes.
 
-At start the app writes one immutable `prototype-vless.json`. The extension
-creates four VLESS outbounds, one `vk-wg` selector with connection interruption,
-and one existing TUN/core. DNS, routes and remote rule-set downloads still target
-`vk-wg`; node hostname resolution uses direct bootstrap DNS. Policy is validated
+For each start, including from system Settings, the extension loads the routing
+and available VLESS configuration from the same committed subscription snapshot.
+The extension creates four VLESS outbounds, one `vk-wg` selector with connection
+interruption, and one existing TUN/core. DNS, routes and remote rule-set downloads
+still target `vk-wg`; node hostname resolution uses direct bootstrap DNS. Policy is validated
 against the final config and passed through Libbox's external override. All-down
 never changes proxy routing to direct. Ordinary failover does not reload NEVPN.
 

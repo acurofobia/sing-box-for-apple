@@ -4,6 +4,8 @@ import subprocess
 import tempfile
 import unittest
 
+from test_prototype_startup_cancellation import method
+
 ROOT = Path(__file__).resolve().parents[2]
 
 HARNESS = r'''
@@ -21,11 +23,14 @@ private func LibboxVerifyVKTurnPrototypeOOMProfiles(_ directory: String, _ error
     }
 }
 
-private func finishStartup(baseline: Bool, vless: Bool, stopped: Bool = false) async throws -> String {
+private func finishStartup(baseline: Bool, vless: Bool, serviceHost: String? = nil, stopped: Bool = false) async throws -> String {
     let capture = Capture()
     let stateLock = NSLock()
+    let stopReason: Int? = stopped ? 1 : nil
     let directory = FileManager.default.temporaryDirectory
+    var started = false
 __STARTUP__
+    precondition(started, "Startup never marked the session as started")
     return capture.phase
 }
 
@@ -50,6 +55,8 @@ __STARTUP__
             _ = try await finishStartup(baseline: true, vless: false, stopped: true)
             fatalError("Startup cancellation guard was lost")
         } catch is CancellationError {}
+        let servicePhase = try await finishStartup(baseline: false, vless: false, serviceHost: "example.invalid")
+        precondition(servicePhase == "combined", "Temporary service startup did not finish")
         print("PASS")
     }
 }
@@ -60,8 +67,10 @@ class ReleaseDiagnosticsTests(unittest.TestCase):
     def test_release_excludes_profiler_call_and_keeps_startup_phase_and_cancellation(self):
         source = (ROOT / 'Extension/PacketTunnelProvider.swift').read_text()
         # Keep the production conditional directives and cancellation/phase updates intact.
-        startup = source.split('commandServer?.writeMessage(4, message: "[VPN] Connected: "', 1)[1]
-        startup = startup.split('\n', 1)[1].split('        } catch {', 1)[0]
+        tunnel = method(source, '    override func startTunnel(')
+        startup = method(tunnel, '\n        do {')
+        startup = startup.split('\n            commandServer?.writeMessage(4, message: "[VPN] Connected: "', 1)[1]
+        startup = startup.split('\n', 1)[1].rsplit('\n', 1)[0]
         with tempfile.TemporaryDirectory() as directory:
             folder = Path(directory)
             swift = folder / 'checks.swift'

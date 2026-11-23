@@ -3,47 +3,34 @@ import Foundation
 import ImageIO
 import UniformTypeIdentifiers
 
-// Adapt the pinned Lucide shield-check paths to CoreGraphics. SVG corner arcs
-// are approximated with quadratic curves; the original SVG remains alongside.
+// Input: Vipin VPN's Android xxxhdpi adaptive foreground. Output: the iOS AppIcon set.
+guard CommandLine.arguments.count == 3 else { fatalError("Usage: render.swift <foreground.png> <appiconset>") }
+let source = URL(fileURLWithPath: CommandLine.arguments[1])
 let output = URL(fileURLWithPath: CommandLine.arguments[2], isDirectory: true)
-let outline = CGMutablePath()
-outline.move(to: CGPoint(x: 20, y: 13))
-outline.addCurve(to: CGPoint(x: 12.34, y: 21.95), control1: CGPoint(x: 20, y: 18), control2: CGPoint(x: 16.5, y: 20.5))
-outline.addQuadCurve(to: CGPoint(x: 11.67, y: 21.94), control: CGPoint(x: 12, y: 22.06))
-outline.addCurve(to: CGPoint(x: 4, y: 13), control1: CGPoint(x: 7.5, y: 20.5), control2: CGPoint(x: 4, y: 18))
-outline.addLine(to: CGPoint(x: 4, y: 6))
-outline.addQuadCurve(to: CGPoint(x: 5, y: 5), control: CGPoint(x: 4, y: 5))
-outline.addCurve(to: CGPoint(x: 11.24, y: 2.28), control1: CGPoint(x: 7, y: 5), control2: CGPoint(x: 9.5, y: 3.8))
-outline.addQuadCurve(to: CGPoint(x: 12.76, y: 2.28), control: CGPoint(x: 12, y: 1.64))
-outline.addCurve(to: CGPoint(x: 19, y: 5), control1: CGPoint(x: 14.51, y: 3.81), control2: CGPoint(x: 17, y: 5))
-outline.addQuadCurve(to: CGPoint(x: 20, y: 6), control: CGPoint(x: 20, y: 5))
-outline.closeSubpath()
-outline.move(to: CGPoint(x: 9, y: 12))
-outline.addLine(to: CGPoint(x: 11, y: 14))
-outline.addLine(to: CGPoint(x: 15, y: 10))
+// Remove Android's adaptive mask padding to match the lettering in its 192 × 192 launcher icon.
+guard let input = CGImageSourceCreateWithURL(source as CFURL, nil),
+      let image = CGImageSourceCreateImageAtIndex(input, 0, nil), image.width == 432, image.height == 432,
+      let logo = image.cropping(to: CGRect(x: 104, y: 104, width: 224, height: 224))
+else { fatalError("Expected the 432 × 432 Android foreground") }
 
-for (name, red, green, blue) in [
-    ("1024.png", 166.0, 22.0, 67.0),
-    ("1024-dark.png", 37.0, 15.0, 27.0),
-    ("1024-tinted.png", 0.0, 0.0, 0.0),
+let size = CGRect(x: 0, y: 0, width: 1024, height: 1024)
+let srgb = CGColorSpace(name: CGColorSpace.sRGB)!
+let gray = CGColorSpace(name: CGColorSpace.genericGrayGamma2_2)!
+for (name, background, space, alpha) in [
+    ("1024.png", CGColor(gray: 1, alpha: 1), srgb, CGImageAlphaInfo.noneSkipLast),
+    ("1024-dark.png", CGColor(srgbRed: 0.11, green: 0.11, blue: 0.12, alpha: 1), srgb, .noneSkipLast),
+    ("1024-tinted.png", CGColor(gray: 0, alpha: 1), gray, .none),
 ] {
     guard let context = CGContext(data: nil, width: 1024, height: 1024, bitsPerComponent: 8,
-                                  bytesPerRow: 4096, space: CGColorSpace(name: CGColorSpace.sRGB)!,
-                                  bitmapInfo: CGImageAlphaInfo.noneSkipLast.rawValue)
-    else { fatalError("Cannot create app icon bitmap") }
-    context.setFillColor(CGColor(red: red / 255, green: green / 255, blue: blue / 255, alpha: 1))
-    context.fill(CGRect(x: 0, y: 0, width: 1024, height: 1024))
-    context.translateBy(x: 176, y: 848)
-    context.scaleBy(x: 28, y: -28)
-    context.setStrokeColor(CGColor(gray: 1, alpha: 1))
-    context.setLineWidth(2)
-    context.setLineCap(.round)
-    context.setLineJoin(.round)
-    context.addPath(outline)
-    context.strokePath()
-    guard let image = context.makeImage(),
+                                  bytesPerRow: 0, space: space, bitmapInfo: alpha.rawValue)
+    else { fatalError("Cannot create bitmap for \(name)") }
+    context.setFillColor(background)
+    context.fill(size)
+    context.interpolationQuality = .high
+    context.draw(logo, in: size)
+    guard let icon = context.makeImage(),
           let destination = CGImageDestinationCreateWithURL(output.appendingPathComponent(name) as CFURL, UTType.png.identifier as CFString, 1, nil)
-    else { fatalError("Cannot encode app icon") }
-    CGImageDestinationAddImage(destination, image, nil)
-    guard CGImageDestinationFinalize(destination) else { fatalError("Cannot write app icon") }
+    else { fatalError("Cannot encode \(name)") }
+    CGImageDestinationAddImage(destination, icon, nil)
+    guard CGImageDestinationFinalize(destination) else { fatalError("Cannot write \(name)") }
 }

@@ -1,5 +1,6 @@
 import Foundation
 import Libbox
+import Network
 import NetworkExtension
 import os.log
 #if os(iOS)
@@ -30,6 +31,9 @@ open class ExtensionProvider: NEPacketTunnelProvider {
     /// Subclasses may latch cancellation before the new server can start a core.
     open func prepareServiceStart(_: LibboxCommandServer) throws {}
 
+    /// Called once per monitor so an observer can bind updates to its own tunnel session.
+    open func makeNetworkPathObserver() -> (@Sendable (Network.NWPath) -> Void)? { nil }
+
     private func applyStartOptions(_ options: [String: NSObject]) throws {
         if let policy = options["priorityFailoverJSON"], !(policy is String) {
             throw ExtensionStartupError("(packet-tunnel) error: invalid priorityFailoverJSON type")
@@ -45,8 +49,10 @@ open class ExtensionProvider: NEPacketTunnelProvider {
         )
     }
 
+    open var shouldPersistStartOptions: Bool { true }
+
     private func persistStartOptions(_ options: [String: NSObject]) throws {
-        guard let startOptionsURL else {
+        guard shouldPersistStartOptions, let startOptionsURL else {
             return
         }
         let data = try ExtensionStartOptions.encode(options)

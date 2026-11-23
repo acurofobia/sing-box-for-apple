@@ -250,43 +250,54 @@ public class CrashReportManager: ObservableObject {
     }
 
     private nonisolated static func coalesceArchivedCrashReports() {
+        coalescingLock.lock()
+        defer { coalescingLock.unlock() }
         let records = loadArchivedReportRecords()
-        let goOnlyRecords = records.filter { $0.contents.goLog != nil && $0.contents.nativeLog == nil }
-        let nativeOnlyRecords = records.filter { $0.contents.nativeLog != nil && $0.contents.goLog == nil }
-        guard !goOnlyRecords.isEmpty, !nativeOnlyRecords.isEmpty else {
-            return
-        }
-
-        var usedGoReportURLs: Set<URL> = []
-        for nativeRecord in nativeOnlyRecords {
-            guard let goRecord = matchingGoReport(for: nativeRecord, among: goOnlyRecords, excluding: usedGoReportURLs) else {
-                continue
+        var goRecords = records.filter { $0.isGo }
+        for native in records where !native.isGo {
+            let candidates = goRecords.filter { canMerge($0, native) }.sorted {
+                abs($0.date.timeIntervalSince(native.date)) < abs($1.date.timeIntervalSince(native.date))
             }
-
-            let mergedMetadata = CrashReportMetadataBuilder.mergedMetadata(
-                go: goRecord.metadata,
-                goContent: goRecord.contents.goLog ?? "",
-                native: nativeRecord.metadata,
-                nativeContent: nativeRecord.contents.nativeLog ?? ""
-            )
-            let mergedContents = CrashReportArtifactContents(
-                goLog: goRecord.contents.goLog,
-                nativeLog: nativeRecord.contents.nativeLog,
-                configContent: goRecord.contents.configContent ?? nativeRecord.contents.configContent
-            )
-
-            do {
-                try CrashReportArchive.rewriteArchivedReport(
-                    at: goRecord.reportURL,
-                    contents: mergedContents,
-                    metadata: mergedMetadata
-                )
-                CrashReportArchive.removeArtifact(at: nativeRecord.reportURL)
-                usedGoReportURLs.insert(goRecord.reportURL)
-            } catch {
-                continue
+            guard !candidates.isEmpty else { continue }
+            autoreleasepool {
+                guard let nativeFiles = native.readForMerge() else { return }
+                for go in candidates {
+                    guard let goFiles = go.readForMerge() else {
+                        goRecords.removeAll { $0.reportURL == go.reportURL }
+                        continue
+                    }
+                    let metadata = CrashReportMetadataBuilder.mergedMetadata(
+                        go: goFiles.metadata, goContent: goFiles.log,
+                        native: nativeFiles.metadata, nativeContent: nativeFiles.log
+                    )
+                    let contents = CrashReportArtifactContents(
+                        goLog: goFiles.log, nativeLog: nativeFiles.log, configContent: goFiles.config ?? nativeFiles.config
+                    )
+                    do {
+                        try replaceGoReport(at: go.reportURL, contents: contents, metadata: metadata)
+                        CrashReportArchive.removeArtifact(at: native.reportURL)
+                        goRecords.removeAll { $0.reportURL == go.reportURL }
+                    } catch {}
+                    return
+                }
             }
         }
+    }
+
+    private nonisolated static let coalescingLock = NSLock()
+
+    private nonisolated static func replaceGoReport(at url: URL, contents: CrashReportArtifactContents, metadata: CrashReportMetadata) throws {
+        // Publish the complete merged directory before retiring either original report.
+        let fm = FileManager.default
+        let temporary = try fm.url(for: .itemReplacementDirectory, in: .userDomainMask, appropriateFor: url, create: true)
+        defer { try? fm.removeItem(at: temporary) }
+        let staged = temporary.appendingPathComponent(url.lastPathComponent, isDirectory: true)
+        try CrashReportArchive.rewriteArchivedReport(at: staged, contents: contents, metadata: metadata)
+        let marker = url.appendingPathComponent(ReportArchive.readMarkerFileName)
+        if fm.fileExists(atPath: marker.path) {
+            try fm.copyItem(at: marker, to: staged.appendingPathComponent(ReportArchive.readMarkerFileName))
+        }
+        _ = try fm.replaceItemAt(url, withItemAt: staged)
     }
 
     public nonisolated func availableFiles(for report: CrashReport) async -> [CrashReportFile] {
@@ -355,53 +366,45 @@ public class CrashReportManager: ObservableObject {
             return []
         }
 
+        let knownFiles: Set = [ReportArchive.goLogFileName, ReportArchive.nativeLogFileName, ReportArchive.configFileName,
+                               ReportArchive.metadataFileName, ReportArchive.readMarkerFileName]
         return reportURLs
             .filter {
                 (try? $0.resourceValues(forKeys: [.isDirectoryKey]).isDirectory) ?? false
             }
             .compactMap { reportURL in
-                let contents = CrashReportArchive.readContents(for: reportURL)
-                guard let metadata = CrashReportArchive.readMetadata(for: reportURL),
-                      !contents.isEmpty
-                else {
-                    return nil
-                }
+                guard let files = try? FileManager.default.contentsOfDirectory(at: reportURL, includingPropertiesForKeys: [.isRegularFileKey]) else { return nil }
+                let names = Set(files.map(\.lastPathComponent))
+                let isGo = names.contains(ReportArchive.goLogFileName)
+                guard isGo != names.contains(ReportArchive.nativeLogFileName),
+                      names.isSubset(of: knownFiles),
+                      files.allSatisfy({ (try? $0.resourceValues(forKeys: [.isRegularFileKey]).isRegularFile) == true }),
+                      let metadata = CrashReportArchive.readMetadata(for: reportURL) else { return nil }
                 let date = CrashReportArchive.crashDate(for: reportURL)
                     ?? (try? reportURL.resourceValues(forKeys: [.contentModificationDateKey]).contentModificationDate)
                     ?? Date.distantPast
                 return ArchivedCrashReportRecord(
                     reportURL: reportURL,
                     date: date,
-                    contents: contents,
-                    metadata: metadata
+                    isGo: isGo,
+                    hasConfig: names.contains(ReportArchive.configFileName),
+                    source: metadata.source,
+                    bundleIdentifier: metadata.bundleIdentifier
                 )
             }
     }
 
-    private nonisolated static func matchingGoReport(
-        for nativeRecord: ArchivedCrashReportRecord,
-        among goRecords: [ArchivedCrashReportRecord],
-        excluding excludedReportURLs: Set<URL>
-    ) -> ArchivedCrashReportRecord? {
-        goRecords
-            .filter { !excludedReportURLs.contains($0.reportURL) }
-            .filter { canMerge($0, nativeRecord) }
-            .min { lhs, rhs in
-                abs(lhs.date.timeIntervalSince(nativeRecord.date)) < abs(rhs.date.timeIntervalSince(nativeRecord.date))
-            }
-    }
-
     private nonisolated static func canMerge(_ goRecord: ArchivedCrashReportRecord, _ nativeRecord: ArchivedCrashReportRecord) -> Bool {
-        if let goSource = goRecord.metadata.source,
-           let nativeSource = nativeRecord.metadata.source,
+        if let goSource = goRecord.source,
+           let nativeSource = nativeRecord.source,
            goSource != nativeSource
         {
             return false
         }
 
-        if let goBundleIdentifier = goRecord.metadata.bundleIdentifier?.trimmingCharacters(in: .whitespacesAndNewlines),
+        if let goBundleIdentifier = goRecord.bundleIdentifier?.trimmingCharacters(in: .whitespacesAndNewlines),
            !goBundleIdentifier.isEmpty,
-           let nativeBundleIdentifier = nativeRecord.metadata.bundleIdentifier?.trimmingCharacters(in: .whitespacesAndNewlines),
+           let nativeBundleIdentifier = nativeRecord.bundleIdentifier?.trimmingCharacters(in: .whitespacesAndNewlines),
            !nativeBundleIdentifier.isEmpty,
            goBundleIdentifier != nativeBundleIdentifier
         {
@@ -415,8 +418,24 @@ public class CrashReportManager: ObservableObject {
 private struct ArchivedCrashReportRecord {
     let reportURL: URL
     let date: Date
-    let contents: CrashReportArtifactContents
-    let metadata: CrashReportMetadata
+    let isGo: Bool
+    let hasConfig: Bool
+    let source: String?
+    let bundleIdentifier: String?
+
+    func readForMerge() -> (log: String, config: String?, metadata: CrashReportMetadata)? {
+        let url = isGo ? CrashReportArchive.goLogURL(for: reportURL) : CrashReportArchive.nativeLogURL(for: reportURL)
+        guard let log = try? String(contentsOf: url, encoding: .utf8),
+              !log.trimmingCharacters(in: .whitespacesAndNewlines).isEmpty,
+              let metadata = CrashReportArchive.readMetadata(for: reportURL),
+              metadata.source == source, metadata.bundleIdentifier == bundleIdentifier else { return nil }
+        if hasConfig {
+            guard let config = try? String(contentsOf: CrashReportArchive.configURL(for: reportURL), encoding: .utf8),
+                  !config.trimmingCharacters(in: .whitespacesAndNewlines).isEmpty else { return nil }
+            return (log, config, metadata)
+        }
+        return (log, nil, metadata)
+    }
 }
 
 enum CrashReportMetadataBuilder {
